@@ -20,8 +20,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
-import com.sun.grizzly.util.buf.Base64Utils;
-import com.sun.jersey.core.util.Base64;
 
 import eu.wisebed.api.snaa.AuthenticationExceptionException;
 import eu.wisebed.api.snaa.AuthenticationTriple;
