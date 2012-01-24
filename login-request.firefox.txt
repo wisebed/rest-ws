@@ -1,0 +1,7 @@
+{
+		"authenticationData":
+		[
+			{"password":"pass1", "urnPrefix":"urnprefix1", "username":"user1"},
+  			{"password":"pass2", "urnPrefix":"urnprefix2", "username":"user2"}
+		]
+}
