@@ -32,9 +32,27 @@
 			}
 		];
 
-		var loginFormRows = Array;
+		var loginFormRows = new Array();
 
-		function addRowToLoginForm(i, form) {
+		function addNewRowToLoginForm() {
+			addRowToLoginForm($("#firstButtonsRow"), loginFormRows.length);
+		}
+
+		function removeRowFromLoginForm() {
+
+			if (loginFormRows.length > 1) {
+
+				for (var i=0; i<loginFormRows[loginFormRows.length-1].length; i++) {
+					loginFormRows[loginFormRows.length-1][i].remove();
+				}
+
+				loginFormRows.splice(loginFormElements.length-1, 1);
+			}
+		}
+
+		function addRowToLoginForm(beforeElement, i) {
+
+			loginFormRows[i] = new Array();
 
 			for (var e=0; e<loginFormElements.length; e++) {
 
@@ -50,21 +68,15 @@
 				row.append(columnLabel);
 				columnField.append(field);
 				row.append(columnField);
-				form.append(row);
+				beforeElement.before(row);
 
-				loginFormRows[i] = {
-					"label" : columnLabel,
-					"field" : field
-				};
+				loginFormRows[i][e] = row;
 			}
 		}
 
 		$(document).ready(function () {
-
-			var form = $("#loginForm");
-			addRowToLoginForm(1, form);
-			addRowToLoginForm(2, form);
-			form.append('<div class="row"><div class="span4">&nbsp;</div><div class="span12"><input type="submit"/></div></div>');
+			addRowToLoginForm($("#firstButtonsRow"), 1);
+			addRowToLoginForm($("#firstButtonsRow"), 2);
 		}
 		);
 	</script>
@@ -79,7 +91,19 @@
 
 	<hr/>
 
-	<form id="loginForm" name="loginForm" action="/wisebed/2.3/login" method="post"></form>
+	<form id="loginForm" name="loginForm" action="/wisebed/2.3/login" method="post">
+		<div class="row" id="firstButtonsRow">
+			<div class="span4">&nbsp;</div>
+			<div class="span12">
+				<input type="button" onclick="addNewRowToLoginForm()" value="+"/>&nbsp;
+				<input type="button" onclick="removeRowFromLoginForm()" value="-"/>
+			</div>
+		</div>
+		<div class="row">
+			<div class="span4">&nbsp;</div>
+			<div class="span12"><input type="submit" value="login" /></div>
+		</div>
+	</form>
 
 </div>
 
