@@ -20,12 +20,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
+import com.sun.grizzly.util.buf.Base64Utils;
+import com.sun.jersey.core.util.Base64;
 
 import eu.wisebed.api.snaa.AuthenticationExceptionException;
 import eu.wisebed.api.snaa.AuthenticationTriple;
 import eu.wisebed.api.snaa.SNAA;
 import eu.wisebed.api.snaa.SNAAExceptionException;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
+import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
 
@@ -54,12 +57,10 @@ public class SnaaResource {
 		}
 
 		public SecretAuthenticationKeyList(String json) {
-			System.err.println("llllllllllllllllllllllllllllllllllllllllllllllllllllll");
 			try {
-				this.secretAuthenticationKeys = JaxbHelper.fromJSON(json, SecretAuthenticationKeyList.class).secretAuthenticationKeys;
+				this.secretAuthenticationKeys = JaxbHelper.fromJSON(Base64Helper.decode(json), SecretAuthenticationKeyList.class).secretAuthenticationKeys;
 			} catch (Exception e) {
 				this.secretAuthenticationKeys = null;
-				System.err.println("OHO" + e);
 			}
 		}
 
@@ -105,8 +106,7 @@ public class SnaaResource {
 			SecretAuthenticationKeyList loginResult = new SecretAuthenticationKeyList(secretAuthenticationKeys);
 			String jsonResponse = convertToJSON(loginResult);
 
-			NewCookie sakCookie = new NewCookie(Constants.COOKIE_WISEBED_SECRET_AUTHENTICATION_KEY, jsonResponse, "/", uriInfo.getRequestUri()
-					.getHost(), "", 60 * 60 * 24, false);
+			NewCookie sakCookie = toCookie(loginResult);
 
 			log.debug("Received {}, returning {}", convertToJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(sakCookie).build();
@@ -125,11 +125,14 @@ public class SnaaResource {
 		SecretAuthenticationKeyList loginResult = new SecretAuthenticationKeyList(secretAuthenticationKeys);
 		String jsonResponse = convertToJSON(loginResult);
 
-		NewCookie sakCookie = new NewCookie(Constants.COOKIE_WISEBED_SECRET_AUTHENTICATION_KEY, jsonResponse);
-
 		log.debug("Received {}, returning {}", "{}", jsonResponse);
-		return Response.ok(jsonResponse).cookie(sakCookie).build();
+		return Response.ok(jsonResponse).cookie(toCookie(loginResult)).build();
 
+	}
+
+	private NewCookie toCookie(SecretAuthenticationKeyList loginData) {
+		return new NewCookie(Constants.COOKIE_WISEBED_SECRET_AUTHENTICATION_KEY, Base64Helper.encode(convertToJSON(loginData)), "/", uriInfo
+				.getRequestUri().getHost(), "", 60 * 60 * 24, false);
 	}
 
 	private Response returnLoginError(Exception e) {
