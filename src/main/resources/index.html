@@ -1,0 +1,87 @@
+<!DOCTYPE html >
+<meta charset="utf-8">
+<head>
+	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
+	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<style type="text/css">
+		.container {
+			padding-top: 20px;
+		}
+	</style>
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript">
+
+		var loginFormElements = [
+			{
+				"name"    : "urnprefix",
+				"id"      : "urnprefix",
+				"caption" : "URN prefix",
+				"type"    : "text"
+			},
+			{
+				"name"    : "username",
+				"id"      : "username",
+				"caption" : "Username",
+				"type"    : "text"
+			},
+			{
+				"name"    : "password",
+				"id"      : "id",
+				"caption" : "Password",
+				"type"    : "password"
+			}
+		];
+
+		var loginFormRows = Array;
+
+		function addRowToLoginForm(i, form) {
+
+			for (var e=0; e<loginFormElements.length; e++) {
+
+				var row = $('<div class="row"/>');
+
+				var columnLabel = $('<div class="span4"/>');
+				var columnField = $('<div class="span12"/>');
+
+				var label = $('<label for="'+loginFormElements[e].id.concat(i)+'">'+loginFormElements[e].caption.concat('&nbsp;'+i)+'</label>');
+				var field = $('<input type="'+loginFormElements[e].type+'" id="'+loginFormElements[e].id.concat(i)+'" name="'+loginFormElements[e].name.concat(i)+'"/>');
+
+				columnLabel.append(label);
+				row.append(columnLabel);
+				columnField.append(field);
+				row.append(columnField);
+				form.append(row);
+
+				loginFormRows[i] = {
+					"label" : columnLabel,
+					"field" : field
+				};
+			}
+		}
+
+		$(document).ready(function () {
+
+			var form = $("#loginForm");
+			addRowToLoginForm(1, form);
+			addRowToLoginForm(2, form);
+			form.append('<div class="row"><div class="span4">&nbsp;</div><div class="span12"><input type="submit"/></div></div>');
+		}
+		);
+	</script>
+</head>
+<body>
+
+<div class="container">
+
+	<h1>WISEBED REST/WebSocket API v2.3</h1>
+
+	<h2>Login</h2>
+
+	<hr/>
+
+	<form id="loginForm" name="loginForm" action="/wisebed/2.3/login" method="post"></form>
+
+</div>
+
+</body>
+</html>
