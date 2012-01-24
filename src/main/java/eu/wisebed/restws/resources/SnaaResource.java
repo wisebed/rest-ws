@@ -1,9 +1,7 @@
 package eu.wisebed.restws.resources;
 
 import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
-import static eu.wisebed.restws.util.JaxbHelper.convertToXML;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -11,18 +9,31 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.slf4j.Logger;
 
+import com.google.inject.Inject;
+
+import eu.wisebed.api.snaa.AuthenticationExceptionException;
 import eu.wisebed.api.snaa.AuthenticationTriple;
+import eu.wisebed.api.snaa.SNAA;
+import eu.wisebed.api.snaa.SNAAExceptionException;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.util.InjectLogger;
+import eu.wisebed.restws.util.JaxbHelper;
 
 @Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/snaa/")
 public class SnaaResource {
+
 	@InjectLogger
 	private Logger log;
+
+	@Inject
+	private SNAA snaa;
 
 	@XmlRootElement
 	public static class LoginData {
@@ -30,14 +41,22 @@ public class SnaaResource {
 	}
 
 	@XmlRootElement
-	public static class LoginResult {
+	public static class SecretAuthenticationKeyList {
 		public List<SecretAuthenticationKey> secretAuthenticationKeys;
 
-		public LoginResult() {
+		public SecretAuthenticationKeyList() {
 		}
 
-		public LoginResult(List<SecretAuthenticationKey> secretAuthenticationKeys) {
+		public SecretAuthenticationKeyList(List<SecretAuthenticationKey> secretAuthenticationKeys) {
 			this.secretAuthenticationKeys = secretAuthenticationKeys;
+		}
+
+		public static SecretAuthenticationKeyList fromString(String json) {
+			try {
+				return JaxbHelper.fromJSON(json, SecretAuthenticationKeyList.class);
+			} catch (Exception e) {
+				return null;
+			}
 		}
 	}
 
@@ -69,27 +88,32 @@ public class SnaaResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Path("login")
-	public LoginResult login(LoginData loginData) {
-		List<SecretAuthenticationKey> secretAuthKeys = new LinkedList<>();
+	public Response login(LoginData loginData) {
 
-		SecretAuthenticationKey sak1 = new SecretAuthenticationKey();
-		sak1.setSecretAuthenticationKey("verysecret");
-		sak1.setUrnPrefix("urn");
-		sak1.setUsername("user");
+		List<SecretAuthenticationKey> secretAuthenticationKeys;
+		try {
 
-		SecretAuthenticationKey sak2 = new SecretAuthenticationKey();
-		sak2.setSecretAuthenticationKey("verysecret");
-		sak2.setUrnPrefix("urn");
-		sak2.setUsername("user");
+			secretAuthenticationKeys = snaa.authenticate(loginData.authenticationData);
+			SecretAuthenticationKeyList loginResult = new SecretAuthenticationKeyList(secretAuthenticationKeys);
+			String jsonResponse = convertToJSON(loginResult);
 
-		secretAuthKeys.add(sak1);
-		secretAuthKeys.add(sak2);
+			NewCookie sakCookie = new NewCookie(Constants.COOKIE_WISEBED_SECRET_AUTHENTICATION_KEY, jsonResponse);
 
-		LoginResult loginResult = new LoginResult(secretAuthKeys);
-		log.debug("XML : received {}, sending {}", convertToXML(loginData), convertToXML(loginResult));
-		log.debug("JSON: received {}, sending {}", convertToJSON(loginData), convertToJSON(loginResult));
-		return loginResult;
+			log.debug("Received {}, returning {}", convertToJSON(loginData), jsonResponse);
+			return Response.ok(jsonResponse).cookie(sakCookie).build();
 
+		} catch (AuthenticationExceptionException e) {
+			return returnLoginError(e);
+		} catch (SNAAExceptionException e) {
+			return returnLoginError(e);
+		}
+
+	}
+
+	private Response returnLoginError(Exception e) {
+		log.debug("Login failed :" + e, e);
+		String errorMessage = String.format("Login failed: %s (%s)", e, e.getMessage());
+		return Response.status(Status.FORBIDDEN).entity(errorMessage).build();
 	}
 
 }

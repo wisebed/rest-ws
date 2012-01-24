@@ -38,6 +38,7 @@ public class WisebedRestServer {
 
 		String url = (args.length > 0) ? args[0] : "http://localhost:" + options.webServerPort;
 		final GrizzlyWebServer ws = new GrizzlyWebServer(url);
+
 		ServletAdapter sa = new ServletAdapter();
 		ws.addGrizzlyAdapter(sa, null);
 		sa.addServletListener(WisebedRestServerConfig.class.getName());

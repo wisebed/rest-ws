@@ -4,6 +4,10 @@ import com.google.inject.matcher.Matchers;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.snaa.SNAA;
+import eu.wisebed.restws.dummy.DummyRS;
+import eu.wisebed.restws.dummy.DummySnaa;
 import eu.wisebed.restws.resources.ExperimentResource;
 import eu.wisebed.restws.resources.RsResource;
 import eu.wisebed.restws.resources.SessionManagementResource;
@@ -26,6 +30,8 @@ public class WisebedRestServerModule extends JerseyServletModule {
 		bind(RsResource.class);
 		bind(SessionManagementResource.class);
 		bind(ExperimentResource.class);
+		bind(SNAA.class).to(DummySnaa.class);
+		bind(RS.class).to(DummyRS.class);
 
 		bindListener(Matchers.any(), new Log4JTypeListener());
 

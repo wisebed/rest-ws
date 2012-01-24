@@ -2,8 +2,6 @@ package eu.wisebed.restws;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
 /**
  * Test case example that runs tests against the phone book REST service.
  */

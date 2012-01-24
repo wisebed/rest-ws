@@ -7,6 +7,8 @@ import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
+import com.google.common.base.Throwables;
+
 @SuppressWarnings("deprecation")
 public class JaxbHelper {
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -33,6 +35,14 @@ public class JaxbHelper {
 		} catch (IOException e) {
 		}
 		return writer.toString();
+	}
+
+	public static <T> T fromJSON(String json, Class<T> type) throws Exception {
+		try {
+			return mapper.readValue(json, type);
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 }
