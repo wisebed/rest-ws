@@ -30,6 +30,7 @@ public class WisebedRestServerModule extends JerseyServletModule {
 		bind(RsResource.class);
 		bind(SessionManagementResource.class);
 		bind(ExperimentResource.class);
+		
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 
