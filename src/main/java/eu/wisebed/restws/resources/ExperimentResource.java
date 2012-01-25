@@ -197,7 +197,7 @@ public class ExperimentResource {
 	 * @param flashData
 	 * @return
 	 */
-	@GET
+	@POST
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("{experimenturl}/flash/{requestIdBase64}")
 	public Response flashProgramsStatus(@PathParam("experimenturl") String experimentUrl, @PathParam("requestIdBase64") String requestIdBase64,
@@ -416,7 +416,7 @@ public class ExperimentResource {
 	}
 
 	@GET
-	@Path("network")
+	@Path("{experimenturl}/network")
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getExperimentNetworkXml(@PathParam("experimenturl") String experimentUrlBase64) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
