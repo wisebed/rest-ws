@@ -129,7 +129,7 @@ public class SnaaResource {
 	}
 
 	private NewCookie toCookie(SecretAuthenticationKeyList loginData) {
-		return new NewCookie(Constants.COOKIE_WISEBED_SECRET_AUTHENTICATION_KEY, Base64Helper.encode(convertToJSON(loginData)), "/", uriInfo
+		return new NewCookie(Constants.COOKIE_SECRET_AUTH_KEY, Base64Helper.encode(convertToJSON(loginData)), "/", uriInfo
 				.getRequestUri().getHost(), "", 60 * 60 * 24, false);
 	}
 

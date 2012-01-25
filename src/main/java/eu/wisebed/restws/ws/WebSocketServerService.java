@@ -1,19 +1,20 @@
 package eu.wisebed.restws.ws;
 
-import com.google.common.eventbus.EventBus;
-import com.google.common.util.concurrent.AbstractService;
-import com.google.inject.Inject;
-import eu.wisebed.restws.CommandLineOptions;
-import eu.wisebed.restws.util.InjectLogger;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.util.internal.ExecutorUtil;
 import org.slf4j.Logger;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.google.common.util.concurrent.AbstractService;
+import com.google.inject.Inject;
+
+import eu.wisebed.restws.CommandLineOptions;
+import eu.wisebed.restws.util.InjectLogger;
 
 public class WebSocketServerService extends AbstractService {
 

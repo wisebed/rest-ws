@@ -1,6 +1,5 @@
 package eu.wisebed.restws;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.matcher.Matchers;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
@@ -11,7 +10,6 @@ import eu.wisebed.restws.dummy.DummyRS;
 import eu.wisebed.restws.dummy.DummySnaa;
 import eu.wisebed.restws.resources.ExperimentResource;
 import eu.wisebed.restws.resources.RsResource;
-import eu.wisebed.restws.resources.SessionManagementResource;
 import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.util.Log4JTypeListener;
 
@@ -29,7 +27,6 @@ public class WisebedRestServerModule extends JerseyServletModule {
 		bind(WisebedResource.class);
 		bind(SnaaResource.class);
 		bind(RsResource.class);
-		bind(SessionManagementResource.class);
 		bind(ExperimentResource.class);
 		
 		bind(SNAA.class).to(DummySnaa.class);

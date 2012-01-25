@@ -1,9 +1,15 @@
 package eu.wisebed.restws.ws;
 
-import org.jboss.netty.channel.*;
-import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-
 import java.net.SocketAddress;
+
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.DefaultChannelFuture;
+import org.jboss.netty.channel.DownstreamMessageEvent;
+import org.jboss.netty.channel.LifeCycleAwareChannelHandler;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
 public class WebSocketServerWsnHandler extends SimpleChannelUpstreamHandler implements LifeCycleAwareChannelHandler {
 

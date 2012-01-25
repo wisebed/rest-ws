@@ -1,22 +1,20 @@
 package eu.wisebed.restws;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import eu.wisebed.restws.ws.WebSocketServerModule;
-import eu.wisebed.restws.ws.WebSocketServerService;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.sun.grizzly.http.embed.GrizzlyWebServer;
 import com.sun.grizzly.http.servlet.ServletAdapter;
 
 import de.uniluebeck.itm.tr.util.Logging;
-
-import java.util.concurrent.ExecutionException;
+import eu.wisebed.restws.ws.WebSocketServerModule;
+import eu.wisebed.restws.ws.WebSocketServerService;
 
 /**
  * This class must not be modified.

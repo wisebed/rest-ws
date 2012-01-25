@@ -30,6 +30,7 @@ public class GuiceInMemoryTestContainerFactory implements TestContainerFactory {
 		this.injector = injector;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Class<LowLevelAppDescriptor> supports() {
 		return LowLevelAppDescriptor.class;
 	}
