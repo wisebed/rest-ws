@@ -54,11 +54,10 @@ public class WisebedRestServer {
 		final Injector injector = Guice.createInjector(new AbstractModule() {
 			@Override
 			protected void configure() {
-				binder().requireExplicitBindings();
 				bind(GuiceContainer.class);
 				bind(GuiceFilter.class);
 			}
-		}, new WisebedRestServerModule(), new WebSocketServerModule(options));
+		}, new WisebedRestServerModule()/*, new WebSocketServerModule(options)*/);
 
 		final Server server = new Server(options.webServerPort);
 
@@ -73,9 +72,9 @@ public class WisebedRestServer {
 		server.setHandler(handler);
 		server.start();
 
-		log.info("Started REST resources on port {}", options.webServerPort);
+		log.info("Started server on port {}", options.webServerPort);
 
-		
+		/*
 		final WebSocketServerService webSocketServerService =
 		injector.getInstance(WebSocketServerService.class);
 		 
@@ -87,6 +86,7 @@ public class WisebedRestServer {
 			log.error("Exception while starting WebSocketServerService: " + e, e);
 			System.exit(1);
 		}
+		*/
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override

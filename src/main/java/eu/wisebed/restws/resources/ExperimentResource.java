@@ -80,7 +80,7 @@ public class ExperimentResource {
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
 
 			String jsonString = JaxbHelper.convertToJSON(wiseml);
-			log.trace("Returning JSON reprentation of WiseML: {}", jsonString);
+			log.trace("Returning JSON representation of WiseML: {}", jsonString);
 			return Response.ok(jsonString).build();
 
 		} catch (JAXBException e) {

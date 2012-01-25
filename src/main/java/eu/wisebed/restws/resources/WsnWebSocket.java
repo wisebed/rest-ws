@@ -1,6 +1,7 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import eu.wisebed.restws.WsnInstanceCache;
 import eu.wisebed.restws.util.InjectLogger;
 import org.eclipse.jetty.websocket.WebSocket;
@@ -15,11 +16,14 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 
 	private final WsnInstanceCache wsnInstanceCache;
 
+	private final String experimentId;
+
 	private Connection connection;
 
 	@Inject
-	public WsnWebSocket(final WsnInstanceCache wsnInstanceCache) {
+	public WsnWebSocket(final WsnInstanceCache wsnInstanceCache, @Assisted final String experimentId) {
 		this.wsnInstanceCache = wsnInstanceCache;
+		this.experimentId = experimentId;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package eu.wisebed.restws;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
@@ -21,11 +22,9 @@ public class WisebedRestServerServletModule extends ServletModule {
 		bind(RsResource.class);
 		bind(ExperimentResource.class);
 
-		bind(WsnWebSocket.class);
-		bind(WsnWebSocketServlet.class);
+		install(new FactoryModuleBuilder().build(WsnWebSocketFactory.class));
 
-		bind(GuiceContainer.class);
-		serve("/ws").with(WsnWebSocketServlet.class);
+		serve("/ws/*").with(WsnWebSocketServlet.class);
 		serve("/*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 	}
 }
