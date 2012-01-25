@@ -1,5 +1,9 @@
 package eu.wisebed.restws;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import eu.wisebed.restws.ws.WebSocketServerModule;
+import eu.wisebed.restws.ws.WebSocketServerService;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -11,6 +15,8 @@ import com.sun.grizzly.http.embed.GrizzlyWebServer;
 import com.sun.grizzly.http.servlet.ServletAdapter;
 
 import de.uniluebeck.itm.tr.util.Logging;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * This class must not be modified.
@@ -34,24 +40,35 @@ public class WisebedRestServer {
 			org.apache.log4j.Logger.getRootLogger().setLevel(Level.DEBUG);
 		}
 
-		log.debug("Startup");
+		log.debug("Startup with the following configuration " + options);
 
-		String url = (args.length > 0) ? args[0] : "http://localhost:" + options.webServerPort;
-		final GrizzlyWebServer ws = new GrizzlyWebServer(url);
+		final GrizzlyWebServer ws = new GrizzlyWebServer(options.webServerPort);
 
 		ServletAdapter sa = new ServletAdapter();
 		ws.addGrizzlyAdapter(sa, null);
-		sa.addServletListener(WisebedRestServerConfig.class.getName());
+		sa.addServletListener(WisebedRestServerServletListener.class.getName());
 		sa.addFilter(new GuiceFilter(), "guiceFilter", null);
 		ws.start();
 
-		log.info("Started server on URL: {}", url);
+		log.info("Started REST resources on port {}", options.webServerPort);
+
+		Injector injector = Guice.createInjector(new WebSocketServerModule(options));
+		final WebSocketServerService webSocketServerService = injector.getInstance(WebSocketServerService.class);
+
+		try {
+			webSocketServerService.start().get();
+			log.info("Started WebSocket service on port " + options.webSocketPort);
+		} catch (Exception e) {
+			log.error("Exception while starting WebSocketServerService: " + e, e);
+			System.exit(1);
+		}
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
 				log.info("Received EXIT signal. Shutting down Web server...");
 				ws.stop();
+				webSocketServerService.stopAndWait();
 			}
 		}, "ShutdownThread"));
 

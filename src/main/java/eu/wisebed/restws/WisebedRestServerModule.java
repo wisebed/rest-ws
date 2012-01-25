@@ -1,5 +1,6 @@
 package eu.wisebed.restws;
 
+import com.google.common.eventbus.EventBus;
 import com.google.inject.matcher.Matchers;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
