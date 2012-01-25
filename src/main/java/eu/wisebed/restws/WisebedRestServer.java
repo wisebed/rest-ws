@@ -5,9 +5,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
 import de.uniluebeck.itm.tr.util.Logging;
+
 import eu.wisebed.restws.ws.WebSocketServerModule;
 import eu.wisebed.restws.ws.WebSocketServerService;
+
 import org.apache.log4j.Level;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -19,12 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
+
 import java.util.EnumSet;
 
 /**
  * This class must not be modified.
  * <p/>
- * Main class to bootstrap the HTTP server that runs the phone book REST service.
+ * Main class to bootstrap the HTTP server that runs the phone book REST
+ * service.
  */
 public class WisebedRestServer {
 
@@ -46,18 +51,14 @@ public class WisebedRestServer {
 
 		log.debug("Startup with the following configuration " + options);
 
-		final Injector injector = Guice.createInjector(
-				new AbstractModule() {
-					@Override
-					protected void configure() {
-						binder().requireExplicitBindings();
-						bind(GuiceContainer.class);
-						bind(GuiceFilter.class);
-					}
-				},
-				new WisebedRestServerModule(),
-				new WebSocketServerModule(options)
-		);
+		final Injector injector = Guice.createInjector(new AbstractModule() {
+			@Override
+			protected void configure() {
+				binder().requireExplicitBindings();
+				bind(GuiceContainer.class);
+				bind(GuiceFilter.class);
+			}
+		}, new WisebedRestServerModule(), new WebSocketServerModule(options));
 
 		final Server server = new Server(options.webServerPort);
 
@@ -74,11 +75,14 @@ public class WisebedRestServer {
 
 		log.info("Started REST resources on port {}", options.webServerPort);
 
-		final WebSocketServerService webSocketServerService = injector.getInstance(WebSocketServerService.class);
-
+		
+		final WebSocketServerService webSocketServerService =
+		injector.getInstance(WebSocketServerService.class);
+		 
 		try {
 			webSocketServerService.start().get();
-			log.info("Started WebSocket service on port " + options.webSocketPort);
+			log.info("Started WebSocket service on port " +
+			options.webSocketPort);
 		} catch (Exception e) {
 			log.error("Exception while starting WebSocketServerService: " + e, e);
 			System.exit(1);
@@ -91,16 +95,15 @@ public class WisebedRestServer {
 				try {
 					server.stop();
 				} catch (Exception e) {
-					log.warn("Exception caught while shutting down Jetty during application shutdown: " + e, e);
+					log.warn(
+							"Exception caught while shutting down Jetty during application shutdown: "
+									+ e, e);
 				}
-				webSocketServerService.stopAndWait();
+				// webSocketServerService.stopAndWait();
 			}
-		}, "ShutdownThread"
-		)
-		);
+		}, "ShutdownThread"));
 
 	}
-
 	private static CommandLineOptions parseCmdLineOptions(final String[] args) {
 		CommandLineOptions options = new CommandLineOptions();
 		CmdLineParser parser = new CmdLineParser(options);
@@ -119,7 +122,8 @@ public class WisebedRestServer {
 	}
 
 	private static void printHelpAndExit(CmdLineParser parser) {
-		System.err.print("Usage: java " + WisebedRestServer.class.getCanonicalName());
+		System.err.print("Usage: java "
+				+ WisebedRestServer.class.getCanonicalName());
 		parser.printSingleLineUsage(System.err);
 		System.err.println();
 		parser.printUsage(System.err);

@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import eu.wisebed.restws.resources.ExperimentResource;
-import eu.wisebed.restws.resources.RootResource;
-import eu.wisebed.restws.resources.RsResource;
-import eu.wisebed.restws.resources.SnaaResource;
+import eu.wisebed.restws.resources.*;
 
 /**
  * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For
@@ -24,7 +21,11 @@ public class WisebedRestServerServletModule extends ServletModule {
 		bind(RsResource.class);
 		bind(ExperimentResource.class);
 
+		bind(WsnWebSocket.class);
+		bind(WsnWebSocketServlet.class);
+
 		bind(GuiceContainer.class);
+		serve("/ws").with(WsnWebSocketServlet.class);
 		serve("/*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 	}
 }
