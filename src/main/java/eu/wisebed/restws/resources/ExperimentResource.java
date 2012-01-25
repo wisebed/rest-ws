@@ -88,7 +88,10 @@ public class ExperimentResource {
 			JAXBContext jaxbContext = JAXBContext.newInstance(Wiseml.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
-			return Response.ok(JaxbHelper.convertToJSON(wiseml)).build();
+
+			String jsonString = JaxbHelper.convertToJSON(wiseml);
+			log.trace("Returning JSON reprentation of WiseML: {}", jsonString);
+			return Response.ok(jsonString).build();
 
 		} catch (JAXBException e) {
 			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
@@ -100,6 +103,7 @@ public class ExperimentResource {
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getNetworkXml() {
 		String wisemlString = sessions.getNetwork();
+		log.trace("Returning WiseML: {}", wisemlString);
 		return Response.ok(wisemlString).build();
 	}
 
@@ -109,10 +113,13 @@ public class ExperimentResource {
 	public Response getInstance(SecretReservationKeyListRs reservationKey) {
 
 		try {
-
+			log.error("Hier muss noch eine Controller-URL übergeben werden");
 			// TODO Hier muss noch eine Controller-URL übergeben werden
 			String experimentInstanceUrl = sessions.getInstance(BeanShellHelper.copyRsToWsn(reservationKey.reservations), null);
-			return Response.ok().location(new URI(Base64Helper.encode(experimentInstanceUrl) + "/")).build();
+
+			URI location = new URI(Base64Helper.encode(experimentInstanceUrl) + "/");
+			log.debug("Returning instance URL {}", location.toString());
+			return Response.ok().location(location).build();
 
 		} catch (ExperimentNotRunningException_Exception e) {
 			return returnError("Experiment not running (yet)", e, Status.BAD_REQUEST);
@@ -143,6 +150,8 @@ public class ExperimentResource {
 	@Path("{experimenturl}/flash")
 	public Response flashPrograms(@PathParam("experimenturl") String experimentUrlBase64, FlashProgramsRequest flashData) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+
+		log.debug("Flash request received");
 
 		// Convert input to the strange flashPrograms format
 		LinkedList<Program> programs = new LinkedList<Program>();
@@ -204,9 +213,9 @@ public class ExperimentResource {
 			FlashProgramsRequest flashData) {
 
 		FlashProgramsStatus status = new FlashProgramsStatus();
+		log.error("Returning fake status. Please implement me.");
 		// TODO Generate real status or return error
 		return Response.ok(JaxbHelper.convertToJSON(status)).build();
-
 	}
 
 	@POST
@@ -215,6 +224,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/resetNodes")
 	public Response resetNodes(@PathParam("experimenturl") String experimentUrlBase64, NodeUrnList nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to reset nodes: {}", nodeUrns);
 
 		try {
 
@@ -237,6 +247,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/areNodesAlive")
 	public Response areNodesAlive(@PathParam("experimenturl") String experimentUrlBase64, NodeUrnList nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to check for alive nodes: {}", nodeUrns);
 
 		try {
 
@@ -259,6 +270,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/send")
 	public Response send(@PathParam("experimenturl") String experimentUrlBase64, SendMessageData data) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to send data:  {}", data);
 
 		try {
 			Message message = new Message();
@@ -285,6 +297,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/destroyVirtualLink")
 	public Response destroyVirtualLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to destroy virtual link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
@@ -307,6 +320,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/disableNode")
 	public Response disableNode(@PathParam("experimenturl") String experimentUrlBase64, String nodeUrn) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to disable node:  {}", nodeUrn);
 
 		try {
 
@@ -329,6 +343,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/enableNode")
 	public Response enableNode(@PathParam("experimenturl") String experimentUrlBase64, String nodeUrn) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to enable node:  {}", nodeUrn);
 
 		try {
 
@@ -351,6 +366,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/disablePhysicalLink")
 	public Response disablePhysicalLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to disable physical link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
@@ -373,6 +389,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/enablePhysicalLink")
 	public Response enablePhysicalLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		log.debug("Received request to enable physical link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
@@ -403,7 +420,9 @@ public class ExperimentResource {
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
 
-			return Response.ok(JaxbHelper.convertToJSON(wiseml)).build();
+			String json = JaxbHelper.convertToJSON(wiseml);
+			log.debug("Returning network for experiment {} as json: {}", experimentUrl, json);
+			return Response.ok(json).build();
 
 		} catch (JAXBException e) {
 			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
@@ -424,6 +443,7 @@ public class ExperimentResource {
 		try {
 			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
 			String wisemlString = wsnAsync.getNetwork().get();
+			log.debug("Returning network for experiment {} as xml: {}", experimentUrl, wisemlString);
 			return Response.ok(wisemlString).build();
 
 		} catch (JAXBException e) {
