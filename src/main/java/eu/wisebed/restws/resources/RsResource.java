@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -68,7 +69,7 @@ public class RsResource {
 				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
 				String jsonResponse = convertToJSON(new PublicReservationDataList(reservations));
 
-				log.debug("Listing public reservations from {} until {}: {}", new Object[] { from, to, jsonResponse });
+				log.debug("Listing public reservations from {} until {}: {}", new Object[] { fromDate, toDate, jsonResponse });
 				return Response.ok(jsonResponse).build();
 
 			} else {
@@ -80,7 +81,7 @@ public class RsResource {
 						BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr);
 				String jsonResponse = convertToJSON(new ConfidentialReservationDataList(reservations));
 
-				log.debug("Listing confidential reservations from {} until {}: {}", new Object[] { from, to, jsonResponse });
+				log.debug("Listing confidential reservations from {} until {}: {}", new Object[] { fromDate, toDate, jsonResponse });
 				return Response.ok(jsonResponse).build();
 			}
 
@@ -128,7 +129,7 @@ public class RsResource {
 	 * List<SecretReservationKey> secretReservationKey)
 	 * 
 	 */
-	@GET
+	@DELETE
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response deleteReservation(@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
@@ -157,7 +158,7 @@ public class RsResource {
 	 * 
 	 * public List<ConfidentialReservationData> getReservation(List<SecretReservationKey> secretReservationKey)
 	 */
-	@GET
+	@POST
 	@Consumes({ MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_JSON })
 	public Response getReservation(SecretReservationKeyListRs secretReservationKeys) {
