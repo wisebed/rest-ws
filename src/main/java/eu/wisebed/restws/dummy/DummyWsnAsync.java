@@ -1,11 +1,5 @@
 package eu.wisebed.restws.dummy;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.Job.JobType;
 import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult;
 import de.uniluebeck.itm.wisebed.cmdlineclient.wrapper.IWsnAsyncWrapper;
@@ -13,6 +7,12 @@ import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class DummyWsnAsync implements IWsnAsyncWrapper {
 
@@ -32,8 +32,10 @@ public class DummyWsnAsync implements IWsnAsyncWrapper {
 	}
 
 	@Override
-	public Future<JobResult> setChannelPipeline(List<String> nodes, List<ChannelHandlerConfiguration> channelHandlerConfigurations, int timeout,
-			TimeUnit timeUnit) {
+	public Future<JobResult> setChannelPipeline(List<String> nodes,
+												List<ChannelHandlerConfiguration> channelHandlerConfigurations,
+												int timeout,
+												TimeUnit timeUnit) {
 		return new DummyFuture<JobResult>(generateResults(nodes, JobType.setChannelPipeline));
 	}
 
@@ -78,7 +80,8 @@ public class DummyWsnAsync implements IWsnAsyncWrapper {
 	}
 
 	@Override
-	public Future<JobResult> flashPrograms(List<String> nodeIds, List<Integer> programIndices, List<Program> programs, int timeout, TimeUnit timeUnit) {
+	public Future<JobResult> flashPrograms(List<String> nodeIds, List<Integer> programIndices, List<Program> programs,
+										   int timeout, TimeUnit timeUnit) {
 		return new DummyFuture<JobResult>(generateResults(nodeIds, JobType.flashPrograms));
 	}
 
@@ -105,16 +108,18 @@ public class DummyWsnAsync implements IWsnAsyncWrapper {
 	}
 
 	@Override
-	public Future<JobResult> setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance, List<String> parameters,
-			List<String> filters, int timeout, TimeUnit timeUnit) {
+	public Future<JobResult> setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance,
+											List<String> parameters,
+											List<String> filters, int timeout, TimeUnit timeUnit) {
 		return new DummyFuture<JobResult>(generateResults(Arrays.asList(sourceNode), JobType.setVirtualLink));
 	}
 
 	private JobResult generateResults(List<String> nodeIds, JobType jobType) {
 		JobResult result = new JobResult(jobType);
 		Random r = new Random();
-		for (String urn : nodeIds)
+		for (String urn : nodeIds) {
 			result.addResult(urn, r.nextBoolean(), "no message here");
+		}
 		return result;
 	}
 

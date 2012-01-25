@@ -1,35 +1,24 @@
 package eu.wisebed.restws.resources;
 
-import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
-
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.slf4j.Logger;
-
 import com.google.inject.Inject;
-
-import eu.wisebed.api.snaa.AuthenticationExceptionException;
-import eu.wisebed.api.snaa.AuthenticationTriple;
-import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.api.snaa.SNAAExceptionException;
-import eu.wisebed.api.snaa.SecretAuthenticationKey;
+import com.google.inject.Singleton;
+import eu.wisebed.api.snaa.*;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
+import org.slf4j.Logger;
 
+import javax.annotation.concurrent.ThreadSafe;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
+
+import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
+
+@Singleton
+@ThreadSafe
 @Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/login")
 public class SnaaResource {
 
@@ -44,11 +33,13 @@ public class SnaaResource {
 
 	@XmlRootElement
 	public static class LoginData {
+
 		public List<AuthenticationTriple> authenticationData;
 	}
 
 	@XmlRootElement
 	public static class SecretAuthenticationKeyList {
+
 		public List<SecretAuthenticationKey> secretAuthenticationKeys;
 
 		public SecretAuthenticationKeyList() {
@@ -56,7 +47,9 @@ public class SnaaResource {
 
 		public SecretAuthenticationKeyList(String json) {
 			try {
-				this.secretAuthenticationKeys = JaxbHelper.fromJSON(Base64Helper.decode(json), SecretAuthenticationKeyList.class).secretAuthenticationKeys;
+				this.secretAuthenticationKeys = JaxbHelper.fromJSON(Base64Helper.decode(json),
+						SecretAuthenticationKeyList.class
+				).secretAuthenticationKeys;
 			} catch (Exception e) {
 				this.secretAuthenticationKeys = null;
 			}
@@ -70,31 +63,32 @@ public class SnaaResource {
 
 	/**
 	 * loginData example: <code>
-		{
-		"authenticationData":
-		[
-		{"password":"pass1", "urnPrefix":"urnprefix1", "username":"user1"},
-		{"password":"pass2", "urnPrefix":"urnprefix2", "username":"user2"}
-		]
-		}
+	 * {
+	 * "authenticationData":
+	 * [
+	 * {"password":"pass1", "urnPrefix":"urnprefix1", "username":"user1"},
+	 * {"password":"pass2", "urnPrefix":"urnprefix2", "username":"user2"}
+	 * ]
+	 * }
 	 * </code>
-	 * 
+	 * <p/>
 	 * loginResult example: <code>
-	 	{	
-	 		"secretAuthenticationKeys":
-	 		[
-	 			{"username":"user","secretAuthenticationKey":"verysecret","urnPrefix":"urn"},
-	 			{"username":"user","secretAuthenticationKey":"verysecret","urnPrefix":"urn"}
-	 		]
-	 	}
+	 * {
+	 * "secretAuthenticationKeys":
+	 * [
+	 * {"username":"user","secretAuthenticationKey":"verysecret","urnPrefix":"urn"},
+	 * {"username":"user","secretAuthenticationKey":"verysecret","urnPrefix":"urn"}
+	 * ]
+	 * }
 	 * </code>
-	 * 
+	 *
 	 * @param authenticationData
+	 *
 	 * @return
 	 */
 	@POST
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_JSON})
 	public Response login(LoginData loginData) {
 
 		List<SecretAuthenticationKey> secretAuthenticationKeys;
@@ -129,8 +123,10 @@ public class SnaaResource {
 	}
 
 	private NewCookie toCookie(SecretAuthenticationKeyList loginData) {
-		return new NewCookie(Constants.COOKIE_SECRET_AUTH_KEY, Base64Helper.encode(convertToJSON(loginData)), "/", uriInfo
-				.getRequestUri().getHost(), "", 60 * 60 * 24, false);
+		return new NewCookie(Constants.COOKIE_SECRET_AUTH_KEY, Base64Helper.encode(convertToJSON(loginData)), "/",
+				uriInfo
+						.getRequestUri().getHost(), "", 60 * 60 * 24, false
+		);
 	}
 
 	private Response returnLoginError(Exception e) {

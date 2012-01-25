@@ -6,6 +6,7 @@ import eu.wisebed.api.wsn.WSN;
 import eu.wisebed.restws.WsnInstanceCache;
 
 public class DummyWsnInstanceCache implements WsnInstanceCache {
+
 	TimedCache<String, WSN> cache = new TimedCache<String, WSN>();
 
 	@Override

@@ -13,19 +13,19 @@ import org.kohsuke.args4j.spi.Setter;
 
 public class Log4JLevelOptionHandler extends OptionHandler<Level> {
 
-    public Log4JLevelOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super Level> setter) {
-        super(parser, option, setter);
-    }
+	public Log4JLevelOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super Level> setter) {
+		super(parser, option, setter);
+	}
 
-    @Override
-    public int parseArguments(final Parameters parameters) throws CmdLineException {
-        setter.addValue(Level.toLevel(parameters.getParameter(0)));
-        return 1;
-    }
+	@Override
+	public int parseArguments(final Parameters parameters) throws CmdLineException {
+		setter.addValue(Level.toLevel(parameters.getParameter(0)));
+		return 1;
+	}
 
-    @Override
-    public String getDefaultMetaVariable() {
-        return "LEVEL";
-    }
+	@Override
+	public String getDefaultMetaVariable() {
+		return "LEVEL";
+	}
 
 }

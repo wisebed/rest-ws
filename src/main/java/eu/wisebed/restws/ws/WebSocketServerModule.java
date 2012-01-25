@@ -23,11 +23,15 @@ public class WebSocketServerModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		
+
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 		bind(SessionManagement.class).to(DummySessionManagement.class);
 		bind(WSN.class).to(DummyWsn.class);
+
+		bind(WebSocketServerHandler.class);
+		bind(WebSocketServerService.class);
+		bind(WebSocketServerPipelineFactory.class);
 		
 		bind(CommandLineOptions.class).toInstance(commandLineOptions);
 

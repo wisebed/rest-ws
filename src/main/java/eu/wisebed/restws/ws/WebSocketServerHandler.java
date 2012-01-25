@@ -15,7 +15,8 @@
  */
 package eu.wisebed.restws.ws;
 
-import com.google.common.primitives.Ints;
+import com.google.inject.Inject;
+import eu.wisebed.restws.WsnInstanceCache;
 import eu.wisebed.restws.util.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
@@ -45,9 +46,12 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 	@InjectLogger
 	private Logger log;
 
+	@Inject
+	private WsnInstanceCache wsnInstanceCache;
+
 	private WebSocketServerHandshaker handshaker;
 
-	private int experimentId;
+	private String experimentId;
 
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -89,12 +93,12 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 		String path = requestUri.getPath().startsWith("/") ? requestUri.getPath().substring(1) : requestUri.getPath();
 		String[] splitPath = path.split("/");
 
-		if (splitPath.length < 1 || !"experiments".equals(splitPath[0]) || Ints.tryParse(splitPath[1]) == null) {
+		if (splitPath.length < 1 || !"experiments".equals(splitPath[0])) {
 			sendHttpResponse(ctx, req, new DefaultHttpResponse(HTTP_1_1, BAD_REQUEST));
 			return;
 		}
 
-		experimentId = Integer.parseInt(splitPath[1]);
+		experimentId = splitPath[1];
 
 		// Handshake
 		WebSocketServerHandshakerFactory wsFactory =
@@ -107,7 +111,7 @@ public class WebSocketServerHandler extends SimpleChannelUpstreamHandler {
 				this.handshaker.handshake(ctx.getChannel(), req);
 				try {
 					ctx.getPipeline().addAfter("webSocketServerHandler", "webSocketServerWsnHandler",
-							new WebSocketServerWsnHandler(experimentId)
+							new WebSocketServerWsnHandler(experimentId, wsnInstanceCache)
 					);
 				} catch (Exception e) {
 					// TODO send some error message to the client and close channel afterwards

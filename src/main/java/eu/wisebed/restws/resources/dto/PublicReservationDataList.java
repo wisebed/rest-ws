@@ -1,13 +1,13 @@
 package eu.wisebed.restws.resources.dto;
 
-import java.util.List;
+import eu.wisebed.api.rs.PublicReservationData;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-import eu.wisebed.api.rs.PublicReservationData;
+import java.util.List;
 
 @XmlRootElement
 public class PublicReservationDataList {
+
 	List<PublicReservationData> reservations;
 
 	public PublicReservationDataList(List<PublicReservationData> reservations) {

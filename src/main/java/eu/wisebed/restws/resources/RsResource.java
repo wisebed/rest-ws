@@ -1,48 +1,33 @@
 package eu.wisebed.restws.resources;
 
-import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
-
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-
 import com.google.inject.Inject;
-
+import com.google.inject.Singleton;
 import de.uniluebeck.itm.tr.util.Tuple;
 import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
-import eu.wisebed.api.rs.AuthorizationExceptionException;
-import eu.wisebed.api.rs.ConfidentialReservationData;
-import eu.wisebed.api.rs.Data;
-import eu.wisebed.api.rs.GetReservations;
-import eu.wisebed.api.rs.PublicReservationData;
-import eu.wisebed.api.rs.RS;
-import eu.wisebed.api.rs.RSExceptionException;
-import eu.wisebed.api.rs.ReservervationConflictExceptionException;
-import eu.wisebed.api.rs.ReservervationNotFoundExceptionException;
-import eu.wisebed.api.rs.SecretReservationKey;
+import eu.wisebed.api.rs.*;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.resources.SnaaResource.SecretAuthenticationKeyList;
 import eu.wisebed.restws.resources.dto.ConfidentialReservationDataList;
 import eu.wisebed.restws.resources.dto.PublicReservationDataList;
 import eu.wisebed.restws.resources.dto.SecretReservationKeyListRs;
 import eu.wisebed.restws.util.InjectLogger;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
 
+import javax.annotation.concurrent.ThreadSafe;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.List;
+
+import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
+
+@Singleton
+@ThreadSafe
 @Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/reservations/")
 public class RsResource {
 
@@ -53,8 +38,9 @@ public class RsResource {
 	private RS rs;
 
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Response listReservations(@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response listReservations(
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
 			@QueryParam("from") String from, @QueryParam("to") String to) {
 
 		log.debug("Cookie (secret authentication key): {}", secretAuthCookie);
@@ -69,7 +55,9 @@ public class RsResource {
 				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
 				String jsonResponse = convertToJSON(new PublicReservationDataList(reservations));
 
-				log.debug("Listing public reservations from {} until {}: {}", new Object[] { fromDate, toDate, jsonResponse });
+				log.debug("Listing public reservations from {} until {}: {}",
+						new Object[]{fromDate, toDate, jsonResponse}
+				);
 				return Response.ok(jsonResponse).build();
 
 			} else {
@@ -78,10 +66,13 @@ public class RsResource {
 				gr.setTo(toDate);
 
 				List<ConfidentialReservationData> reservations = rs.getConfidentialReservations(
-						BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr);
+						BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr
+				);
 				String jsonResponse = convertToJSON(new ConfidentialReservationDataList(reservations));
 
-				log.debug("Listing confidential reservations from {} until {}: {}", new Object[] { fromDate, toDate, jsonResponse });
+				log.debug("Listing confidential reservations from {} until {}: {}",
+						new Object[]{fromDate, toDate, jsonResponse}
+				);
 				return Response.ok(jsonResponse).build();
 			}
 
@@ -94,9 +85,10 @@ public class RsResource {
 	}
 
 	@POST
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response makeReservation(@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.TEXT_PLAIN})
+	public Response makeReservation(
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
 			PublicReservationData request) {
 
 		if (secretAuthCookie == null) {
@@ -105,10 +97,13 @@ public class RsResource {
 
 		try {
 
-			ConfidentialReservationData confidentialReservation = createFrom(secretAuthCookie.secretAuthenticationKeys, request);
+			ConfidentialReservationData confidentialReservation =
+					createFrom(secretAuthCookie.secretAuthenticationKeys, request);
 
-			List<SecretReservationKey> reservation = rs.makeReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
-					confidentialReservation);
+			List<SecretReservationKey> reservation =
+					rs.makeReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+							confidentialReservation
+					);
 
 			String jsonResponse = convertToJSON(new SecretReservationKeyListRs(reservation));
 			log.debug("Made reservation: {}", jsonResponse);
@@ -127,23 +122,27 @@ public class RsResource {
 	/**
 	 * Deletes a single reservation. public void deleteReservation(List<SecretAuthenticationKey> authenticationData,
 	 * List<SecretReservationKey> secretReservationKey)
-	 * 
 	 */
 	@DELETE
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response deleteReservation(@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.TEXT_PLAIN})
+	public Response deleteReservation(
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
 			SecretReservationKeyListRs secretReservationKeys) {
 
 		log.debug("Cookie (secret authentication key): {}", secretAuthCookie);
 
 		if (secretAuthCookie != null) {
 			try {
-				rs.deleteReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), secretReservationKeys.reservations);
+				rs.deleteReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+						secretReservationKeys.reservations
+				);
 				return Response.ok("Ok, deleted reservation").build();
 
 			} catch (RSExceptionException e) {
-				return returnError("Error while communicating with the reservation server", e, Status.INTERNAL_SERVER_ERROR);
+				return returnError("Error while communicating with the reservation server", e,
+						Status.INTERNAL_SERVER_ERROR
+				);
 			} catch (ReservervationNotFoundExceptionException e) {
 				return returnError("Reservation not found", e, Status.BAD_REQUEST);
 			}
@@ -153,14 +152,14 @@ public class RsResource {
 
 	/**
 	 * Returns data about a single reservation (including confidential information).
-	 * 
+	 * <p/>
 	 * WISEBED API function:
-	 * 
+	 * <p/>
 	 * public List<ConfidentialReservationData> getReservation(List<SecretReservationKey> secretReservationKey)
 	 */
 	@POST
-	@Consumes({ MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response getReservation(SecretReservationKeyListRs secretReservationKeys) {
 
 		try {
@@ -171,7 +170,8 @@ public class RsResource {
 			return Response.ok(jsonResponse).build();
 
 		} catch (RSExceptionException e) {
-			return returnError("Error while communicating with the reservation server", e, Status.INTERNAL_SERVER_ERROR);
+			return returnError("Error while communicating with the reservation server", e, Status.INTERNAL_SERVER_ERROR
+			);
 		} catch (ReservervationNotFoundExceptionException e) {
 			return returnError("Reservation not found", e, Status.BAD_REQUEST);
 		}
@@ -183,7 +183,8 @@ public class RsResource {
 		return Response.status(status).entity(errorMessage).build();
 	}
 
-	private ConfidentialReservationData createFrom(List<SecretAuthenticationKey> secretAuthenticationKeys, PublicReservationData reservation) {
+	private ConfidentialReservationData createFrom(List<SecretAuthenticationKey> secretAuthenticationKeys,
+												   PublicReservationData reservation) {
 
 		ConfidentialReservationData confidentialReservation = new ConfidentialReservationData();
 		for (SecretAuthenticationKey key : secretAuthenticationKeys) {
@@ -202,15 +203,20 @@ public class RsResource {
 		return confidentialReservation;
 	}
 
-	private Tuple<XMLGregorianCalendar, XMLGregorianCalendar> convertToDuration(String from, String to) throws IllegalArgumentException {
+	private Tuple<XMLGregorianCalendar, XMLGregorianCalendar> convertToDuration(String from, String to)
+			throws IllegalArgumentException {
 
 		try {
 
-			if (from == null || "".equals(from))
-				from = DatatypeFactory.newInstance().newXMLGregorianCalendar(new DateTime().toGregorianCalendar()).toString();
+			if (from == null || "".equals(from)) {
+				from = DatatypeFactory.newInstance().newXMLGregorianCalendar(new DateTime().toGregorianCalendar())
+						.toString();
+			}
 
-			if (to == null || "".equals(to))
-				to = DatatypeFactory.newInstance().newXMLGregorianCalendar(new DateTime().plusDays(1).toGregorianCalendar()).toString();
+			if (to == null || "".equals(to)) {
+				to = DatatypeFactory.newInstance()
+						.newXMLGregorianCalendar(new DateTime().plusDays(1).toGregorianCalendar()).toString();
+			}
 
 			XMLGregorianCalendar fromDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(from);
 			XMLGregorianCalendar toDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(to);

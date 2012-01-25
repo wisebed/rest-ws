@@ -1,11 +1,12 @@
-package eu.wisebed.restws;
+package eu.wisebed.restws.resources;
 
+import eu.wisebed.restws.GuiceAndJerseyTest;
 import org.junit.Test;
 
 /**
  * Test case example that runs tests against the phone book REST service.
  */
-public class WisebedResourceTest extends GuiceAndJerseyTest {
+public class RootResourceTest extends GuiceAndJerseyTest {
 
 	/*@Inject
 	private EmployeeDB employeeDB;*/

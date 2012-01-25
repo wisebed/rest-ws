@@ -1,27 +1,26 @@
 package eu.wisebed.restws.ws;
 
-import java.net.SocketAddress;
-
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.DefaultChannelFuture;
-import org.jboss.netty.channel.DownstreamMessageEvent;
-import org.jboss.netty.channel.LifeCycleAwareChannelHandler;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import eu.wisebed.restws.WsnInstanceCache;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+
+import java.net.SocketAddress;
 
 public class WebSocketServerWsnHandler extends SimpleChannelUpstreamHandler implements LifeCycleAwareChannelHandler {
 
-	private final int experimentId;
+	private final WsnInstanceCache wsnInstanceCache;
 
-	public WebSocketServerWsnHandler(final int experimentId) {
+	private final String experimentId;
+
+	public WebSocketServerWsnHandler(final String experimentId, final WsnInstanceCache wsnInstanceCache) {
 		this.experimentId = experimentId;
+		this.wsnInstanceCache = wsnInstanceCache;
 	}
 
 	@Override
 	public void beforeAdd(final ChannelHandlerContext ctx) throws Exception {
 		// TODO connect to WSN as Controller to receive messages or throw Exception if not possible
+		wsnInstanceCache.get(experimentId);
 	}
 
 	@Override

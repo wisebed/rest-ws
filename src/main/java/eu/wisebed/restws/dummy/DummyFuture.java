@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DummyFuture<T> implements Future<T> {
+
 	T dummyValue;
 
 	boolean cancelled = false;

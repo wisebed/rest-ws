@@ -1,12 +1,12 @@
 package eu.wisebed.restws.dummy;
 
-import java.util.List;
-
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
 import eu.wisebed.api.wsn.WSN;
+
+import java.util.List;
 
 public class DummyWsn implements WSN {
 
@@ -84,12 +84,14 @@ public class DummyWsn implements WSN {
 	}
 
 	@Override
-	public String setChannelPipeline(List<String> nodes, List<ChannelHandlerConfiguration> channelHandlerConfigurations) {
+	public String setChannelPipeline(List<String> nodes,
+									 List<ChannelHandlerConfiguration> channelHandlerConfigurations) {
 		return null;
 	}
 
 	@Override
-	public String setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance, List<String> parameters, List<String> filters) {
+	public String setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance,
+								 List<String> parameters, List<String> filters) {
 		return null;
 	}
 }

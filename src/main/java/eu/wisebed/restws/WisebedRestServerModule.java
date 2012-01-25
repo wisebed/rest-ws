@@ -1,11 +1,7 @@
 package eu.wisebed.restws;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.guice.JerseyServletModule;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-
 import eu.wisebed.api.rs.RS;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.snaa.SNAA;
@@ -13,37 +9,20 @@ import eu.wisebed.restws.dummy.DummyRS;
 import eu.wisebed.restws.dummy.DummySessionManagement;
 import eu.wisebed.restws.dummy.DummySnaa;
 import eu.wisebed.restws.dummy.DummyWsnInstanceCache;
-import eu.wisebed.restws.resources.ExperimentResource;
-import eu.wisebed.restws.resources.RsResource;
-import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.util.Log4JTypeListener;
 
-/**
- * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For more
- * information please check
- * http://jersey.java.net/nonav/apidocs/latest/contribs/jersey-guice/com/sun/jersey/guice/spi/container
- * /servlet/package-summary.html.
- */
-public class WisebedRestServerModule extends JerseyServletModule {
+public class WisebedRestServerModule extends AbstractModule {
 
 	@Override
-	protected void configureServlets() {
+	protected void configure() {
 
-		bind(WisebedResource.class);
-		bind(SnaaResource.class);
-		bind(RsResource.class);
-		bind(ExperimentResource.class);
-		
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 		bind(SessionManagement.class).to(DummySessionManagement.class);
 		bind(WsnInstanceCache.class).to(DummyWsnInstanceCache.class);
-		
+
 		bindListener(Matchers.any(), new Log4JTypeListener());
 
-		serve("/*").with(
-				GuiceContainer.class,
-				ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true")
-		);
+		install(new WisebedRestServerServletModule());
 	}
 }

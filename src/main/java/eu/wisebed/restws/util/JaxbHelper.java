@@ -1,16 +1,16 @@
 package eu.wisebed.restws.util;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
+import com.google.common.base.Throwables;
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 
-import com.google.common.base.Throwables;
+import java.io.IOException;
+import java.io.StringWriter;
 
 @SuppressWarnings("deprecation")
 public class JaxbHelper {
+
 	private static ObjectMapper mapper = new ObjectMapper();
 
 	private static AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();

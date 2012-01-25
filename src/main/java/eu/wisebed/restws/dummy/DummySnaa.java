@@ -1,19 +1,15 @@
 package eu.wisebed.restws.dummy;
 
+import eu.wisebed.api.snaa.*;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import eu.wisebed.api.snaa.Action;
-import eu.wisebed.api.snaa.AuthenticationExceptionException;
-import eu.wisebed.api.snaa.AuthenticationTriple;
-import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.api.snaa.SNAAExceptionException;
-import eu.wisebed.api.snaa.SecretAuthenticationKey;
 
 public class DummySnaa implements SNAA {
 
 	@Override
-	public List<SecretAuthenticationKey> authenticate(List<AuthenticationTriple> loginData) throws AuthenticationExceptionException,
+	public List<SecretAuthenticationKey> authenticate(List<AuthenticationTriple> loginData)
+			throws AuthenticationExceptionException,
 			SNAAExceptionException {
 
 		List<SecretAuthenticationKey> secretAuthKeys = new LinkedList<SecretAuthenticationKey>();

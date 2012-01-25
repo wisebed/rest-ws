@@ -1,8 +1,10 @@
 package eu.wisebed.restws;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import de.uniluebeck.itm.tr.util.Logging;
 import eu.wisebed.restws.ws.WebSocketServerModule;
 import eu.wisebed.restws.ws.WebSocketServerService;
@@ -10,6 +12,7 @@ import org.apache.log4j.Level;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
@@ -44,6 +47,14 @@ public class WisebedRestServer {
 		log.debug("Startup with the following configuration " + options);
 
 		final Injector injector = Guice.createInjector(
+				new AbstractModule() {
+					@Override
+					protected void configure() {
+						binder().requireExplicitBindings();
+						bind(GuiceContainer.class);
+						bind(GuiceFilter.class);
+					}
+				},
 				new WisebedRestServerModule(),
 				new WebSocketServerModule(options)
 		);
@@ -53,19 +64,13 @@ public class WisebedRestServer {
 		ServletContextHandler handler = new ServletContextHandler();
 		handler.setContextPath("/");
 
+		handler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
+
 		FilterHolder guiceFilter = new FilterHolder(injector.getInstance(GuiceFilter.class));
 		handler.addFilter(guiceFilter, "/*", EnumSet.allOf(DispatcherType.class));
 
 		server.setHandler(handler);
 		server.start();
-
-		/*final GrizzlyWebServer ws = new GrizzlyWebServer(options.webServerPort);
-
-		ServletAdapter sa = new ServletAdapter();
-		ws.addGrizzlyAdapter(sa, null);
-		sa.addServletListener(WisebedRestServerServletListener.class.getName());
-		sa.addFilter(new GuiceFilter(), "guiceFilter", null);
-		ws.start();*/
 
 		log.info("Started REST resources on port {}", options.webServerPort);
 
