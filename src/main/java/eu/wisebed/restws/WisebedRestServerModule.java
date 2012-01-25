@@ -1,6 +1,8 @@
 package eu.wisebed.restws;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.matcher.Matchers;
+import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
@@ -39,6 +41,9 @@ public class WisebedRestServerModule extends JerseyServletModule {
 		
 		bindListener(Matchers.any(), new Log4JTypeListener());
 
-		serve("/*").with(GuiceContainer.class);
+		serve("/*").with(
+				GuiceContainer.class,
+				ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true")
+		);
 	}
 }

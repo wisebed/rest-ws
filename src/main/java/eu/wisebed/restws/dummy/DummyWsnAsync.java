@@ -49,7 +49,7 @@ public class DummyWsnAsync implements IWsnAsyncWrapper {
 
 	@Override
 	public Future<String> describeCapabilities(String capability) {
-		return new DummyFuture<String>("m‰chtig viel");
+		return new DummyFuture<String>("m√§chtig viel");
 	}
 
 	@Override

@@ -20,10 +20,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeFactory;
 
+import com.sun.jersey.core.util.Base64;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
-import com.sun.grizzly.util.buf.Base64Utils;
 
 import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
 import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult;
@@ -113,8 +113,8 @@ public class ExperimentResource {
 	public Response getInstance(SecretReservationKeyListRs reservationKey) {
 
 		try {
-			log.error("Hier muss noch eine Controller-URL übergeben werden");
-			// TODO Hier muss noch eine Controller-URL übergeben werden
+			log.error("Hier muss noch eine Controller-URL Ã¼bergeben werden");
+			// TODO Hier muss noch eine Controller-URL Ã¼bergeben werden
 			String experimentInstanceUrl = sessions.getInstance(BeanShellHelper.copyRsToWsn(reservationKey.reservations), null);
 
 			URI location = new URI(Base64Helper.encode(experimentInstanceUrl) + "/");
@@ -161,7 +161,7 @@ public class ExperimentResource {
 		for (FlashTask task : flashData.flashTasks) {
 			// First, add the program to the list of programs
 			Program program = new Program();
-			program.setProgram(Base64Utils.decode(task.programBase64));
+			program.setProgram(Base64.decode(task.programBase64));
 			ProgramMetaData metaData = new ProgramMetaData();
 			program.setMetaData(metaData);
 			programs.addLast(program);
@@ -274,7 +274,7 @@ public class ExperimentResource {
 
 		try {
 			Message message = new Message();
-			message.setBinaryData(Base64Utils.decode(data.bytesBase64));
+			message.setBinaryData(Base64.decode(data.bytesBase64));
 			message.setSourceNodeId(data.sourceNodeUrn);
 			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
 

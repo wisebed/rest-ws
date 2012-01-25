@@ -1,20 +1,22 @@
 package eu.wisebed.restws;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.servlet.GuiceFilter;
+import de.uniluebeck.itm.tr.util.Logging;
+import eu.wisebed.restws.ws.WebSocketServerModule;
+import eu.wisebed.restws.ws.WebSocketServerService;
 import org.apache.log4j.Level;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceFilter;
-import com.sun.grizzly.http.embed.GrizzlyWebServer;
-import com.sun.grizzly.http.servlet.ServletAdapter;
-
-import de.uniluebeck.itm.tr.util.Logging;
-import eu.wisebed.restws.ws.WebSocketServerModule;
-import eu.wisebed.restws.ws.WebSocketServerService;
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
 
 /**
  * This class must not be modified.
@@ -22,6 +24,7 @@ import eu.wisebed.restws.ws.WebSocketServerService;
  * Main class to bootstrap the HTTP server that runs the phone book REST service.
  */
 public class WisebedRestServer {
+
 	private static Logger log;
 
 	static {
@@ -40,17 +43,32 @@ public class WisebedRestServer {
 
 		log.debug("Startup with the following configuration " + options);
 
-		final GrizzlyWebServer ws = new GrizzlyWebServer(options.webServerPort);
+		final Injector injector = Guice.createInjector(
+				new WisebedRestServerModule(),
+				new WebSocketServerModule(options)
+		);
+
+		final Server server = new Server(options.webServerPort);
+
+		ServletContextHandler handler = new ServletContextHandler();
+		handler.setContextPath("/");
+
+		FilterHolder guiceFilter = new FilterHolder(injector.getInstance(GuiceFilter.class));
+		handler.addFilter(guiceFilter, "/*", EnumSet.allOf(DispatcherType.class));
+
+		server.setHandler(handler);
+		server.start();
+
+		/*final GrizzlyWebServer ws = new GrizzlyWebServer(options.webServerPort);
 
 		ServletAdapter sa = new ServletAdapter();
 		ws.addGrizzlyAdapter(sa, null);
 		sa.addServletListener(WisebedRestServerServletListener.class.getName());
 		sa.addFilter(new GuiceFilter(), "guiceFilter", null);
-		ws.start();
+		ws.start();*/
 
 		log.info("Started REST resources on port {}", options.webServerPort);
 
-		Injector injector = Guice.createInjector(new WebSocketServerModule(options));
 		final WebSocketServerService webSocketServerService = injector.getInstance(WebSocketServerService.class);
 
 		try {
@@ -65,10 +83,16 @@ public class WisebedRestServer {
 			@Override
 			public void run() {
 				log.info("Received EXIT signal. Shutting down Web server...");
-				ws.stop();
+				try {
+					server.stop();
+				} catch (Exception e) {
+					log.warn("Exception caught while shutting down Jetty during application shutdown: " + e, e);
+				}
 				webSocketServerService.stopAndWait();
 			}
-		}, "ShutdownThread"));
+		}, "ShutdownThread"
+		)
+		);
 
 	}
 
@@ -78,8 +102,9 @@ public class WisebedRestServer {
 
 		try {
 			parser.parseArgument(args);
-			if (options.help)
+			if (options.help) {
 				printHelpAndExit(parser);
+			}
 		} catch (CmdLineException e) {
 			System.err.println(e.getMessage());
 			printHelpAndExit(parser);
