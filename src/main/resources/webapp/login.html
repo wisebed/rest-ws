@@ -81,7 +81,7 @@
 				data        : JSON.stringify(data, null, '\t'),
 				contentType : "application/json; charset=utf-8",
 				dataType    : "json",
-				success     : function(response){alert(JSON.stringify(response))},
+				success     : function(response){alert(JSON.stringify(response, null, '\t'))},
 				error       : function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
 			});
 		}
