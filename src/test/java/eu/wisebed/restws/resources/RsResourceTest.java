@@ -6,7 +6,7 @@ import org.junit.Test;
 /**
  * Test case example that runs tests against the phone book REST service.
  */
-public class RootResourceTest extends GuiceAndJerseyTest {
+public class RsResourceTest extends GuiceAndJerseyTest {
 
 	/*@Inject
 	private EmployeeDB employeeDB;*/

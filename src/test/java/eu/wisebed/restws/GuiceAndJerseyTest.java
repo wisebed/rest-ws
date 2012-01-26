@@ -5,7 +5,7 @@ import com.google.inject.Injector;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.LowLevelAppDescriptor;
-import eu.wisebed.restws.resources.RootResource;
+import eu.wisebed.restws.resources.RsResource;
 
 /**
  * This class must not be modified.
@@ -20,6 +20,6 @@ public abstract class GuiceAndJerseyTest extends JerseyTest {
 
 		setTestContainerFactory(new GuiceInMemoryTestContainerFactory(injector));
 
-		return new LowLevelAppDescriptor.Builder(RootResource.class.getPackage().getName()).build();
+		return new LowLevelAppDescriptor.Builder(RsResource.class.getPackage().getName()).build();
 	}
 }

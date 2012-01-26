@@ -19,7 +19,7 @@ import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
 
 @Singleton
 @ThreadSafe
-@Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/login")
+@Path("/" + Constants.WISEBED_API_VERSION + "/login")
 public class SnaaResource {
 
 	@InjectLogger
@@ -82,7 +82,7 @@ public class SnaaResource {
 	 * }
 	 * </code>
 	 *
-	 * @param authenticationData
+	 * @param loginData
 	 *
 	 * @return
 	 */

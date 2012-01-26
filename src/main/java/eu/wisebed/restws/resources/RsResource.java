@@ -28,7 +28,7 @@ import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
 
 @Singleton
 @ThreadSafe
-@Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/reservations/")
+@Path("/" + Constants.WISEBED_API_VERSION + "/reservations/")
 public class RsResource {
 
 	@InjectLogger

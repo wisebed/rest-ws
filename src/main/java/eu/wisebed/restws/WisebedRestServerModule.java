@@ -23,7 +23,7 @@ public class WisebedRestServerModule extends AbstractModule {
 	protected void configure() {
 
 		bind(WisebedRestServerConfig.class).toInstance(wisebedRestServerConfig);
-		
+
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 		bind(SessionManagement.class).to(DummySessionManagement.class);

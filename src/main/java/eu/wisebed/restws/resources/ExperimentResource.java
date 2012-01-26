@@ -56,7 +56,7 @@ import java.util.concurrent.Future;
  */
 @Singleton
 @ThreadSafe
-@Path("/wisebed/" + Constants.WISEBED_API_VERSION + "/experiments/")
+@Path("/" + Constants.WISEBED_API_VERSION + "/experiments/")
 public class ExperimentResource {
 
 	@InjectLogger

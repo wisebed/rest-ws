@@ -5,7 +5,9 @@ import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-import eu.wisebed.restws.resources.*;
+import eu.wisebed.restws.resources.ExperimentResource;
+import eu.wisebed.restws.resources.RsResource;
+import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.ws.WsnWebSocketFactory;
 import eu.wisebed.restws.ws.WsnWebSocketServlet;
 
@@ -19,7 +21,6 @@ public class WisebedRestServerServletModule extends ServletModule {
 	@Override
 	protected void configureServlets() {
 
-		bind(RootResource.class);
 		bind(SnaaResource.class);
 		bind(RsResource.class);
 		bind(ExperimentResource.class);
@@ -27,6 +28,6 @@ public class WisebedRestServerServletModule extends ServletModule {
 		install(new FactoryModuleBuilder().build(WsnWebSocketFactory.class));
 
 		serve("/ws/*").with(WsnWebSocketServlet.class);
-		serve("/*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
+		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 	}
 }

@@ -5,7 +5,10 @@ import com.google.inject.Inject;
 import com.google.inject.servlet.GuiceFilter;
 import eu.wisebed.restws.servlet.InvalidRequestServlet;
 import eu.wisebed.restws.util.InjectLogger;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -38,14 +41,26 @@ public class WisebedRestServerService extends AbstractService {
 
 			server = new Server(config.webServerPort);
 
-			ServletContextHandler handler = new ServletContextHandler();
-			handler.setContextPath("/");
-			handler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
-
 			FilterHolder guiceFilterHolder = new FilterHolder(guiceFilter);
-			handler.addFilter(guiceFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
-			server.setHandler(handler);
+			String webDir = this.getClass().getClassLoader().getResource("webapp").toExternalForm();
+			log.info("Using webapp path=" + webDir);
+
+			ServletContextHandler guiceHandler = new ServletContextHandler();
+			guiceHandler.setContextPath("/");
+			guiceHandler.setResourceBase(webDir);
+			guiceHandler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
+			guiceHandler.addFilter(guiceFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
+
+			ResourceHandler resourceHandler = new ResourceHandler();
+			resourceHandler.setDirectoriesListed(false);
+			resourceHandler.setWelcomeFiles(new String[]{"index.html"});
+			resourceHandler.setResourceBase(webDir);
+
+			HandlerList handlers = new HandlerList();
+			handlers.setHandlers(new Handler[]{resourceHandler, guiceHandler});
+
+			server.setHandler(handlers);
 			server.start();
 
 			log.info("Started server on port {}", config.webServerPort);
