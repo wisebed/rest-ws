@@ -55,8 +55,27 @@
 			$('#credentialsTable').append(tr);
 		}
 
-		function doLogin() {
-			alert(document.cookie);
+		function readLoginDataFromForm() {
+
+			loginData = new Object();
+			loginData.authenticationData = new Array();
+
+			for (var i=0; i<loginFormRows.length; i++) {
+
+				loginData.authenticationData[i] = new Object();
+				loginData.authenticationData[i].urnPrefix = loginFormRows[i].inputUrnPrefix.value;
+				loginData.authenticationData[i].username = loginFormRows[i].inputUsername.value;
+				loginData.authenticationData[i].password = loginFormRows[i].inputPassword.value;
+			}
+
+			return loginData;
+		}
+
+		function login() {
+			var loginData = readLoginDataFromForm();
+			$.post("/rest/2.3/login", loginData, "json")
+			 .success(function() { alert("success"); })
+			 .error(function() { alert("error"); });
 		}
 
 		$(document).ready(function () { addRowToLoginForm(); });
@@ -90,7 +109,7 @@
 			<tbody>
 			</tbody>
 		</table>
-		<input type="button" class="span6" value="login" onclick="doLogin()" />
+		<input type="button" class="span6" value="login" onclick="login()" />
 	</form>
 
 </div>
