@@ -17,8 +17,6 @@ import java.util.List;
 
 import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
 
-@Singleton
-@ThreadSafe
 @Path("/" + Constants.WISEBED_API_VERSION + "/login")
 public class SnaaResource {
 

@@ -54,8 +54,6 @@ import java.util.concurrent.Future;
  * String setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance, List<String> parameters,
  * List<String> filters);
  */
-@Singleton
-@ThreadSafe
 @Path("/" + Constants.WISEBED_API_VERSION + "/experiments/")
 public class ExperimentResource {
 
