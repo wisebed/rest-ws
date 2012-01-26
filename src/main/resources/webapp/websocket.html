@@ -1,0 +1,66 @@
+<!DOCTYPE html >
+<meta charset="utf-8">
+<head>
+	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
+	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<style type="text/css">
+		.container {
+			padding-top: 20px;
+		}
+	</style>
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript">
+		var socket;
+		if (!window.WebSocket) {
+			window.WebSocket = window.MozWebSocket;
+		}
+		if (window.WebSocket) {
+
+			socket = new WebSocket("ws://localhost:8880/ws/experiments/1234");
+
+			socket.onmessage = function(event) {
+				var ta = document.getElementById('responseText');
+				ta.value = ta.value + '\n' + event.data
+			};
+
+			socket.onopen = function(event) {
+				var ta = document.getElementById('responseText');
+				ta.value = "Web Socket opened!";
+			};
+
+			socket.onclose = function(event) {
+				var ta = document.getElementById('responseText');
+				ta.value = ta.value + "Web Socket closed";
+			};
+		} else {
+			alert("Your browser does not support Web Socket.");
+		}
+
+		function send(message) {
+			if (!window.WebSocket) { return; }
+			if (socket.readyState == WebSocket.OPEN) {
+				socket.send(message);
+			} else {
+				alert("The socket is not open.");
+			}
+		}
+	</script>
+</head>
+<body>
+
+<div class="container">
+
+	<h1>WISEBED REST/WebSocket API v2.3</h1>
+
+	<h2>WebSocket</h2>
+
+	<form onsubmit="return false;">
+		<input type="text" name="message" value="Hello, World!"/><input type="button" value="Send Web Socket Data" onclick="send(this.form.message.value)" />
+		<h3>Output</h3>
+		<textarea id="responseText" style="width: 500px; height:300px;"></textarea>
+	</form>
+
+</div>
+
+</body>
+</html>
