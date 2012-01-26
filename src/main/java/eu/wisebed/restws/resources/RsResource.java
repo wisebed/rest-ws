@@ -53,11 +53,13 @@ public class RsResource {
 			if (secretAuthCookie == null) {
 
 				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
-				String jsonResponse = convertToJSON(new PublicReservationDataList(reservations));
+				PublicReservationDataList list = new PublicReservationDataList(reservations);
+				String jsonResponse = convertToJSON(list);
 
 				log.debug("Listing public reservations from {} until {}: {}",
 						new Object[]{fromDate, toDate, jsonResponse}
 				);
+
 				return Response.ok(jsonResponse).build();
 
 			} else {

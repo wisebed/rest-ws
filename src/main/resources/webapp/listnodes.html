@@ -1,0 +1,63 @@
+<!DOCTYPE html >
+<meta charset="utf-8">
+<head>
+	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
+	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<style type="text/css">
+		.container {
+			padding-top: 20px;
+		}
+	</style>
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+
+			$("#callState").append("Loading... ");
+
+			var reservationsRequest = $.ajax({
+				url: "/rest/2.3/experiments/network",
+				context: document.body
+			});
+
+			function getNodeList(network) {
+				var nodeUrns = new Array();
+				var nodes = network["setup"].node;
+				for (var i in nodes) {
+					nodeUrns[i] = nodes[i].id;
+				}
+				return nodeUrns;
+			}
+
+			reservationsRequest.done(function(network) {
+				$("#callState").append("Success!");
+				var nodeUrnArray = getNodeList(network);
+				for (var i=0; i<nodeUrnArray.length; i++) {
+					$("#callResult").append(nodeUrnArray[i] + '<br/>');
+				}
+			});
+
+			reservationsRequest.fail(function(jqXHR, textStatus) {
+				$("#callState").append("Failure!");
+			});
+		});
+	</script>
+</head>
+<body>
+
+<div class="container">
+
+	<h1>WISEBED REST/WebSocket API v2.3</h1>
+
+	<h2>Reservation</h2>
+
+	<div class="row">
+		<div class="span16" id="callState">&nbsp;</div>
+	</div>
+	<div class="row">
+		<div class="span16" id="callResult"></div>
+	</div>
+
+</div>
+
+</body>
+</html>
