@@ -1,4 +1,4 @@
-package eu.wisebed.restws.resources;
+package eu.wisebed.restws.ws;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -6,7 +6,6 @@ import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 
 import javax.annotation.concurrent.ThreadSafe;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;

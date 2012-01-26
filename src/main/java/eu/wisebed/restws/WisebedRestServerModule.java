@@ -13,9 +13,17 @@ import eu.wisebed.restws.util.Log4JTypeListener;
 
 public class WisebedRestServerModule extends AbstractModule {
 
+	private final WisebedRestServerConfig wisebedRestServerConfig;
+
+	public WisebedRestServerModule(final WisebedRestServerConfig wisebedRestServerConfig) {
+		this.wisebedRestServerConfig = wisebedRestServerConfig;
+	}
+
 	@Override
 	protected void configure() {
 
+		bind(WisebedRestServerConfig.class).toInstance(wisebedRestServerConfig);
+		
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 		bind(SessionManagement.class).to(DummySessionManagement.class);

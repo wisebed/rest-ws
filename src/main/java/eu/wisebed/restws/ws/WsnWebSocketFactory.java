@@ -1,4 +1,4 @@
-package eu.wisebed.restws.resources;
+package eu.wisebed.restws.ws;
 
 public interface WsnWebSocketFactory {
 

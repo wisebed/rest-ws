@@ -1,4 +1,4 @@
-package eu.wisebed.restws.resources;
+package eu.wisebed.restws.ws;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;

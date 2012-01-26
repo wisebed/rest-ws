@@ -25,13 +25,6 @@
 			<version>1.0</version>
 		</dependency>
 
-		<!-- Netty -->
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty</artifactId>
-			<version>3.3.0.Final</version>
-		</dependency>
-
 		<!-- Time handling -->
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -69,18 +62,6 @@
 		</dependency>
 
 		<!-- HTTP server -->
-		<!--
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-grizzly</artifactId>
-			<version>1.10</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.grizzly</groupId>
-			<artifactId>grizzly-servlet-webserver</artifactId>
-			<version>1.9.36</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>

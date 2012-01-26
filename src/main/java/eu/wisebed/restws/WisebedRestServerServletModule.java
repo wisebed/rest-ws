@@ -6,6 +6,8 @@ import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import eu.wisebed.restws.resources.*;
+import eu.wisebed.restws.ws.WsnWebSocketFactory;
+import eu.wisebed.restws.ws.WsnWebSocketServlet;
 
 /**
  * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For

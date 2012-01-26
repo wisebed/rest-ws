@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package eu.wisebed.restws;
+package eu.wisebed.restws.servlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

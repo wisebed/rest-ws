@@ -1,29 +1,16 @@
 package eu.wisebed.restws;
 
-import com.google.inject.AbstractModule;
+import com.google.common.util.concurrent.Service;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceFilter;
-import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-
 import de.uniluebeck.itm.tr.util.Logging;
-
-import eu.wisebed.restws.ws.WebSocketServerModule;
-import eu.wisebed.restws.ws.WebSocketServerService;
-
 import org.apache.log4j.Level;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-
-import java.util.EnumSet;
+import java.util.concurrent.ExecutionException;
 
 /**
  * This class must not be modified.
@@ -40,72 +27,50 @@ public class WisebedRestServer {
 	}
 
 	public static void main(String[] args) throws Exception {
+
 		log = LoggerFactory.getLogger(WisebedRestServer.class);
-		final CommandLineOptions options = parseCmdLineOptions(args);
+		final WisebedRestServerConfig config = parseCmdLineOptions(args);
 
-		if (options.logLevel != null) {
-			org.apache.log4j.Logger.getRootLogger().setLevel(options.logLevel);
-		} else if (options.verbose) {
-			org.apache.log4j.Logger.getRootLogger().setLevel(Level.DEBUG);
-		}
+		setLogLevel(config);
 
-		log.debug("Startup with the following configuration " + options);
+		log.debug("Starting up with the following configuration " + config);
 
-		final Injector injector = Guice.createInjector(new AbstractModule() {
-			@Override
-			protected void configure() {
-				bind(GuiceContainer.class);
-				bind(GuiceFilter.class);
-			}
-		}, new WisebedRestServerModule()/*, new WebSocketServerModule(options)*/);
+		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config));
+		final WisebedRestServerService serverService = injector.getInstance(WisebedRestServerService.class);
 
-		final Server server = new Server(options.webServerPort);
-
-		ServletContextHandler handler = new ServletContextHandler();
-		handler.setContextPath("/");
-
-		handler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
-
-		FilterHolder guiceFilter = new FilterHolder(injector.getInstance(GuiceFilter.class));
-		handler.addFilter(guiceFilter, "/*", EnumSet.allOf(DispatcherType.class));
-
-		server.setHandler(handler);
-		server.start();
-
-		log.info("Started server on port {}", options.webServerPort);
-
-		/*
-		final WebSocketServerService webSocketServerService =
-		injector.getInstance(WebSocketServerService.class);
-		 
 		try {
-			webSocketServerService.start().get();
-			log.info("Started WebSocket service on port " +
-			options.webSocketPort);
+			serverService.start().get();
 		} catch (Exception e) {
-			log.error("Exception while starting WebSocketServerService: " + e, e);
+			log.warn("Exception while starting server: " + e, e);
 			System.exit(1);
 		}
-		*/
 
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+		Runtime.getRuntime().addShutdownHook(new Thread("ShutdownThread") {
 			@Override
 			public void run() {
-				log.info("Received EXIT signal. Shutting down Web server...");
+				log.info("Received EXIT signal. Shutting down server...");
 				try {
-					server.stop();
+					serverService.stop().get();
 				} catch (Exception e) {
-					log.warn(
-							"Exception caught while shutting down Jetty during application shutdown: "
-									+ e, e);
+					log.warn("Exception caught while shutting server: " + e, e);
 				}
-				// webSocketServerService.stopAndWait();
 			}
-		}, "ShutdownThread"));
+		}
+		);
 
 	}
-	private static CommandLineOptions parseCmdLineOptions(final String[] args) {
-		CommandLineOptions options = new CommandLineOptions();
+
+	private static void setLogLevel(final WisebedRestServerConfig config) {
+		if (config.logLevel != null) {
+			org.apache.log4j.Logger.getRootLogger().setLevel(config.logLevel);
+		} else if (config.verbose) {
+			org.apache.log4j.Logger.getRootLogger().setLevel(Level.DEBUG);
+		}
+	}
+
+	private static WisebedRestServerConfig parseCmdLineOptions(final String[] args) {
+
+		WisebedRestServerConfig options = new WisebedRestServerConfig();
 		CmdLineParser parser = new CmdLineParser(options);
 
 		try {
@@ -122,8 +87,7 @@ public class WisebedRestServer {
 	}
 
 	private static void printHelpAndExit(CmdLineParser parser) {
-		System.err.print("Usage: java "
-				+ WisebedRestServer.class.getCanonicalName());
+		System.err.print("Usage: java " + WisebedRestServer.class.getCanonicalName());
 		parser.printSingleLineUsage(System.err);
 		System.err.println();
 		parser.printUsage(System.err);
