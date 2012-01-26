@@ -33,9 +33,9 @@
 
 			loginFormRows[loginFormRows.length] = {
 				"tr" : tr,
-				"inputUrnPrefix" : inputUrnPrefix,
-				"inputUsername" : inputUsername,
-				"inputPassword" : inputPassword
+				"inputUrnPrefix" : inputUrnPrefix[0],
+				"inputUsername" : inputUsername[0],
+				"inputPassword" : inputPassword[0]
 			};
 
 			var tdUrnPrefix = $('<td/>');
@@ -71,14 +71,25 @@
 			return loginData;
 		}
 
-		function login() {
-			var loginData = readLoginDataFromForm();
-			$.post("/rest/2.3/login", loginData, "json")
-			 .success(function() { alert("success"); })
-			 .error(function() { alert("error"); });
+		function login(event) {
+			event.preventDefault();
+			var data = readLoginDataFromForm();
+			console.log(data);
+			$.ajax({
+				url         : "/rest/2.3/login",
+				type        : "POST",
+				data        : JSON.stringify(data, null, '\t'),
+				contentType : "application/json; charset=utf-8",
+				dataType    : "json",
+				success     : function(response){alert(JSON.stringify(response))},
+				error       : function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
+			});
 		}
 
-		$(document).ready(function () { addRowToLoginForm(); });
+		$(document).ready(function () {
+			addRowToLoginForm();
+			$("#loginForm").submit(login);
+		});
 
 	</script>
 </head>
@@ -92,7 +103,7 @@
 
 	<hr/>
 
-	<form id="loginForm" name="loginForm" action="/wisebed/2.3/login" method="post">
+	<form id="loginForm" name="loginForm" action="/rest/2.3/login" method="post">
 		<table id="credentialsTable">
 			<thead>
 				<tr>
@@ -109,7 +120,7 @@
 			<tbody>
 			</tbody>
 		</table>
-		<input type="button" class="span6" value="login" onclick="login()" />
+		<input type="submit" class="span6" value="login" />
 	</form>
 
 </div>
