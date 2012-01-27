@@ -71,19 +71,28 @@
 			return loginData;
 		}
 
-		function login(event) {
-			event.preventDefault();
-			var data = readLoginDataFromForm();
-			console.log(data);
+		function postJSON(url, data, successCallback, errorCallback) {
 			$.ajax({
-				url         : "/rest/2.3/login",
+				url         : url,
 				type        : "POST",
-				data        : JSON.stringify(data, null, '\t'),
+				data        : JSON.stringify(data, null, '  '),
 				contentType : "application/json; charset=utf-8",
 				dataType    : "json",
-				success     : function(response){alert(JSON.stringify(response, null, '\t'))},
-				error       : function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
+				success     : successCallback,
+				error       : errorCallback
 			});
+		}
+
+		function login(event) {
+			event.preventDefault();
+			postJSON("/rest/2.3/login",
+				readLoginDataFromForm(),
+				function(data, textStatus, jqXHR){
+					console.log(jqXHR.getAllResponseHeaders()),
+					alert(JSON.stringify(data, null, '  '))
+				},
+				function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
+			)
 		}
 
 		$(document).ready(function () {
