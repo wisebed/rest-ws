@@ -1,11 +1,13 @@
 package eu.wisebed.restws.resources.dto;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
 @XmlRootElement
 public class NodeUrnList {
 
+	@XmlElement(name = "nodeurns")
 	public List<String> nodeUrns;
 
 	/* (non-Javadoc)

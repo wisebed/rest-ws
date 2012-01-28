@@ -5,10 +5,7 @@ import com.google.inject.matcher.Matchers;
 import eu.wisebed.api.rs.RS;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.restws.dummy.DummyRS;
-import eu.wisebed.restws.dummy.DummySessionManagement;
-import eu.wisebed.restws.dummy.DummySnaa;
-import eu.wisebed.restws.dummy.DummyWsnInstanceCache;
+import eu.wisebed.restws.dummy.*;
 import eu.wisebed.restws.util.Log4JTypeListener;
 
 public class WisebedRestServerModule extends AbstractModule {
@@ -27,6 +24,8 @@ public class WisebedRestServerModule extends AbstractModule {
 		bind(SNAA.class).to(DummySnaa.class);
 		bind(RS.class).to(DummyRS.class);
 		bind(SessionManagement.class).to(DummySessionManagement.class);
+		
+		bind(OperationStatus.class).to(DummyOperationStatus.class);
 		bind(WsnInstanceCache.class).to(DummyWsnInstanceCache.class);
 
 		bindListener(Matchers.any(), new Log4JTypeListener());

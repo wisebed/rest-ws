@@ -23,8 +23,7 @@ import eu.wisebed.wiseml.Wiseml;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -33,6 +32,7 @@ import javax.xml.datatype.DatatypeFactory;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.Future;
 
@@ -63,6 +63,9 @@ public class ExperimentResource {
 
 	@Inject
 	private WsnInstanceCache wsnCache;
+	
+	@Context
+	private UriInfo uriInfo;
 
 	@GET
 	@Path("network")
@@ -169,7 +172,9 @@ public class ExperimentResource {
 
 			WSN wsn = wsnCache.getOrCreate(experimentUrl);
 			String taskid = wsn.flashPrograms(nodeUrns, programIndices, programs);
-			return Response.ok().location(new URI(Base64Helper.encode(taskid) + "/")).build();
+			UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getRequestUri()).path("{taskId}");
+			String base64EncodedTaskId = Base64Helper.encode(taskid);
+			return Response.ok().location(uriBuilder.build(base64EncodedTaskId)).build();
 
 		} catch (URISyntaxException e) {
 			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
@@ -205,18 +210,21 @@ public class ExperimentResource {
 	 *
 	 * @param experimentUrl
 	 * @param requestIdBase64
-	 * @param flashData
 	 *
 	 * @return
 	 */
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
 	@Path("{experimenturl}/flash/{requestIdBase64}")
-	public Response flashProgramsStatus(@PathParam("experimenturl") String experimentUrl,
-										@PathParam("requestIdBase64") String requestIdBase64,
-										FlashProgramsRequest flashData) {
+	public Response flashProgramsStatus(@PathParam("experimenturl") final String experimentUrl,
+										@PathParam("requestIdBase64") final String requestIdBase64,
+										final NodeUrnList nodeUrnList) {
 
 		FlashProgramsStatus status = new FlashProgramsStatus();
+		status.statusList = new HashMap<String, Integer>();
+		for (String nodeUrn : nodeUrnList.nodeUrns) {
+			status.statusList.put(nodeUrn, 100);
+		}
 		log.error("Returning fake status. Please implement me.");
 		// TODO Generate real status or return error
 		return Response.ok(JaxbHelper.convertToJSON(status)).build();

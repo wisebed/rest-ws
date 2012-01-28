@@ -49,8 +49,11 @@
 
 			imageFileReader.onloadend = function(progressEvent) {
 
+				var selectedNodeUrns = getSelectedNodeUrns();
+				var progressBars = initProgressBars(selectedNodeUrns);
+
 				configuration.configurations[0] = {
-					nodeurns : getSelectedNodeUrns(),
+					nodeurns : selectedNodeUrns,
 					image : imageFileReader.result
 				};
 
@@ -59,8 +62,28 @@
 				WBHelper.postJSON("/rest/2.3/experiments/1234/flash",
 						configuration,
 						function(data, textStatus, jqXHR){
-							console.log(jqXHR.getAllResponseHeaders());
-							alert(jqXHR.getResponseHeader("Location"));
+							var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
+							var schedule = setInterval(function() {
+								WBHelper.postJSON(
+										flashRequestStatusURL,
+										{"nodeurns":selectedNodeUrns},
+										function(data, textStatus, jqXHR){
+											for (var nodeUrn in data.status) {
+												console.log(nodeUrn + " : " + data.status[nodeUrn]);
+												if (progressBars[nodeUrn]) {
+													progressBars[nodeUrn].value = data.status[nodeUrn];
+												}
+											}
+											clearInterval(schedule);
+										},
+										function(jqXHR, textStatus, errorThrown){
+											console.log(jqXHR);
+											console.log(textStatus);
+											console.log(errorThrown);
+											clearInterval(schedule);
+										}
+								);
+							}, 1000);
 						},
 						function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
 				)
@@ -69,11 +92,40 @@
 			imageFileReader.readAsDataURL(imageFile);
 		}
 
-		function getSelectedNodeUrns() {
-			var selectedNodeUrns = [];
-			for (var i=0; i<selectedNodeUrns.length; i++) {
-				selectedNodeUrns[i] = $("#nodeurns")[0].options[i].value;
+		function fetchFlashProgress(flashRequestStatusUrl) {
+
+		}
+
+		function initProgressBars(nodeUrns) {
+			var progressBars = {};
+			for (var i=0; i<nodeUrns.length; i++) {
+
+				var nodeUrn = nodeUrns[i];
+				progressBars[nodeUrn] = $('<progress value="0" min="0" max="100"/>')[0];
+
+				var progressBarTd = $('#progressBarTd');
+				progressBarTd.append(progressBars[nodeUrn]);
+				progressBarTd.append($('<br/>'));
+
 			}
+			return progressBars;
+		}
+
+		function updateFlashProgress(progressBars, nodeUrn, status) {
+
+		}
+
+		function getSelectedNodeUrns() {
+
+			var selectedNodeUrns = [];
+			var options = $("#nodeurns")[0].options;
+
+			for (var i=0; i<options.length; i++) {
+				if (options[i].selected) {
+					selectedNodeUrns[selectedNodeUrns.length] = options[i].value;
+				}
+			}
+
 			return selectedNodeUrns;
 		}
 
@@ -135,7 +187,7 @@
 						<td>1</td>
 						<td><select id="nodeurns" name="nodeurns" multiple></select></td>
 						<td><input type="file" id="image" name="image"/></td>
-						<td><progress value="25" min="0" max="100">25%</progress></td>
+						<td id="progressBarTd"></td>
 					</tr>
 					</tbody>
 				</table>
