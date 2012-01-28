@@ -9,7 +9,7 @@ public class FlashProgramsRequest {
 
 	public static class FlashTask {
 
-		@XmlElement(name = "nodeurns")
+		@XmlElement(name = "nodeUrns")
 		public List<String> nodeUrns;
 
 		@XmlElement(name = "image")

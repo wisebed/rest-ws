@@ -7,7 +7,7 @@ import java.util.List;
 @XmlRootElement
 public class NodeUrnList {
 
-	@XmlElement(name = "nodeurns")
+	@XmlElement(name = "nodeUrns")
 	public List<String> nodeUrns;
 
 	/* (non-Javadoc)

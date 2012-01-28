@@ -34,30 +34,55 @@
 			configurations : []
 		};
 
-		function flashNodes(event) {
+		function updateConfiguration(callbackDone, callbackError) {
+			updateConfigurationNodeUrns(new function() { updateConfigurationImage(callbackDone, callbackError); });
+		}
 
-			event.preventDefault();
+		function updateConfigurationNodeUrns(callbackDone) {
+
+			if (!configuration.configurations[0] !== undefined) {
+				configuration.configurations[0] = {};
+			}
+
+			configuration.configurations[0].nodeUrns = getSelectedNodeUrns();
+		}
+
+		function updateConfigurationImage(callbackDone, callbackError) {
+
+			if (!configuration.configurations[0] !== undefined) {
+				configuration.configurations[0] = {};
+			}
 
 			var imageFile = event.target.image.files[0];
 			var imageFileReader = new FileReader();
 
-			imageFileReader.onabort = function(progressEvent) {console.log(progressEvent);};
-			imageFileReader.onerror = function(progressEvent) {console.log(progressEvent);};
-			imageFileReader.onload = function(progressEvent) {console.log(progressEvent);};
-			imageFileReader.onloadstart = function(progressEvent) {console.log(progressEvent);};
-			imageFileReader.onprogress = function(progressEvent) {console.log(progressEvent);};
+			imageFileReader.onerror = function(progressEvent) {
+				console.log(progressEvent);
+				configuration.configurations[0].image = undefined;
+				if (callbackError !== undefined) {
+					callbackError();
+				}
+			};
 
 			imageFileReader.onloadend = function(progressEvent) {
+				console.log(progressEvent);
+				configuration.configurations[0].image = imageFileReader.result;
+				if (callbackDone !== undefined) {
+					callbackDone();
+				}
+			};
+
+			imageFileReader.readAsDataURL(imageFile);
+		}
+
+		function flashNodes(event) {
+
+			event.preventDefault();
+
+			function doFlashRequest() {
 
 				var selectedNodeUrns = getSelectedNodeUrns();
 				var progressBars = initProgressBars(selectedNodeUrns);
-
-				configuration.configurations[0] = {
-					nodeurns : selectedNodeUrns,
-					image : imageFileReader.result
-				};
-
-				console.log(configuration);
 
 				WBHelper.postJSON("/rest/2.3/experiments/1234/flash",
 						configuration,
@@ -66,30 +91,27 @@
 							var schedule = setInterval(function() {
 								WBHelper.postJSON(
 										flashRequestStatusURL,
-										{"nodeurns":selectedNodeUrns},
+										{ nodeUrns : selectedNodeUrns },
 										function(data, textStatus, jqXHR){
 											for (var nodeUrn in data.status) {
-												console.log(nodeUrn + " : " + data.status[nodeUrn]);
 												if (progressBars[nodeUrn]) {
-													progressBars[nodeUrn].value = data.status[nodeUrn];
+													progressBars[nodeUrn].addClass('error');
+													progressBars[nodeUrn][0].value = data.status[nodeUrn];
 												}
 											}
 											clearInterval(schedule);
 										},
 										function(jqXHR, textStatus, errorThrown){
-											console.log(jqXHR);
-											console.log(textStatus);
-											console.log(errorThrown);
 											clearInterval(schedule);
 										}
 								);
 							}, 1000);
 						},
 						function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
-				)
-			};
+				);
+			}
 
-			imageFileReader.readAsDataURL(imageFile);
+			updateConfiguration(doFlashRequest, undefined);
 		}
 
 		function fetchFlashProgress(flashRequestStatusUrl) {
@@ -101,7 +123,7 @@
 			for (var i=0; i<nodeUrns.length; i++) {
 
 				var nodeUrn = nodeUrns[i];
-				progressBars[nodeUrn] = $('<progress value="0" min="0" max="100"/>')[0];
+				progressBars[nodeUrn] = $('<progress value="0" min="0" max="100"/>');
 
 				var progressBarTd = $('#progressBarTd');
 				progressBarTd.append(progressBars[nodeUrn]);
@@ -111,14 +133,10 @@
 			return progressBars;
 		}
 
-		function updateFlashProgress(progressBars, nodeUrn, status) {
-
-		}
-
 		function getSelectedNodeUrns() {
 
 			var selectedNodeUrns = [];
-			var options = $("#nodeurns")[0].options;
+			var options = $("#nodeUrns")[0].options;
 
 			for (var i=0; i<options.length; i++) {
 				if (options[i].selected) {
@@ -131,7 +149,7 @@
 
 		$(document).ready(function () {
 			$("#flashForm").submit(flashNodes);
-			WBHelper.populateSelectBox($("#nodeurns")[0], availableNodeUrns);
+			WBHelper.populateSelectBox($("#nodeUrns")[0], availableNodeUrns);
 		});
 
 	</script>
@@ -185,7 +203,7 @@
 					<tbody>
 					<tr>
 						<td>1</td>
-						<td><select id="nodeurns" name="nodeurns" multiple></select></td>
+						<td><select id="nodeUrns" name="nodeUrns" multiple></select></td>
 						<td><input type="file" id="image" name="image"/></td>
 						<td id="progressBarTd"></td>
 					</tr>
