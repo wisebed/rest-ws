@@ -1,7 +1,6 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.sun.jersey.core.util.Base64;
 import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
 import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult;
@@ -23,7 +22,6 @@ import eu.wisebed.restws.util.JaxbHelper;
 import eu.wisebed.wiseml.Wiseml;
 import org.slf4j.Logger;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,7 +62,7 @@ public class ExperimentResource {
 	private SessionManagement sessions;
 
 	@Inject
-	WsnInstanceCache wsnCache;
+	private WsnInstanceCache wsnCache;
 
 	@GET
 	@Path("network")
@@ -124,8 +122,8 @@ public class ExperimentResource {
 	 * <code>
 	 * {
 	 * [
-	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "image" : base64-string },
-	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "image" : base64-string }
+	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string },
+	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string }
 	 * ]
 	 * }
 	 * </code>
@@ -140,6 +138,7 @@ public class ExperimentResource {
 	@Path("{experimenturl}/flash")
 	public Response flashPrograms(@PathParam("experimenturl") String experimentUrlBase64,
 								  FlashProgramsRequest flashData) {
+
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 
 		log.debug("Flash request received");
@@ -152,7 +151,7 @@ public class ExperimentResource {
 		for (FlashTask task : flashData.flashTasks) {
 			// First, add the program to the list of programs
 			Program program = new Program();
-			program.setProgram(Base64.decode(task.programBase64));
+			program.setProgram(extractByteArrayFromDataURL(task.imageBase64));
 			ProgramMetaData metaData = new ProgramMetaData();
 			program.setMetaData(metaData);
 			programs.addLast(program);
@@ -168,7 +167,7 @@ public class ExperimentResource {
 		// Invoke the call and redirect the caller
 		try {
 
-			WSN wsn = wsnCache.get(experimentUrl);
+			WSN wsn = wsnCache.getOrCreate(experimentUrl);
 			String taskid = wsn.flashPrograms(nodeUrns, programIndices, programs);
 			return Response.ok().location(new URI(Base64Helper.encode(taskid) + "/")).build();
 
@@ -181,6 +180,16 @@ public class ExperimentResource {
 			);
 		}
 
+	}
+
+	private byte[] extractByteArrayFromDataURL(String dataURL) {
+		// data:[<mediatype>][;base64]
+		int commaPos = dataURL.indexOf(',');
+		String header = dataURL.substring(0, commaPos);
+		if (!header.endsWith(";base64")) {
+			throw new RuntimeException("Data URLs are only supported with base64 encoding!");
+		}
+		return Base64.decode(dataURL.substring(commaPos + 1).getBytes());
 	}
 
 	/**
@@ -223,7 +232,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future =
 					wsnAsync.resetNodes(nodeUrns.nodeUrns, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
@@ -249,7 +258,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future =
 					wsnAsync.areNodesAlive(nodeUrns.nodeUrns, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
@@ -279,7 +288,7 @@ public class ExperimentResource {
 			message.setSourceNodeId(data.sourceNodeUrn);
 			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future = wsnAsync.send(data.nodeUrns, message, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
 
@@ -304,7 +313,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future =
 					wsnAsync.destroyVirtualLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
@@ -330,7 +339,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future = wsnAsync.disableNode(nodeUrn, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
 
@@ -355,7 +364,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future = wsnAsync.enableNode(nodeUrn, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
 
@@ -380,7 +389,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future =
 					wsnAsync.disablePhysicalLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
@@ -406,7 +415,7 @@ public class ExperimentResource {
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			Future<JobResult> future =
 					wsnAsync.enablePhysicalLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
 			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
@@ -429,7 +438,7 @@ public class ExperimentResource {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 
 		try {
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			String wisemlString = wsnAsync.getNetwork().get();
 
 			JAXBContext jaxbContext = JAXBContext.newInstance(Wiseml.class);
@@ -459,7 +468,7 @@ public class ExperimentResource {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 
 		try {
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAyncWrapper(experimentUrl);
+			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
 			String wisemlString = wsnAsync.getNetwork().get();
 			log.debug("Returning network for experiment {} as xml: {}", experimentUrl, wisemlString);
 			return Response.ok(wisemlString).build();

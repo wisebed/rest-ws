@@ -9,6 +9,7 @@
 		}
 	</style>
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="js/wbhelper.js"></script>
 	<script type="text/javascript">
 
 		var loginFormRows = new Array();
@@ -71,21 +72,9 @@
 			return loginData;
 		}
 
-		function postJSON(url, data, successCallback, errorCallback) {
-			$.ajax({
-				url         : url,
-				type        : "POST",
-				data        : JSON.stringify(data, null, '  '),
-				contentType : "application/json; charset=utf-8",
-				dataType    : "json",
-				success     : successCallback,
-				error       : errorCallback
-			});
-		}
-
 		function login(event) {
 			event.preventDefault();
-			postJSON("/rest/2.3/login",
+			WBHelper.postJSON("/rest/2.3/login",
 				readLoginDataFromForm(),
 				function(data, textStatus, jqXHR){
 					console.log(jqXHR.getAllResponseHeaders()),

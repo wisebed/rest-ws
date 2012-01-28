@@ -7,8 +7,8 @@ public interface WsnInstanceCache {
 
 	public WSN create(String experimentUrl);
 
-	public WSN get(String experimentUrl) throws Exception;
+	public WSN getOrCreate(String experimentUrl) throws Exception;
 
-	public IWsnAsyncWrapper getAyncWrapper(String experimentUrl) throws Exception;
+	public IWsnAsyncWrapper getAsyncWrapper(String experimentUrl) throws Exception;
 
 }

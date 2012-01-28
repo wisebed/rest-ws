@@ -46,7 +46,7 @@ public class DummyWsn implements WSN {
 
 	@Override
 	public String flashPrograms(List<String> nodeIds, List<Integer> programIndices, List<Program> programs) {
-		return null;
+		return "1234567890";
 	}
 
 	@Override

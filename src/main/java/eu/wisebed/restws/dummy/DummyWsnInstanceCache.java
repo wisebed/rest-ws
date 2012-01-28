@@ -7,22 +7,23 @@ import eu.wisebed.restws.WsnInstanceCache;
 
 public class DummyWsnInstanceCache implements WsnInstanceCache {
 
-	TimedCache<String, WSN> cache = new TimedCache<String, WSN>();
+	private TimedCache<String, WSN> cache = new TimedCache<String, WSN>();
 
-	@Override
 	public WSN create(String experimentUrl) {
 		DummyWsn wsn = new DummyWsn();
 		cache.put(experimentUrl, wsn);
 		return wsn;
 	}
 
-	@Override
-	public WSN get(String experimentUrl) throws Exception {
-		return cache.get(experimentUrl);
+	public WSN getOrCreate(String experimentUrl) throws Exception {
+		WSN experiment = cache.get(experimentUrl);
+		if (experiment == null) {
+			return create(experimentUrl);
+		}
+		return experiment;
 	}
 
-	@Override
-	public IWsnAsyncWrapper getAyncWrapper(String experimentUrl) throws Exception {
+	public IWsnAsyncWrapper getAsyncWrapper(String experimentUrl) throws Exception {
 		return new DummyWsnAsync();
 	}
 

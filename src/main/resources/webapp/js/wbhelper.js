@@ -25,4 +25,16 @@ var WBHelper = new function() {
 	this.emptySelectOptions = function(selectBox) {
 		selectBox.options.length = 0;
 	};
+
+	this.postJSON = function(url, data, successCallback, errorCallback) {
+		$.ajax({
+			url         : url,
+			type        : "POST",
+			data        : JSON.stringify(data, null, '  '),
+			contentType : "application/json; charset=utf-8",
+			dataType    : "json",
+			success     : successCallback,
+			error       : errorCallback
+		});
+	};
 };

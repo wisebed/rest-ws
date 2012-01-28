@@ -14,11 +14,6 @@
 
 			$("#callState").append("Loading... ");
 
-			var reservationsRequest = $.ajax({
-				url: "/rest/2.3/experiments/network",
-				context: document.body
-			});
-
 			function getNodeList(network) {
 				var nodeUrns = new Array();
 				var nodes = network["setup"].node;
@@ -27,6 +22,11 @@
 				}
 				return nodeUrns;
 			}
+
+			var reservationsRequest = $.ajax({
+				url: "/rest/2.3/experiments/network",
+				context: document.body
+			});
 
 			reservationsRequest.done(function(network) {
 				$("#callState").append("Success!");

@@ -1,5 +1,6 @@
 package eu.wisebed.restws.resources.dto;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
@@ -8,11 +9,14 @@ public class FlashProgramsRequest {
 
 	public static class FlashTask {
 
+		@XmlElement(name = "nodeurns")
 		public List<String> nodeUrns;
 
-		public String programBase64;
+		@XmlElement(name = "image")
+		public String imageBase64;
 	}
 
+	@XmlElement(name = "configurations")
 	public List<FlashTask> flashTasks;
 
 }

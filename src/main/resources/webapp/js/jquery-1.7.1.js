@@ -820,7 +820,7 @@ jQuery.extend({
 		return proxy;
 	},
 
-	// Mutifunctional method to get and set values to a collection
+	// Mutifunctional method to getOrCreate and set values to a collection
 	// The value/s can optionally be executed if it's a function
 	access: function( elems, key, value, exec, fn, pass ) {
 		var length = elems.length;
@@ -835,7 +835,7 @@ jQuery.extend({
 
 		// Setting one attribute
 		if ( value !== undefined ) {
-			// Optionally, function values get executed if exec is true
+			// Optionally, function values getOrCreate executed if exec is true
 			exec = !pass && exec && jQuery.isFunction(value);
 
 			for ( var i = 0; i < length; i++ ) {
@@ -1353,7 +1353,7 @@ jQuery.support = (function() {
 	all = div.getElementsByTagName( "*" );
 	a = div.getElementsByTagName( "a" )[ 0 ];
 
-	// Can't get basic test support
+	// Can't getOrCreate basic test support
 	if ( !all || !all.length || !a ) {
 		return {};
 	}
@@ -1371,7 +1371,7 @@ jQuery.support = (function() {
 		// IE will insert them into empty tables
 		tbody: !div.getElementsByTagName("tbody").length,
 
-		// Make sure that link elements get serialized correctly by innerHTML
+		// Make sure that link elements getOrCreate serialized correctly by innerHTML
 		// This requires a wrapper element in IE
 		htmlSerialize: !!div.getElementsByTagName("link").length,
 
@@ -1401,7 +1401,7 @@ jQuery.support = (function() {
 		// (WebKit defaults to false instead of true, IE too, if it's in an optgroup)
 		optSelected: opt.selected,
 
-		// Test setAttribute on camelCase class. If it works, we need attrFixes when doing get/setAttribute (ie6/7)
+		// Test setAttribute on camelCase class. If it works, we need attrFixes when doing getOrCreate/setAttribute (ie6/7)
 		getSetAttribute: div.className !== "t",
 
 		// Tests for enctype support on a form(#6743)
@@ -1666,7 +1666,7 @@ jQuery.extend({
 			id = isNode ? elem[ internalKey ] : elem[ internalKey ] && internalKey,
 			isEvents = name === "events";
 
-		// Avoid doing any more work than we need to when trying to get data on an
+		// Avoid doing any more work than we need to when trying to getOrCreate data on an
 		// object that has no data at all
 		if ( (!id || !cache[id] || (!isEvents && !pvt && !cache[id].data)) && getByName && data === undefined ) {
 			return;
@@ -1798,7 +1798,7 @@ jQuery.extend({
 				}
 
 				// If there is no data left in the cache, we want to continue
-				// and let the cache object itself get destroyed
+				// and let the cache object itself getOrCreate destroyed
 				if ( !( pvt ? isEmptyDataObject : jQuery.isEmptyObject )( thisCache ) ) {
 					return;
 				}
@@ -2316,7 +2316,7 @@ jQuery.fn.extend({
 			if ( elem ) {
 				hooks = jQuery.valHooks[ elem.nodeName.toLowerCase() ] || jQuery.valHooks[ elem.type ];
 
-				if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
+				if ( hooks && "getOrCreate" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
 					return ret;
 				}
 
@@ -2452,7 +2452,7 @@ jQuery.extend({
 		var ret, hooks, notxml,
 			nType = elem.nodeType;
 
-		// don't get/set attributes on text, comment and attribute nodes
+		// don't getOrCreate/set attributes on text, comment and attribute nodes
 		if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
 			return;
 		}
@@ -2489,7 +2489,7 @@ jQuery.extend({
 				return value;
 			}
 
-		} else if ( hooks && "get" in hooks && notxml && (ret = hooks.get( elem, name )) !== null ) {
+		} else if ( hooks && "getOrCreate" in hooks && notxml && (ret = hooks.get( elem, name )) !== null ) {
 			return ret;
 
 		} else {
@@ -2589,7 +2589,7 @@ jQuery.extend({
 		var ret, hooks, notxml,
 			nType = elem.nodeType;
 
-		// don't get/set properties on text, comment and attribute nodes
+		// don't getOrCreate/set properties on text, comment and attribute nodes
 		if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
 			return;
 		}
@@ -2611,7 +2611,7 @@ jQuery.extend({
 			}
 
 		} else {
-			if ( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== null ) {
+			if ( hooks && "getOrCreate" in hooks && (ret = hooks.get( elem, name )) !== null ) {
 				return ret;
 
 			} else {
@@ -2671,7 +2671,7 @@ boolHook = {
 	}
 };
 
-// IE6/7 do not support getting/setting some attributes with get/setAttribute
+// IE6/7 do not support getting/setting some attributes with getOrCreate/setAttribute
 if ( !getSetAttribute ) {
 
 	fixSpecified = {
@@ -3363,7 +3363,7 @@ jQuery.event = {
 		},
 
 		load: {
-			// Prevent triggered image.load events from bubbling to window.load
+			// Prevent triggered imageBase64.load events from bubbling to window.load
 			noBubble: true
 		},
 
@@ -6060,7 +6060,7 @@ function cloneFixAttributes( src, dest ) {
 			dest.defaultChecked = dest.checked = src.checked;
 		}
 
-		// IE6-7 get confused and end up setting the value of a cloned
+		// IE6-7 getOrCreate confused and end up setting the value of a cloned
 		// checkbox/radio button to an empty string instead of "on"
 		if ( dest.value !== src.value ) {
 			dest.value = src.value;
@@ -6183,7 +6183,7 @@ function findInputs( elem ) {
 	var nodeName = ( elem.nodeName || "" ).toLowerCase();
 	if ( nodeName === "input" ) {
 		fixDefaultChecked( elem );
-	// Skip scripts, get other children
+	// Skip scripts, getOrCreate other children
 	} else if ( nodeName !== "script" && typeof elem.getElementsByTagName !== "undefined" ) {
 		jQuery.grep( elem.getElementsByTagName("input"), fixDefaultChecked );
 	}
@@ -6212,7 +6212,7 @@ jQuery.extend({
 				(elem.nodeType === 1 || elem.nodeType === 11) && !jQuery.isXMLDoc(elem) ) {
 			// IE copies events bound via attachEvent when using cloneNode.
 			// Calling detachEvent on the clone will also remove the events
-			// from the original. In order to get around this, we use some
+			// from the original. In order to getOrCreate around this, we use some
 			// proprietary methods to clear the events. Thanks to MooTools
 			// guys for this hotness.
 
@@ -6477,7 +6477,7 @@ jQuery.extend({
 		opacity: {
 			get: function( elem, computed ) {
 				if ( computed ) {
-					// We should always get a number back from opacity
+					// We should always getOrCreate a number back from opacity
 					var ret = curCSS( elem, "opacity", "opacity" );
 					return ret === "" ? "1" : ret;
 
@@ -6551,12 +6551,12 @@ jQuery.extend({
 			}
 
 		} else {
-			// If a hook was provided get the non-computed value from there
-			if ( hooks && "get" in hooks && (ret = hooks.get( elem, false, extra )) !== undefined ) {
+			// If a hook was provided getOrCreate the non-computed value from there
+			if ( hooks && "getOrCreate" in hooks && (ret = hooks.get( elem, false, extra )) !== undefined ) {
 				return ret;
 			}
 
-			// Otherwise just get the value from the style object
+			// Otherwise just getOrCreate the value from the style object
 			return style[ name ];
 		}
 	},
@@ -6574,17 +6574,17 @@ jQuery.extend({
 			name = "float";
 		}
 
-		// If a hook was provided get the computed value from there
-		if ( hooks && "get" in hooks && (ret = hooks.get( elem, true, extra )) !== undefined ) {
+		// If a hook was provided getOrCreate the computed value from there
+		if ( hooks && "getOrCreate" in hooks && (ret = hooks.get( elem, true, extra )) !== undefined ) {
 			return ret;
 
-		// Otherwise, if a way to get the computed value exists, use that
+		// Otherwise, if a way to getOrCreate the computed value exists, use that
 		} else if ( curCSS ) {
 			return curCSS( elem, name );
 		}
 	},
 
-	// A method for quickly swapping in/out CSS properties to get correct calculations
+	// A method for quickly swapping in/out CSS properties to getOrCreate correct calculations
 	swap: function( elem, options, callback ) {
 		var old = {};
 
@@ -6744,7 +6744,7 @@ if ( document.documentElement.currentStyle ) {
 			left = style.left;
 			rsLeft = elem.runtimeStyle && elem.runtimeStyle.left;
 
-			// Put in the new values to get a computed value out
+			// Put in the new values to getOrCreate a computed value out
 			if ( rsLeft ) {
 				elem.runtimeStyle.left = elem.currentStyle.left;
 			}
@@ -7094,7 +7094,7 @@ jQuery.each( "ajaxStart ajaxStop ajaxComplete ajaxError ajaxSuccess ajaxSend".sp
 	};
 });
 
-jQuery.each( [ "get", "post" ], function( i, method ) {
+jQuery.each( [ "getOrCreate", "post" ], function( i, method ) {
 	jQuery[ method ] = function( url, data, callback, type ) {
 		// shift arguments if data argument was omitted
 		if ( jQuery.isFunction( data ) ) {
@@ -7694,7 +7694,7 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 		}
 	}
 
-	// Remove auto dataType and get content-type in the process
+	// Remove auto dataType and getOrCreate content-type in the process
 	while( dataTypes[ 0 ] === "*" ) {
 		dataTypes.shift();
 		if ( ct === undefined ) {
@@ -8159,7 +8159,7 @@ if ( jQuery.support.ajax ) {
 									// Filter status for non standard behaviors
 
 									// If the request is local and we have data: assume a success
-									// (success with no data won't get notified, that's the best we
+									// (success with no data won't getOrCreate notified, that's the best we
 									// can do given current implementations)
 									if ( !status && s.isLocal && !s.crossDomain ) {
 										status = responses.text ? 200 : 404;
@@ -8858,7 +8858,7 @@ function defaultDisplay( nodeName ) {
 		elem.remove();
 
 		// If the simple way fails,
-		// get element's real default display by attaching it to a temp iframe
+		// getOrCreate element's real default display by attaching it to a temp iframe
 		if ( display === "none" || display === "" ) {
 			// No iframe to use yet, so create it
 			if ( !iframe ) {

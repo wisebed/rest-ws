@@ -133,7 +133,6 @@
 			<version>1.6</version>
 		</dependency>
 
-
 		<!-- unit-testing dependencies -->
 		<dependency>
 			<groupId>junit</groupId>

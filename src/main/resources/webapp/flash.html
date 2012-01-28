@@ -9,7 +9,7 @@
 		}
 	</style>
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
-	<script type="text/javascript" src="js/helpers.js"></script>
+	<script type="text/javascript" src="js/wbhelper.js"></script>
 	<script type="text/javascript">
 
 		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
@@ -30,6 +30,10 @@
 			{value:"urn:wisebed:uzl1:0x0123", text:"urn:wisebed:uzl1:0x0123"}
 		];
 
+		var configuration = {
+			configurations : []
+		};
+
 		function flashNodes(event) {
 
 			event.preventDefault();
@@ -44,11 +48,33 @@
 			imageFileReader.onprogress = function(progressEvent) {console.log(progressEvent);};
 
 			imageFileReader.onloadend = function(progressEvent) {
-				console.log(progressEvent);
-				imageFileReader.result;
+
+				configuration.configurations[0] = {
+					nodeurns : getSelectedNodeUrns(),
+					image : imageFileReader.result
+				};
+
+				console.log(configuration);
+
+				WBHelper.postJSON("/rest/2.3/experiments/1234/flash",
+						configuration,
+						function(data, textStatus, jqXHR){
+							console.log(jqXHR.getAllResponseHeaders());
+							alert(jqXHR.getResponseHeader("Location"));
+						},
+						function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
+				)
 			};
 
-			imageFileReader.readAsBinaryString(imageFile);
+			imageFileReader.readAsDataURL(imageFile);
+		}
+
+		function getSelectedNodeUrns() {
+			var selectedNodeUrns = [];
+			for (var i=0; i<selectedNodeUrns.length; i++) {
+				selectedNodeUrns[i] = $("#nodeurns")[0].options[i].value;
+			}
+			return selectedNodeUrns;
 		}
 
 		$(document).ready(function () {
