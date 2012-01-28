@@ -2,13 +2,13 @@
 <meta charset="utf-8">
 <head>
 	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
-	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
 	<style type="text/css">
-		.container {
-			padding-top: 20px;
+		body {
+			padding-top: 50px;
 		}
 	</style>
-	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript">
 
 		var loginFormRows = new Array();
@@ -104,14 +104,24 @@
 </head>
 <body>
 
+<div class="topbar-wrapper" style="z-index: 5;">
+	<div class="topbar">
+		<div class="topbar-inner">
+			<div class="container">
+				<h3><a href="index.html">WISEBED REST/WebSocket API v2.3</a></h3>
+				<ul class="nav">
+					<li><a href="index.html">Home</a></li>
+					<li class="active"><a href="login.html">Login</a></li>
+					<li><a href="listnodes.html">List Nodes</a></li>
+					<li><a href="flash.html">Flash</a></li>
+					<li><a href="websocket.html">WebSocket</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container">
-
-	<h1>WISEBED REST/WebSocket API v2.3</h1>
-
-	<h2>Login</h2>
-
-	<hr/>
-
 	<form id="loginForm" name="loginForm">
 		<table id="credentialsTable">
 			<thead>
@@ -131,7 +141,6 @@
 		</table>
 		<input type="submit" class="span6" value="login" />
 	</form>
-
 </div>
 
 </body>

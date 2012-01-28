@@ -2,14 +2,14 @@
 <meta charset="utf-8">
 <head>
 	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
-	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
 	<style type="text/css">
-		.container {
-			padding-top: 20px;
+		body {
+			padding-top: 50px;
 		}
 	</style>
-	<script type="text/javascript" src="jquery-1.7.1.js"></script>
-	<script type="text/javascript" src="helpers.js"></script>
+	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="js/helpers.js"></script>
 	<script type="text/javascript">
 
 		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
@@ -53,23 +53,32 @@
 
 		$(document).ready(function () {
 			$("#flashForm").submit(flashNodes);
-			WBHelper.populateSelectBox($("#nodeUrns")[0], availableNodeUrns);
+			WBHelper.populateSelectBox($("#nodeurns")[0], availableNodeUrns);
 		});
 
 	</script>
 </head>
 <body>
 
+<div class="topbar-wrapper" style="z-index: 5;">
+	<div class="topbar">
+		<div class="topbar-inner">
+			<div class="container">
+				<h3><a href="index.html">WISEBED REST/WebSocket API v2.3</a></h3>
+				<ul class="nav">
+					<li><a href="index.html">Home</a></li>
+					<li><a href="login.html">Login</a></li>
+					<li><a href="listnodes.html">List Nodes</a></li>
+					<li class="active"><a href="flash.html">Flash</a></li>
+					<li><a href="websocket.html">WebSocket</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container">
-
-	<h1>WISEBED REST/WebSocket API v2.3</h1>
-
-	<h2>Flash Nodes</h2>
-
-	<hr/>
-
 	<form id="flashForm" name="flashForm">
-
 		<div class="row">
 			<div class="span2">
 				<input type="button" onclick="" value=" + " class="span1"/>
@@ -98,7 +107,7 @@
 					<tbody>
 					<tr>
 						<td>1</td>
-						<td><select id="nodeUrns" name="nodeUrns" multiple></select></td>
+						<td><select id="nodeurns" name="nodeurns" multiple></select></td>
 						<td><input type="file" id="image" name="image"/></td>
 						<td><progress value="25" min="0" max="100">25%</progress></td>
 					</tr>
@@ -107,8 +116,6 @@
 			</div>
 		</div>
 	</form>
-
-
 </div>
 
 </body>
