@@ -1,0 +1,115 @@
+<!DOCTYPE html >
+<meta charset="utf-8">
+<head>
+	<title>WISEBED REST/WebSocket API v2.3 - Login</title>
+	<link rel="stylesheet" media="screen" href="bootstrap.css">
+	<style type="text/css">
+		.container {
+			padding-top: 20px;
+		}
+	</style>
+	<script type="text/javascript" src="jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="helpers.js"></script>
+	<script type="text/javascript">
+
+		if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+			alert('The File APIs are not fully supported in this browser. '
+					+ 'Please use a modern browser that supports the HTML5 File API.');
+		}
+
+		var availableNodeUrns = [
+			{value:"urn:wisebed:uzl1:0x1234", text:"urn:wisebed:uzl1:0x1234"},
+			{value:"urn:wisebed:uzl1:0x2345", text:"urn:wisebed:uzl1:0x2345"},
+			{value:"urn:wisebed:uzl1:0x3456", text:"urn:wisebed:uzl1:0x3456"},
+			{value:"urn:wisebed:uzl1:0x4567", text:"urn:wisebed:uzl1:0x4567"},
+			{value:"urn:wisebed:uzl1:0x5678", text:"urn:wisebed:uzl1:0x5678"},
+			{value:"urn:wisebed:uzl1:0x6789", text:"urn:wisebed:uzl1:0x6789"},
+			{value:"urn:wisebed:uzl1:0x7890", text:"urn:wisebed:uzl1:0x7890"},
+			{value:"urn:wisebed:uzl1:0x8901", text:"urn:wisebed:uzl1:0x8901"},
+			{value:"urn:wisebed:uzl1:0x9012", text:"urn:wisebed:uzl1:0x9012"},
+			{value:"urn:wisebed:uzl1:0x0123", text:"urn:wisebed:uzl1:0x0123"}
+		];
+
+		function flashNodes(event) {
+
+			event.preventDefault();
+
+			var imageFile = event.target.image.files[0];
+			var imageFileReader = new FileReader();
+
+			imageFileReader.onabort = function(progressEvent) {console.log(progressEvent);};
+			imageFileReader.onerror = function(progressEvent) {console.log(progressEvent);};
+			imageFileReader.onload = function(progressEvent) {console.log(progressEvent);};
+			imageFileReader.onloadstart = function(progressEvent) {console.log(progressEvent);};
+			imageFileReader.onprogress = function(progressEvent) {console.log(progressEvent);};
+
+			imageFileReader.onloadend = function(progressEvent) {
+				console.log(progressEvent);
+				imageFileReader.result;
+			};
+
+			imageFileReader.readAsBinaryString(imageFile);
+		}
+
+		$(document).ready(function () {
+			$("#flashForm").submit(flashNodes);
+			WBHelper.populateSelectBox($("#nodeUrns")[0], availableNodeUrns);
+		});
+
+	</script>
+</head>
+<body>
+
+<div class="container">
+
+	<h1>WISEBED REST/WebSocket API v2.3</h1>
+
+	<h2>Flash Nodes</h2>
+
+	<hr/>
+
+	<form id="flashForm" name="flashForm">
+
+		<div class="row">
+			<div class="span2">
+				<input type="button" onclick="" value=" + " class="span1"/>
+				<input type="button" onclick="" value=" - " class="span1"/>
+			</div>
+			<div class="span6">
+				<input type="button" id="loadConfigurationButton" value="Load Configuration" class="span3"/>
+				<input type="button" id="saveConfigurationButton" value="Save Configuration" class="span3"/>
+			</div>
+			<div class="span8" style="text-align: right;">
+				<input type="submit" id="submitButton" value="Flash Nodes" class="span6"/>
+			</div>
+		</div>
+		<div class="row">&nbsp;</div>
+		<div class="row">
+			<div class="span16">
+				<table id="credentialsTable" class="zebra-striped">
+					<thead>
+					<tr>
+						<td class="span1">Set</td>
+						<td class="span4">Node URNs</td>
+						<td class="span5">Image File</td>
+						<td class="span6">Flashing Progress</td>
+					</tr>
+					</thead>
+					<tbody>
+					<tr>
+						<td>1</td>
+						<td><select id="nodeUrns" name="nodeUrns" multiple></select></td>
+						<td><input type="file" id="image" name="image"/></td>
+						<td><progress value="25" min="0" max="100">25%</progress></td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</form>
+
+
+</div>
+
+</body>
+</html>
