@@ -12,7 +12,6 @@ var WBHelper = new function() {
 		});
 	};
 
-
 	this.removeSelectOptionByValue = function(select, value) {
 		for (var i=0; i<select.options.length; i++) {
 			if (select.options[i].value == value) {
