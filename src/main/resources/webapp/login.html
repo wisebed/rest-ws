@@ -9,6 +9,7 @@
 		}
 	</style>
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
+	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/wbhelper.js"></script>
 	<script type="text/javascript">
 
@@ -94,7 +95,7 @@
 <body>
 
 <div class="topbar-wrapper" style="z-index: 5;">
-	<div class="topbar">
+	<div class="topbar" data-dropdown="dropdown">
 		<div class="topbar-inner">
 			<div class="container">
 				<h3><a href="index.html">WISEBED REST/WebSocket API v2.3</a></h3>
@@ -104,7 +105,17 @@
 					<li><a href="listnodes.html">List Nodes</a></li>
 					<li><a href="flash.html">Flash</a></li>
 					<li><a href="websocket.html">WebSocket</a></li>
-					<li><a href="localstorage.html">Local Storage</a></li>
+				</ul>
+				<ul class="nav secondary-nav">
+					<li class="dropdown">
+						<a href="" class="dropdown-toggle">Playgrounds</a>
+						<ul class="dropdown-menu">
+							<li><a href="playground/localstorage.html">Local Storage</a></li>
+							<li><a href="playground/databases.html">Databases</a></li>
+							<li><a href="playground/modal-dialogs.html">Modal Dialogs</a></li>
+							<li><a href="playground/tabs.html">Tabs</a></li>
+						</ul>
+					</li>
 				</ul>
 			</div>
 		</div>
