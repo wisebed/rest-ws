@@ -1,4 +1,4 @@
-package eu.wisebed.restws.resources.dto;
+package eu.wisebed.restws.dto;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -15,7 +15,7 @@ public class SendMessageData extends NodeUrnList {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("SendMessageData [bytesBase64 bytes=");
+		builder.append("SendMessageData [payloadBase64 bytes=");
 		builder.append(bytesBase64 != null ? bytesBase64.length() : "0");
 		builder.append(", sourceNodeUrn=");
 		builder.append(sourceNodeUrn);

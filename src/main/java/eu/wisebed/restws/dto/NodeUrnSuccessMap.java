@@ -1,4 +1,4 @@
-package eu.wisebed.restws.resources.dto;
+package eu.wisebed.restws.dto;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;

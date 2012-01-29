@@ -37,7 +37,7 @@
 				if (message.type == 'upstream') {
 
 					var ta = document.getElementById('nodeOutputsTextArea');
-					ta.value += message.timestamp + " | " + message.nodeUrn + " | " + atob(message.payload) + '\n';
+					ta.value += message.timestamp + " | " + message.sourceNodeUrn + " | " + atob(message.payloadBase64) + '\n';
 
 				} else if (message.type == 'notification') {
 
@@ -94,8 +94,8 @@
 			populateSendMessageNodeUrnBox();
 			$('#sendMessageForm').submit(function(evt) {
 				var message = {
-					nodeUrns : [evt.target.elements.nodeUrn.value],
-					bytesBase64 : btoa(evt.target.elements.message.value)
+					targetNodeUrn : evt.target.elements.nodeUrn.value,
+					payloadBase64 : btoa(evt.target.elements.message.value)
 				};
 				socket.send(JSON.stringify(message));
 			})

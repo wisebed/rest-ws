@@ -1,20 +1,18 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import de.uniluebeck.itm.tr.util.Tuple;
 import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
 import eu.wisebed.api.rs.*;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.resources.SnaaResource.SecretAuthenticationKeyList;
-import eu.wisebed.restws.resources.dto.ConfidentialReservationDataList;
-import eu.wisebed.restws.resources.dto.PublicReservationDataList;
-import eu.wisebed.restws.resources.dto.SecretReservationKeyListRs;
+import eu.wisebed.restws.dto.ConfidentialReservationDataList;
+import eu.wisebed.restws.dto.PublicReservationDataList;
+import eu.wisebed.restws.dto.SecretReservationKeyListRs;
 import eu.wisebed.restws.util.InjectLogger;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

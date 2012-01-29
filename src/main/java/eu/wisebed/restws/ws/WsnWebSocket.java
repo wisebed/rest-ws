@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
 import eu.wisebed.restws.WsnInstanceCache;
-import eu.wisebed.restws.resources.dto.WebSocketDownstreamMessage;
+import eu.wisebed.restws.dto.WebSocketDownstreamMessage;
+import eu.wisebed.restws.dto.WebSocketNotificationMessage;
+import eu.wisebed.restws.dto.WebSocketUpstreamMessage;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
@@ -72,7 +74,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 		@Override
 		public void run() {
 			if (node) {
-				sendDownstream(new DateTime(), getRandomNodeUrn(), getRandomPayload());
+				sendUpstream(new DateTime(), getRandomNodeUrn(), getRandomPayload());
 			} else {
 				sendNotification(new DateTime(), getRandomPayload());
 			}
@@ -105,12 +107,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	@Override
 	public void onMessage(final String data) {
 		try {
-
-			WebSocketDownstreamMessage downstreamMessage =
-					JaxbHelper.fromJSON(data, WebSocketDownstreamMessage.class);
-
-			log.warn("TODO: send this message downstream: " + downstreamMessage);
-
+			onMessage(JaxbHelper.fromJSON(data, WebSocketDownstreamMessage.class));
 		} catch (Exception e) {
 			sendNotification(
 					new DateTime(),
@@ -119,22 +116,30 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 		}
 	}
 
-	private void sendDownstream(final DateTime dateTime, final String nodeUrn, final String payload) {
-		sendMessage("{"
-				+ "\"type\":\"upstream\","
-				+ "\"timestamp\":\"" + dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()) + "\","
-				+ "\"nodeUrn\":\"" + nodeUrn + "\","
-				+ "\"payload\":\"" + Base64Helper.encode(payload) + "\""
-				+ "}"
+	private void onMessage(final WebSocketDownstreamMessage message) {
+		log.warn("TODO: send this message downstream: " + message);
+	}
+
+	private void sendUpstream(final DateTime dateTime, final String nodeUrn, final String payload) {
+		String json = JaxbHelper.convertToJSON(
+				new WebSocketUpstreamMessage(
+						dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
+						nodeUrn,
+						Base64Helper.encode(payload)
+				)
 		);
+		System.out.println(json);
+		sendMessage(json);
 	}
 
 	private void sendNotification(final DateTime dateTime, final String notification) {
-		sendMessage("{"
-				+ "\"type\":\"notification\","
-				+ "\"timestamp\":\"" + dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()) + "\","
-				+ "\"message\":\"" + notification + "\""
-				+ "}"
+		sendMessage(
+				JaxbHelper.convertToJSON(
+						new WebSocketNotificationMessage(
+								dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
+								notification
+						)
+				)
 		);
 	}
 
