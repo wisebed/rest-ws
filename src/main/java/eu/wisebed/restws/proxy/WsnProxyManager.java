@@ -1,5 +1,6 @@
 package eu.wisebed.restws.proxy;
 
+import eu.wisebed.restws.jobs.Job;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -12,8 +13,8 @@ public interface WsnProxyManager {
 
 	@Nullable
 	WsnProxy get(@Nonnull String experimentWsnInstanceEndpointUrl);
-	
+
 	@Nullable
-	JobStatus getStatus(@Nonnull String experimentWsnInstanceEndpointUrl, @Nonnull String requestId);
+	Job getJob(@Nonnull String experimentWsnInstanceEndpointUrl, @Nonnull String requestId);
 
 }

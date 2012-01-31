@@ -8,6 +8,7 @@ import eu.wisebed.api.common.Message;
 import eu.wisebed.api.controller.Controller;
 import eu.wisebed.api.controller.RequestStatus;
 import eu.wisebed.restws.WisebedRestServerConfig;
+import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.util.Base64Helper;
 import org.joda.time.DateTime;
 
@@ -20,7 +21,7 @@ import java.util.List;
 		portName = "ControllerPort", endpointInterface = "eu.wisebed.api.controller.Controller")
 public class ControllerProxyService extends AbstractService implements Controller {
 
-	private final AsyncJobObserver asyncJobObserver;
+	private final JobObserver jobObserver;
 
 	private final WisebedRestServerConfig config;
 
@@ -32,11 +33,11 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@Inject
 	public ControllerProxyService(final WisebedRestServerConfig config,
-								  @Assisted final AsyncJobObserver asyncJobObserver,
+								  @Assisted final JobObserver jobObserver,
 								  @Assisted final String experimentWsnInstanceEndpointUrl,
 								  @Assisted final AsyncEventBus asyncEventBus) {
 
-		this.asyncJobObserver = asyncJobObserver;
+		this.jobObserver = jobObserver;
 		this.config = config;
 		this.experimentWsnInstanceEndpointUrl = experimentWsnInstanceEndpointUrl;
 		this.asyncEventBus = asyncEventBus;
@@ -67,7 +68,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 	@Override
 	public void receiveStatus(
 			@WebParam(name = "status", targetNamespace = "") final List<RequestStatus> requestStatuses) {
-		asyncJobObserver.receive(requestStatuses);
+		jobObserver.process(requestStatuses);
 	}
 
 	@Override

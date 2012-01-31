@@ -11,6 +11,7 @@ import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
 import eu.wisebed.api.wsn.WSN;
+import eu.wisebed.restws.jobs.*;
 import eu.wisebed.restws.util.WSNServiceHelper;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -27,21 +28,26 @@ import static com.google.common.collect.Lists.newArrayList;
 
 public class WsnProxyService extends AbstractService implements WsnProxy {
 
-	private static class FutureJobResultListener implements JobResultListener {
+	private static class FutureJobListener implements JobListener {
 
-		private SettableFuture<JobStatus> future;
+		private final SettableFuture<Job> future;
 
-		private FutureJobResultListener(final SettableFuture<JobStatus> future) {
+		private FutureJobListener(final SettableFuture<Job> future) {
 			this.future = future;
 		}
 
 		@Override
-		public void receiveJobResult(final JobStatus status) {
-			future.set(status);
+		public void onJobStatusChanged(final Job job) {
+			// nothing to do
 		}
 
 		@Override
-		public void timeout() {
+		public void onJobDone(final Job job) {
+			future.set(job);
+		}
+
+		@Override
+		public void onJobTimeout(final Job job) {
 			future.setException(new TimeoutException());
 		}
 	}
@@ -56,7 +62,7 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 		}
 	}
 
-	private final AsyncJobObserver asyncJobObserver;
+	private final JobObserver jobObserver;
 
 	private final String experimentWsnInstanceEndpointUrl;
 
@@ -67,15 +73,15 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 	private ListeningExecutorService executor;
 
 	@Inject
-	public WsnProxyService(@Assisted final AsyncJobObserver asyncJobObserver,
+	public WsnProxyService(@Assisted final JobObserver jobObserver,
 						   @Assisted final String experimentWsnInstanceEndpointUrl,
 						   @Assisted final AsyncEventBus asyncEventBus) {
 
-		checkNotNull(asyncJobObserver);
+		checkNotNull(jobObserver);
 		checkNotNull(experimentWsnInstanceEndpointUrl);
 		checkNotNull(asyncEventBus);
 
-		this.asyncJobObserver = asyncJobObserver;
+		this.jobObserver = jobObserver;
 		this.experimentWsnInstanceEndpointUrl = experimentWsnInstanceEndpointUrl;
 		this.asyncEventBus = asyncEventBus;
 	}
@@ -151,29 +157,29 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> send(final List<String> nodeIds, final Message message, final int timeout,
+	public ListenableFuture<Job> send(final List<String> nodeIds, final Message message, final int timeout,
 											final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.send(nodeIds, message), nodeIds, Job.JobType.send);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		SettableFuture<Job> future = SettableFuture.create();
+		Job job = new Job(wsn.send(nodeIds, message), nodeIds, JobType.SEND);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> setChannelPipeline(final List<String> nodes,
+	public ListenableFuture<Job> setChannelPipeline(final List<String> nodes,
 														  final List<ChannelHandlerConfiguration> channelHandlerConfigurations,
 														  final int timeout, final TimeUnit timeUnit) {
 
-		final SettableFuture<JobStatus> future = SettableFuture.create();
+		final SettableFuture<Job> future = SettableFuture.create();
 		final Job job = new Job(
 				wsn.setChannelPipeline(nodes, channelHandlerConfigurations),
 				nodes,
-				Job.JobType.setChannelPipeline
+				JobType.SET_CHANNEL_PIPELINE
 		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
@@ -190,88 +196,87 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> areNodesAlive(final List<String> nodes, final int timeout,
+	public ListenableFuture<Job> areNodesAlive(final List<String> nodes, final int timeout,
 													 final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.areNodesAlive(nodes), nodes, Job.JobType.areNodesAlive);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		SettableFuture<Job> future = SettableFuture.create();
+		Job job = new Job(wsn.areNodesAlive(nodes), nodes, JobType.ARE_NODES_ALIVE);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> destroyVirtualLink(final String sourceNode, final String targetNode,
+	public ListenableFuture<Job> destroyVirtualLink(final String sourceNode, final String targetNode,
 														  final int timeout,
 														  final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
+		SettableFuture<Job> future = SettableFuture.create();
 		Job job = new Job(wsn.destroyVirtualLink(sourceNode, targetNode), sourceNode,
-				Job.JobType.destroyVirtualLink
+				JobType.DESTROY_VIRTUAL_LINK
 		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> disableNode(final String node, final int timeout, final TimeUnit timeUnit) {
+	public ListenableFuture<Job> disableNode(final String node, final int timeout, final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.disableNode(node), node, Job.JobType.disableNode);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		SettableFuture<Job> future = SettableFuture.create();
+		Job job = new Job(wsn.disableNode(node), node, JobType.DISABLE_NODE);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> disablePhysicalLink(final String nodeA, final String nodeB, final int timeout,
+	public ListenableFuture<Job> disablePhysicalLink(final String nodeA, final String nodeB, final int timeout,
 														   final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
+		SettableFuture<Job> future = SettableFuture.create();
 		Job job = new Job(wsn.disablePhysicalLink(nodeA, nodeB), nodeA,
-				Job.JobType.disablePhysicalLink
+				JobType.DISABLE_PHYSICAL_LINK
 		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> enableNode(final String node, final int timeout, final TimeUnit timeUnit) {
+	public ListenableFuture<Job> enableNode(final String node, final int timeout, final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.enableNode(node), node, Job.JobType.enableNode);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		SettableFuture<Job> future = SettableFuture.create();
+		Job job = new Job(wsn.enableNode(node), node, JobType.ENABLE_NODE);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> enablePhysicalLink(final String nodeA, final String nodeB, final int timeout,
+	public ListenableFuture<Job> enablePhysicalLink(final String nodeA, final String nodeB, final int timeout,
 														  final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
+		SettableFuture<Job> future = SettableFuture.create();
 		Job job = new Job(wsn.enablePhysicalLink(nodeA, nodeB), nodeA,
-				Job.JobType.enablePhysicalLink
+				JobType.ENABLE_PHYSICAL_LINK
 		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> flashPrograms(final List<String> nodeIds, final List<Integer> programIndices,
+	public String flashPrograms(final List<String> nodeIds, final List<Integer> programIndices,
 													 final List<Program> programs, final int timeout,
 													 final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.flashPrograms(nodeIds, programIndices, programs), nodeIds,
-				Job.JobType.flashPrograms
-		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
-		return future;
+		String requestId = wsn.flashPrograms(nodeIds, programIndices, programs);
+
+		Job job = new Job(requestId, nodeIds, JobType.FLASH_PROGRAMS);
+		jobObserver.submit(job, timeout, timeUnit);
+
+		return requestId;
 	}
 
 	@Override
@@ -311,23 +316,23 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> resetNodes(final List<String> nodes, final int timeout,
+	public ListenableFuture<Job> resetNodes(final List<String> nodes, final int timeout,
 												  final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
-		Job job = new Job(wsn.resetNodes(nodes), nodes, Job.JobType.resetNodes);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		SettableFuture<Job> future = SettableFuture.create();
+		Job job = new Job(wsn.resetNodes(nodes), nodes, JobType.RESET_NODES);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 
 	@Override
-	public ListenableFuture<JobStatus> setVirtualLink(final String sourceNode, final String targetNode,
+	public ListenableFuture<Job> setVirtualLink(final String sourceNode, final String targetNode,
 													  final String remoteServiceInstance, final List<String> parameters,
 													  final List<String> filters, final int timeout,
 													  final TimeUnit timeUnit) {
 
-		SettableFuture<JobStatus> future = SettableFuture.create();
+		SettableFuture<Job> future = SettableFuture.create();
 		Job job = new Job(
 				wsn.setVirtualLink(
 						sourceNode,
@@ -337,10 +342,10 @@ public class WsnProxyService extends AbstractService implements WsnProxy {
 						filters
 				),
 				sourceNode,
-				Job.JobType.setVirtualLink
+				JobType.SET_VIRTUAL_LINK
 		);
-		job.addListener(new FutureJobResultListener(future));
-		asyncJobObserver.submit(job, timeout, timeUnit);
+		job.addListener(new FutureJobListener(future));
+		jobObserver.submit(job, timeout, timeUnit);
 		return future;
 	}
 }

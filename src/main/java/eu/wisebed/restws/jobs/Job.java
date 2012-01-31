@@ -21,8 +21,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                *
  **********************************************************************************************************************/
 
-package eu.wisebed.restws.proxy;
+package eu.wisebed.restws.jobs;
 
+import de.uniluebeck.itm.tr.util.ListenerManager;
+import de.uniluebeck.itm.tr.util.ListenerManagerImpl;
 import eu.wisebed.api.controller.RequestStatus;
 import eu.wisebed.api.controller.Status;
 import org.slf4j.Logger;
@@ -40,42 +42,12 @@ public class Job {
 
 	private final JobType jobType;
 
+	private final ListenerManager<JobListener> listenerManager = new ListenerManagerImpl<JobListener>();
+
 	private final String requestId;
 
-	private final Set<JobResultListener> listeners = new HashSet<JobResultListener>();
-
-
-	public enum JobType {
-
-		areNodesAlive,
-		destroyVirtualLink,
-		disableNode,
-		disablePhysicalLink,
-		enableNode,
-		enablePhysicalLink,
-		flashPrograms,
-		resetNodes,
-		send,
-		setChannelPipeline,
-		setVirtualLink,
-
-	}
-
-	// NodeUrn -> NodeStatus
-	private final Map<String, NodeStatus> nodeStates = new HashMap<String, NodeStatus>();
-
-	public void updateNodeState(String nodeUrn, State nodeState, int statusCode, @Nullable String message) {
-
-		NodeStatus nodeStatus = nodeStates.get(nodeUrn);
-		if (nodeStatus == null) {
-			log.warn("Received status for unknown node URN " + nodeUrn + "!");
-			return;
-		}
-
-		nodeStatus.state = nodeState;
-		nodeStatus.statusCode = statusCode;
-		nodeStatus.message = message;
-	}
+	// NodeUrn -> JobNodeStatus
+	private final Map<String, JobNodeStatus> jobNodeStates = new HashMap<String, JobNodeStatus>();
 
 	public Job(String requestId, List<String> nodeUrns, JobType jobType) {
 
@@ -83,7 +55,7 @@ public class Job {
 		this.jobType = jobType;
 
 		for (String nodeUrn : newHashSet(nodeUrns)) {
-			nodeStates.put(nodeUrn, new NodeStatus(State.RUNNING, 0, "Starting..."));
+			jobNodeStates.put(nodeUrn, new JobNodeStatus(JobState.RUNNING, 0, "Starting..."));
 		}
 	}
 
@@ -95,36 +67,30 @@ public class Job {
 		return requestId;
 	}
 
-	public void timeout() {
-		for (JobResultListener l : listeners) {
-			l.timeout();
-		}
-	}
+	private boolean isDone(int statusCode) {
 
-	private boolean isDone(int value) {
-
-		if (jobType == JobType.areNodesAlive) {
-			return value == 1;
-		} else if (jobType == JobType.resetNodes) {
-			return value == 1;
-		} else if (jobType == JobType.send) {
-			return value == 1;
-		} else if (jobType == JobType.flashPrograms) {
-			return value == 100;
-		} else if (jobType == JobType.setVirtualLink) {
-			return value == 1;
-		} else if (jobType == JobType.destroyVirtualLink) {
-			return value == 1;
-		} else if (jobType == JobType.disableNode) {
-			return value == 1;
-		} else if (jobType == JobType.enableNode) {
-			return value == 1;
-		} else if (jobType == JobType.disablePhysicalLink) {
-			return value == 1;
-		} else if (jobType == JobType.enablePhysicalLink) {
-			return value == 1;
-		} else if (jobType == JobType.setChannelPipeline) {
-			return value == 1;
+		if (jobType == JobType.ARE_NODES_ALIVE) {
+			return statusCode == 1;
+		} else if (jobType == JobType.RESET_NODES) {
+			return statusCode == 1;
+		} else if (jobType == JobType.SEND) {
+			return statusCode == 1;
+		} else if (jobType == JobType.FLASH_PROGRAMS) {
+			return statusCode == 100;
+		} else if (jobType == JobType.SET_VIRTUAL_LINK) {
+			return statusCode == 1;
+		} else if (jobType == JobType.DESTROY_VIRTUAL_LINK) {
+			return statusCode == 1;
+		} else if (jobType == JobType.DISABLE_NODE) {
+			return statusCode == 1;
+		} else if (jobType == JobType.ENABLE_NODE) {
+			return statusCode == 1;
+		} else if (jobType == JobType.DISABLE_PHYSICAL_LINK) {
+			return statusCode == 1;
+		} else if (jobType == JobType.ENABLE_PHYSICAL_LINK) {
+			return statusCode == 1;
+		} else if (jobType == JobType.SET_CHANNEL_PIPELINE) {
+			return statusCode == 1;
 		}
 
 		return false;
@@ -132,61 +98,94 @@ public class Job {
 
 	private boolean isError(int value) {
 
-		if (jobType == JobType.areNodesAlive) {
+		if (jobType == JobType.ARE_NODES_ALIVE) {
 			return value <= 0;
-		} else if (jobType == JobType.resetNodes) {
+		} else if (jobType == JobType.RESET_NODES) {
 			return value == 0 || value == -1;
-		} else if (jobType == JobType.send) {
+		} else if (jobType == JobType.SEND) {
 			return value == 0 || value == -1;
-		} else if (jobType == JobType.flashPrograms) {
+		} else if (jobType == JobType.FLASH_PROGRAMS) {
 			return value < 0;
-		} else if (jobType == JobType.setVirtualLink) {
+		} else if (jobType == JobType.SET_VIRTUAL_LINK) {
 			return value < 1;
-		} else if (jobType == JobType.destroyVirtualLink) {
+		} else if (jobType == JobType.DESTROY_VIRTUAL_LINK) {
 			return value < 1;
-		} else if (jobType == JobType.disableNode) {
+		} else if (jobType == JobType.DISABLE_NODE) {
 			return value < 1;
-		} else if (jobType == JobType.enableNode) {
+		} else if (jobType == JobType.ENABLE_NODE) {
 			return value < 1;
-		} else if (jobType == JobType.disablePhysicalLink) {
+		} else if (jobType == JobType.DISABLE_PHYSICAL_LINK) {
 			return value < 1;
-		} else if (jobType == JobType.enablePhysicalLink) {
+		} else if (jobType == JobType.ENABLE_PHYSICAL_LINK) {
 			return value < 1;
-		} else if (jobType == JobType.setChannelPipeline) {
+		} else if (jobType == JobType.SET_CHANNEL_PIPELINE) {
 			return value < 1;
 		}
 
 		return false;
 	}
 
-	public State receive(RequestStatus status) {
+	public JobState process(RequestStatus status) {
 
 		for (Status s : status.getStatus()) {
 
-			State nodeState = State.RUNNING;
+			JobState nodeJobState = JobState.RUNNING;
 			if (isDone(s.getValue())) {
-				nodeState = State.SUCCESS;
+				nodeJobState = JobState.SUCCESS;
 			} else if (isError(s.getValue())) {
-				nodeState = State.FAILED;
+				nodeJobState = JobState.FAILED;
 			}
 
-			updateNodeState(s.getNodeId(), nodeState, s.getValue(), s.getMsg());
+			updateNodeState(s.getNodeId(), nodeJobState, s.getValue(), s.getMsg());
 		}
 
-		State jobState = determineJobState();
-		if (jobState != State.RUNNING) {
-			notifyListeners(jobState);
+		JobState jobJobState = determineJobState();
+		if (jobJobState != JobState.RUNNING) {
+			notifyListenersJobDone();
+		} else {
+			notifyListenersJobStateChanged();
 		}
-		return jobState;
+
+		return jobJobState;
 	}
 
-	private State determineJobState() {
+	public void addListener(JobListener listener) {
+		listenerManager.addListener(listener);
+	}
+
+	public void removeListener(JobListener listener) {
+		listenerManager.removeListener(listener);
+	}
+
+	private void notifyListenersJobDone() {
+		for (JobListener l : listenerManager.getListeners()) {
+			l.onJobDone(this);
+		}
+	}
+
+	private void notifyListenersJobStateChanged() {
+		for (JobListener l : listenerManager.getListeners()) {
+			l.onJobStatusChanged(this);
+		}
+	}
+
+	public void notifyListenersTimeout() {
+		for (JobListener l : listenerManager.getListeners()) {
+			l.onJobTimeout(this);
+		}
+	}
+
+	public JobType getJobType() {
+		return jobType;
+	}
+
+	private JobState determineJobState() {
 
 		int running = 0;
 		int success = 0;
 
-		for (NodeStatus nodeStatus : nodeStates.values()) {
-			switch (nodeStatus.state) {
+		for (JobNodeStatus jobNodeStatus : jobNodeStates.values()) {
+			switch (jobNodeStatus.getStatus()) {
 				case RUNNING:
 					running++;
 					break;
@@ -197,29 +196,28 @@ public class Job {
 		}
 
 		if (running > 0) {
-			return State.RUNNING;
-		} else if (success == nodeStates.size()) {
-			return State.SUCCESS;
+			return JobState.RUNNING;
+		} else if (success == jobNodeStates.size()) {
+			return JobState.SUCCESS;
 		} else {
-			return State.FAILED;
+			return JobState.FAILED;
 		}
 	}
 
-	public void addListener(JobResultListener listener) {
-		listeners.add(listener);
-	}
+	private void updateNodeState(String nodeUrn, JobState nodeJobState, int statusCode, @Nullable String message) {
 
-	public void removeListener(JobResultListener listener) {
-		listeners.remove(listener);
-	}
-
-	private void notifyListeners(State status) {
-		for (JobResultListener l : listeners) {
-			l.receiveJobResult(status);
+		JobNodeStatus jobNodeStatus = jobNodeStates.get(nodeUrn);
+		if (jobNodeStatus == null) {
+			log.warn("Received status for unknown node URN " + nodeUrn + "!");
+			return;
 		}
+
+		jobNodeStatus.setStatus(nodeJobState);
+		jobNodeStatus.setStatusCode(statusCode);
+		jobNodeStatus.setMessage(message);
 	}
 
-	public JobType getJobType() {
-		return jobType;
+	public Map<String, JobNodeStatus> getJobNodeStates() {
+		return jobNodeStates;
 	}
 }

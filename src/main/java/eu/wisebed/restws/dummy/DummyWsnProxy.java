@@ -5,13 +5,11 @@ import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
-import eu.wisebed.restws.proxy.Job;
-import eu.wisebed.restws.proxy.JobStatus;
+import eu.wisebed.restws.jobs.JobType;
 import eu.wisebed.restws.proxy.WsnProxy;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class DummyWsnProxy implements WsnProxy {
@@ -28,7 +26,7 @@ public class DummyWsnProxy implements WsnProxy {
 
 	@Override
 	public ListenableFuture<JobStatus> send(List<String> nodeIds, Message message, int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, Job.JobType.send));
+		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, JobType.SEND));
 	}
 
 	@Override
@@ -36,7 +34,7 @@ public class DummyWsnProxy implements WsnProxy {
 														  List<ChannelHandlerConfiguration> channelHandlerConfigurations,
 														  int timeout,
 														  TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.setChannelPipeline));
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, JobType.SET_CHANNEL_PIPELINE));
 	}
 
 	@Override
@@ -46,38 +44,38 @@ public class DummyWsnProxy implements WsnProxy {
 
 	@Override
 	public ListenableFuture<JobStatus> areNodesAlive(List<String> nodes, int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.areNodesAlive));
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, JobType.ARE_NODES_ALIVE));
 	}
 
 	@Override
 	public ListenableFuture<JobStatus> destroyVirtualLink(String sourceNode, String targetNode, int timeout,
 														  TimeUnit timeUnit) {
 		return new DummyListenableFuture<JobStatus>(
-				generateResults(Arrays.asList(sourceNode), Job.JobType.destroyVirtualLink)
+				generateResults(Arrays.asList(sourceNode), JobType.DESTROY_VIRTUAL_LINK)
 		);
 	}
 
 	@Override
 	public ListenableFuture<JobStatus> disableNode(String node, int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), Job.JobType.disableNode));
+		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), JobType.DISABLE_NODE));
 	}
 
 	@Override
 	public ListenableFuture<JobStatus> disablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
 		return new DummyListenableFuture<JobStatus>(
-				generateResults(Arrays.asList(nodeA), Job.JobType.disablePhysicalLink)
+				generateResults(Arrays.asList(nodeA), JobType.DISABLE_PHYSICAL_LINK)
 		);
 	}
 
 	@Override
 	public ListenableFuture<JobStatus> enableNode(String node, int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), Job.JobType.enableNode));
+		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), JobType.ENABLE_NODE));
 	}
 
 	@Override
 	public ListenableFuture<JobStatus> enablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
 		return new DummyListenableFuture<JobStatus>(
-				generateResults(Arrays.asList(nodeA), Job.JobType.enablePhysicalLink)
+				generateResults(Arrays.asList(nodeA), JobType.ENABLE_PHYSICAL_LINK)
 		);
 	}
 
@@ -85,7 +83,7 @@ public class DummyWsnProxy implements WsnProxy {
 	public ListenableFuture<JobStatus> flashPrograms(List<String> nodeIds, List<Integer> programIndices,
 													 List<Program> programs,
 													 int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, Job.JobType.flashPrograms));
+		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, JobType.FLASH_PROGRAMS));
 	}
 
 	@Override
@@ -177,7 +175,7 @@ public class DummyWsnProxy implements WsnProxy {
 
 	@Override
 	public ListenableFuture<JobStatus> resetNodes(List<String> nodes, int timeout, TimeUnit timeUnit) {
-		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.resetNodes));
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, JobType.RESET_NODES));
 	}
 
 	@Override
@@ -186,17 +184,8 @@ public class DummyWsnProxy implements WsnProxy {
 													  List<String> parameters,
 													  List<String> filters, int timeout, TimeUnit timeUnit) {
 		return new DummyListenableFuture<JobStatus>(
-				generateResults(Arrays.asList(sourceNode), Job.JobType.setVirtualLink)
+				generateResults(Arrays.asList(sourceNode), JobType.SET_VIRTUAL_LINK)
 		);
-	}
-
-	private JobStatus generateResults(List<String> nodeIds, Job.JobType jobType) {
-		JobStatus status = new JobStatus(jobType);
-		Random r = new Random();
-		for (String urn : nodeIds) {
-			status.updateNodeState(urn, r.nextBoolean(), "no message here");
-		}
-		return status;
 	}
 
 }

@@ -21,12 +21,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                *
  **********************************************************************************************************************/
 
-package eu.wisebed.restws.proxy;
+package eu.wisebed.restws.jobs;
 
-public interface JobResultListener {
+public interface JobListener {
 
-	void receiveJobResult(State status);
+	void onJobStatusChanged(Job job);
+	
+	void onJobDone(Job job);
 
-	void timeout();
+	void onJobTimeout(final Job job);
 
 }

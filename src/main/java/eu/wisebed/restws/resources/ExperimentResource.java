@@ -2,6 +2,7 @@ package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
 import com.sun.jersey.core.util.Base64;
+import de.uniluebeck.itm.tr.util.TimedCache;
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.rs.*;
 import eu.wisebed.api.sm.ExperimentNotRunningException_Exception;
@@ -12,7 +13,8 @@ import eu.wisebed.api.wsn.ProgramMetaData;
 import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.dto.*;
 import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
-import eu.wisebed.restws.proxy.JobStatus;
+import eu.wisebed.restws.jobs.Job;
+import eu.wisebed.restws.jobs.JobNodeStatus;
 import eu.wisebed.restws.proxy.WsnProxy;
 import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
@@ -36,6 +38,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -162,7 +165,7 @@ public class ExperimentResource {
 			log.error("Hier muss noch eine Controller-URL übergeben werden");
 			// TODO Hier muss noch eine Controller-URL übergeben werden
 
-			String controllerEndpointUrl = null;
+			String controllerEndpointUrl = afsdfasdf;
 			String experimentInstanceUrl = sessions.getInstance(
 					copyRsToWsn(reservationKey.reservations),
 					controllerEndpointUrl
@@ -308,15 +311,29 @@ public class ExperimentResource {
 										final NodeUrnList nodeUrnList) {
 
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+		String requestId = Base64Helper.decode(requestIdBase64);
 
 		WsnProxy wsnProxy = wsnCache.get(experimentUrl);
 		if (wsnProxy == null) {
 			return createExperimentNotFoundResponse(experimentUrlBase64);
 		}
 
-		JobStatus status = wsnCache.getStatus(experimentUrl, Base64Helper.decode(requestIdBase64));
+		Job job = wsnCache.getJob(experimentUrl, requestId);
+		if (job == null) {
+			return Response.status(Status.NOT_FOUND).entity("No job with requestId " + requestId + " found!").build();
+		}
 
-		return Response.ok(JaxbHelper.convertToJSON(status)).build();
+		NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+
+		return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+	}
+
+	private NodeUrnStatusMap buildNodeUrnStatusMap(final Map<String, JobNodeStatus> jobNodeStates) {
+		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
+		for (Map.Entry<String, JobNodeStatus> entry : jobNodeStates.entrySet()) {
+			nodeUrnStatusMap.map.put(entry.getKey(), entry.getValue());
+		}
+		return nodeUrnStatusMap;
 	}
 
 	@POST
@@ -333,9 +350,14 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status =
-					wsnProxy.resetNodes(nodeUrns.nodeUrns, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+
+			Job job = wsnProxy.resetNodes(
+					nodeUrns.nodeUrns,
+					config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -360,10 +382,13 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status =
-					wsnProxy.areNodesAlive(nodeUrns.nodeUrns, config.operationTimeoutMillis, TimeUnit.MILLISECONDS)
-							.get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			Job job = wsnProxy.areNodesAlive(
+					nodeUrns.nodeUrns,
+					config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -392,9 +417,9 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status =
-					wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			Job job = wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -420,10 +445,14 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status = wsnProxy.destroyVirtualLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+			Job job = wsnProxy.destroyVirtualLink(
+					nodeUrns.from,
+					nodeUrns.to,
+					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -448,9 +477,13 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status =
-					wsnProxy.disableNode(nodeUrn, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			Job job = wsnProxy.disableNode(
+					nodeUrn,
+					config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -475,8 +508,14 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status = wsnProxy.enableNode(nodeUrn, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+
+			Job job = wsnProxy.enableNode(
+					nodeUrn,
+					config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -502,10 +541,14 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status = wsnProxy.disablePhysicalLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+			Job job = wsnProxy.disablePhysicalLink(
+					nodeUrns.from,
+					nodeUrns.to,
+					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -531,10 +574,15 @@ public class ExperimentResource {
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			JobStatus status = wsnProxy.enablePhysicalLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+
+			Job job = wsnProxy.enablePhysicalLink(
+					nodeUrns.from,
+					nodeUrns.to,
+					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
+			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -600,17 +648,6 @@ public class ExperimentResource {
 			);
 		}
 
-	}
-
-	private NodeUrnStatusMap convert(JobStatus status) {
-		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
-
-		for (String nodeUrn : status.getNodeStates().keySet()) {
-			JobStatus.NodeStatus nodeStatus = status.getNodeStates().get(nodeUrn);
-			nodeUrnStatusMap.nodeUrnStatusMap.put(nodeUrn, nodeStatus);
-		}
-
-		return nodeUrnStatusMap;
 	}
 
 	private Response returnError(String msg, Exception e, Status status) {

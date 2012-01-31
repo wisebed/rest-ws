@@ -21,51 +21,48 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                *
  **********************************************************************************************************************/
 
-package eu.wisebed.restws.proxy;
+package eu.wisebed.restws.jobs;
 
-import de.uniluebeck.itm.tr.util.TimeDiff;
 import de.uniluebeck.itm.tr.util.TimedCache;
 import de.uniluebeck.itm.tr.util.TimedCacheListener;
 import de.uniluebeck.itm.tr.util.Tuple;
 import eu.wisebed.api.controller.RequestStatus;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class AsyncJobObserver {
+import static com.google.common.collect.Sets.newHashSet;
 
-	private static final Logger log = LoggerFactory.getLogger(AsyncJobObserver.class);
+public class JobObserver {
 
-	private final TimedCache<String, Job> jobList = new TimedCache<String, Job>(60, TimeUnit.MINUTES);
+	private static final Logger log = LoggerFactory.getLogger(JobObserver.class);
+
+	private final TimedCache<String, Job> jobCache = new TimedCache<String, Job>(60, TimeUnit.MINUTES);
 
 	/**
 	 * If a request status arrives before a job is submitted it is cached here. If the job is then submitted it will be
 	 * first checked if the request status for the job is contained here and, in this case, the job will be assumed to be
 	 * completed.
 	 */
-	private final TimedCache<String, List<RequestStatus>> unknownRequestStatuses =
+	private final TimedCache<String, List<RequestStatus>> unknownRequestStatusesCache =
 			new TimedCache<String, List<RequestStatus>>(60, TimeUnit.MINUTES);
 
-	private Set<JobResultListener> listeners = new HashSet<JobResultListener>();
+	private final Set<JobListener> listeners = newHashSet();
 
 	private Lock lock = new ReentrantLock();
 
-	private Condition jobListEmpty = lock.newCondition();
-
-	public AsyncJobObserver() {
-		jobList.setListener(new TimedCacheListener<String, Job>() {
+	public JobObserver() {
+		jobCache.setListener(new TimedCacheListener<String, Job>() {
 			@Override
 			public Tuple<Long, TimeUnit> timeout(final String key, final Job value) {
-				value.timeout();
+				value.notifyListenersTimeout();
 				return null;
 			}
 		}
@@ -79,21 +76,18 @@ public class AsyncJobObserver {
 		lock.lock();
 		try {
 
-			jobList.put(job.getRequestId(), job, timeout, timeUnit);
-			job.setStartTime(new DateTime());
+			jobCache.put(job.getRequestId(), job, timeout, timeUnit);
 
-			for (JobResultListener l : listeners) {
+			for (JobListener l : listeners) {
 				job.addListener(l);
 			}
 
-			List<RequestStatus> unknownRequestStatusList = unknownRequestStatuses.get(job.getRequestId());
+			List<RequestStatus> unknownRequestStatusList = unknownRequestStatusesCache.get(job.getRequestId());
 
 			if (unknownRequestStatusList != null) {
 				log.trace("Found cached unknown request statuses");
-				unknownRequestStatuses.remove(job.getRequestId());
-				for (RequestStatus requestStatus : unknownRequestStatusList) {
-					receive(requestStatus);
-				}
+				unknownRequestStatusesCache.remove(job.getRequestId());
+				process(unknownRequestStatusList);
 			}
 
 		} finally {
@@ -102,73 +96,51 @@ public class AsyncJobObserver {
 
 	}
 
-	public void receive(List<RequestStatus> status) {
-		for (RequestStatus s : status) {
-			receive(s);
-		}
-	}
-
-	public void receive(RequestStatus status) {
+	public void process(final List<RequestStatus> requestStatusList) {
 
 		lock.lock();
 
 		try {
 
-			Job job = jobList.get(status.getRequestId());
+			for (RequestStatus status : requestStatusList) {
 
-			if (job != null) {
+				final String requestId = status.getRequestId();
+				final Job job = jobCache.get(requestId);
 
-				if (job.receive(status) != State.RUNNING) {
+				if (job != null) {
 
-					jobList.remove(status.getRequestId());
-
-					if (jobList.size() == 0) {
-						jobListEmpty.signalAll();
+					if (job.process(status) != JobState.RUNNING) {
+						jobCache.remove(requestId);
 					}
 
+				} else {
+
+					List<RequestStatus> unknownRequestStatusesForRequestId =
+							unknownRequestStatusesCache.get(requestId);
+
+					if (unknownRequestStatusesForRequestId == null) {
+						unknownRequestStatusesForRequestId = new LinkedList<RequestStatus>();
+						unknownRequestStatusesCache.put(requestId, unknownRequestStatusesForRequestId);
+					}
+					unknownRequestStatusesForRequestId.add(status);
 				}
-			} else {
-				log.trace("Unkown request status received");
-				List<RequestStatus> statusList = unknownRequestStatuses.get(status.getRequestId());
-				if (statusList == null) {
-					statusList = new LinkedList<RequestStatus>();
-					unknownRequestStatuses.put(status.getRequestId(), statusList);
-				}
-				statusList.add(status);
 			}
-
-		} finally {
-			lock.unlock();
-		}
-
-	}
-
-	public void clear() {
-
-		lock.lock();
-
-		try {
-
-			if (jobList.size() > 0) {
-				log.warn("Removing " + jobList.size() + " unfinished jobs from the queue");
-			}
-			jobList.clear();
-			jobListEmpty.signal();
 
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	public void addListener(JobResultListener listener) {
+	public void addListener(JobListener listener) {
 		listeners.add(listener);
 	}
 
-	public void removeListener(JobResultListener listener) {
+	public void removeListener(JobListener listener) {
 		listeners.remove(listener);
 	}
 
-	public JobStatus getStatus(final String requestId) {
-		return null;  // TODO implement
+	@Nullable
+	public Job getJob(final String requestId) {
+		return jobCache.get(requestId);
 	}
 }
