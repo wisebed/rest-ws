@@ -3,10 +3,10 @@ package eu.wisebed.restws.ws;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
-import eu.wisebed.restws.WsnInstanceCache;
 import eu.wisebed.restws.dto.WebSocketDownstreamMessage;
 import eu.wisebed.restws.dto.WebSocketNotificationMessage;
 import eu.wisebed.restws.dto.WebSocketUpstreamMessage;
+import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
@@ -27,7 +27,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	@InjectLogger
 	private Logger log;
 
-	private final WsnInstanceCache wsnInstanceCache;
+	private final WsnProxyManager wsnProxyManager;
 
 	private final String experimentId;
 
@@ -99,8 +99,8 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	private ScheduledFuture<?> notificationSchedule;
 
 	@Inject
-	public WsnWebSocket(final WsnInstanceCache wsnInstanceCache, @Assisted final String experimentId) {
-		this.wsnInstanceCache = wsnInstanceCache;
+	public WsnWebSocket(final WsnProxyManager wsnProxyManager, @Assisted final String experimentId) {
+		this.wsnProxyManager = wsnProxyManager;
 		this.experimentId = experimentId;
 	}
 

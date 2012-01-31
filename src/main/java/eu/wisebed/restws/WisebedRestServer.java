@@ -17,15 +17,14 @@ import org.slf4j.LoggerFactory;
  */
 public class WisebedRestServer {
 
-	private static Logger log;
-
 	static {
 		Logging.setLoggingDefaults();
 	}
 
+	private static Logger log = LoggerFactory.getLogger(WisebedRestServer.class);
+
 	public static void main(String[] args) throws Exception {
 
-		log = LoggerFactory.getLogger(WisebedRestServer.class);
 		final WisebedRestServerConfig config = parseCmdLineOptions(args);
 
 		setLogLevel(config);

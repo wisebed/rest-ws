@@ -1,14 +1,14 @@
 package eu.wisebed.restws.resources;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import de.uniluebeck.itm.tr.util.Tuple;
-import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
 import eu.wisebed.api.rs.*;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
-import eu.wisebed.restws.resources.SnaaResource.SecretAuthenticationKeyList;
 import eu.wisebed.restws.dto.ConfidentialReservationDataList;
 import eu.wisebed.restws.dto.PublicReservationDataList;
 import eu.wisebed.restws.dto.SecretReservationKeyListRs;
+import eu.wisebed.restws.resources.SnaaResource.SecretAuthenticationKeyList;
 import eu.wisebed.restws.util.InjectLogger;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -64,7 +64,7 @@ public class RsResource {
 				gr.setTo(toDate);
 
 				List<ConfidentialReservationData> reservations = rs.getConfidentialReservations(
-						BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr
+						copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr
 				);
 				String jsonResponse = convertToJSON(new ConfidentialReservationDataList(reservations));
 
@@ -99,7 +99,7 @@ public class RsResource {
 					createFrom(secretAuthCookie.secretAuthenticationKeys, request);
 
 			List<SecretReservationKey> reservation =
-					rs.makeReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+					rs.makeReservation(copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
 							confidentialReservation
 					);
 
@@ -132,7 +132,7 @@ public class RsResource {
 
 		if (secretAuthCookie != null) {
 			try {
-				rs.deleteReservation(BeanShellHelper.copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+				rs.deleteReservation(copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
 						secretReservationKeys.reservations
 				);
 				return Response.ok("Ok, deleted reservation").build();
@@ -225,6 +225,26 @@ public class RsResource {
 			throw new RuntimeException("Unable to create a DataType factory: " + e, e);
 		}
 
+	}
+
+	private static List<eu.wisebed.api.rs.SecretAuthenticationKey> copySnaaToRs(
+			List<SecretAuthenticationKey> snaaKeys) {
+
+		List<eu.wisebed.api.rs.SecretAuthenticationKey> secretAuthKeys =
+				Lists.newArrayListWithCapacity(snaaKeys.size());
+
+		for (SecretAuthenticationKey snaaKey : snaaKeys) {
+
+			eu.wisebed.api.rs.SecretAuthenticationKey key = new eu.wisebed.api.rs.SecretAuthenticationKey();
+
+			key.setSecretAuthenticationKey(snaaKey.getSecretAuthenticationKey());
+			key.setUrnPrefix(snaaKey.getUrnPrefix());
+			key.setUsername(snaaKey.getUsername());
+
+			secretAuthKeys.add(key);
+		}
+
+		return secretAuthKeys;
 	}
 
 }

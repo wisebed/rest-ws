@@ -2,9 +2,11 @@ package eu.wisebed.restws;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.GuiceFilter;
 import eu.wisebed.restws.servlet.InvalidRequestServlet;
 import eu.wisebed.restws.util.InjectLogger;
+import org.eclipse.jetty.http.spi.JettyHttpServerProvider;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import javax.servlet.DispatcherType;
 import java.util.EnumSet;
 
+@Singleton
 public class WisebedRestServerService extends AbstractService {
 
 	@InjectLogger
@@ -48,10 +51,16 @@ public class WisebedRestServerService extends AbstractService {
 
 			ServletContextHandler guiceHandler = new ServletContextHandler();
 			guiceHandler.setContextPath("/");
-			guiceHandler.setResourceBase(webDir);
 			guiceHandler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
 			guiceHandler.addFilter(guiceFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
+			// set up JAX-WS support for Jetty
+			JettyHttpServerProvider.setServer(server);
+			System.setProperty("com.sun.net.httpserver.HttpServerProvider",
+					JettyHttpServerProvider.class.getCanonicalName()
+			);
+
+			// set up static file delivery for HTTP requests to "/"
 			ResourceHandler resourceHandler = new ResourceHandler();
 			resourceHandler.setDirectoriesListed(false);
 			resourceHandler.setWelcomeFiles(new String[]{"index.html"});

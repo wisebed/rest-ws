@@ -10,10 +10,7 @@ import org.slf4j.Logger;
 
 import javax.jws.WebParam;
 import javax.xml.ws.Holder;
-import java.io.IOException;
 import java.util.List;
-
-import static com.google.common.base.Throwables.propagate;
 
 public class DummySessionManagement implements SessionManagement {
 

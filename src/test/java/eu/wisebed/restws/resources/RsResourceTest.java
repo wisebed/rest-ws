@@ -19,7 +19,7 @@ public class RsResourceTest extends GuiceAndJerseyTest {
 				.type(MediaType.APPLICATION_XML)
 				.accept(MediaType.APPLICATION_XML);
 
-		ClientResponse response = requestBuilder.getOrCreate(ClientResponse.class);
+		ClientResponse response = requestBuilder.get(ClientResponse.class);
 		assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());*/
 	}
 }

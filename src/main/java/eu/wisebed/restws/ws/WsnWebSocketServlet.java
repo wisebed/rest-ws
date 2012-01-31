@@ -35,8 +35,8 @@ public class WsnWebSocketServlet extends WebSocketServlet {
 			return null;
 		}
 
-		String experimentId = splitPath[2];
+		String experimentUrl = splitPath[2];
 
-		return wsnWebSocketFactory.create(experimentId);
+		return wsnWebSocketFactory.create(experimentUrl);
 	}
 }

@@ -1,14 +1,12 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import eu.wisebed.api.snaa.*;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
 import org.slf4j.Logger;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;

@@ -1,17 +1,19 @@
 package eu.wisebed.restws.dummy;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class DummyFuture<T> implements Future<T> {
+public class DummyListenableFuture<T> implements ListenableFuture<T> {
 
 	T dummyValue;
 
 	boolean cancelled = false;
 
-	public DummyFuture(T dummyValue) {
+	public DummyListenableFuture(T dummyValue) {
 		super();
 		this.dummyValue = dummyValue;
 	}
@@ -42,4 +44,13 @@ public class DummyFuture<T> implements Future<T> {
 		return get();
 	}
 
+	@Override
+	public void addListener(final Runnable listener, final Executor executor) {
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				listener.run();
+			}
+		});
+	}
 }

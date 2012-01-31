@@ -11,13 +11,6 @@
 
 	<dependencies>
 
-		<!-- Testbed Runtime -->
-		<dependency>
-			<groupId>de.uniluebeck.itm</groupId>
-			<artifactId>tr.scripting-client</artifactId>
-			<version>0.9-SNAPSHOT</version>
-		</dependency>
-
 		<!-- WiseML parsing -->
 		<dependency>
 			<groupId>eu.wisebed</groupId>
@@ -39,7 +32,7 @@
 			<version>2.3</version>
 		</dependency>
 
-		<!-- jersey (JAX-RS) dependencies -->
+		<!-- JAX-RS reference implementation (Jersey) -->
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
@@ -61,21 +54,28 @@
 			<version>1.11</version>
 		</dependency>
 
-		<!-- HTTP server -->
+		<!-- Jetty embedded HTTP server -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>8.0.4.v20111024</version>
+			<version>8.1.0.v20120127</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>8.0.4.v20111024</version>
+			<version>8.1.0.v20120127</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-websocket</artifactId>
-			<version>8.0.4.v20111024</version>
+			<version>8.1.0.v20120127</version>
+		</dependency>
+
+		<!-- JAX-WS support for Jetty -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-http-spi</artifactId>
+			<version>8.1.0.v20120127</version>
 		</dependency>
 
 		<!-- dependency injection support -->
@@ -102,7 +102,7 @@
 			<version>11.0.1</version>
 		</dependency>
 
-		<!-- Command-Line dependencies -->
+		<!-- command-line argument parsing -->
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
@@ -133,7 +133,7 @@
 			<version>1.6</version>
 		</dependency>
 
-		<!-- unit-testing dependencies -->
+		<!-- unit testing dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

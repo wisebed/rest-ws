@@ -2,24 +2,25 @@ package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
 import com.sun.jersey.core.util.Base64;
-import de.uniluebeck.itm.wisebed.cmdlineclient.BeanShellHelper;
-import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult;
-import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult.Result;
-import de.uniluebeck.itm.wisebed.cmdlineclient.wrapper.IWsnAsyncWrapper;
 import eu.wisebed.api.common.Message;
+import eu.wisebed.api.rs.*;
 import eu.wisebed.api.sm.ExperimentNotRunningException_Exception;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.sm.UnknownReservationIdException_Exception;
 import eu.wisebed.api.wsn.Program;
 import eu.wisebed.api.wsn.ProgramMetaData;
-import eu.wisebed.api.wsn.WSN;
-import eu.wisebed.restws.WsnInstanceCache;
+import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.dto.*;
 import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
+import eu.wisebed.restws.proxy.JobStatus;
+import eu.wisebed.restws.proxy.WsnProxy;
+import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JaxbHelper;
 import eu.wisebed.wiseml.Wiseml;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
@@ -32,24 +33,20 @@ import javax.xml.datatype.DatatypeFactory;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.concurrent.Future;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: The following WISEBED functions are not implemented yet:
  * <p/>
- * List<String> getFilters();
- * <p/>
- * List<ChannelHandlerDescription>
- * <p/>
- * getSupportedChannelHandlers();
- * <p/>
- * String getVersion();
- * <p/>
- * String setChannelPipeline(List<String> nodes, List<ChannelHandlerConfiguration> channelHandlerConfigurations);
- * <p/>
- * String setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance, List<String> parameters,
+ * List<String> getFilters();<br/>
+ * List<ChannelHandlerDescription> getSupportedChannelHandlers();<br/>
+ * String getVersion();<br/>
+ * String setChannelPipeline(List<String> nodes, List<ChannelHandlerConfiguration> channelHandlerConfigurations);<br/>
+ * String setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance, List<String>
+ * parameters,<br/>
  * List<String> filters);
  */
 @Path("/" + Constants.WISEBED_API_VERSION + "/experiments/")
@@ -59,13 +56,19 @@ public class ExperimentResource {
 	private Logger log;
 
 	@Inject
+	private RS rs;
+
+	@Inject
 	private SessionManagement sessions;
 
 	@Inject
-	private WsnInstanceCache wsnCache;
-	
+	private WsnProxyManager wsnCache;
+
 	@Context
 	private UriInfo uriInfo;
+
+	@Inject
+	private WisebedRestServerConfig config;
 
 	@GET
 	@Path("network")
@@ -102,10 +105,68 @@ public class ExperimentResource {
 	public Response getInstance(SecretReservationKeyListRs reservationKey) {
 
 		try {
+
+			List<ConfidentialReservationData> reservation = rs.getReservation(reservationKey.reservations);
+
+			DateTime now = DateTime.now();
+			DateTime earliestFrom = new DateTime();
+			DateTime latestUntil = new DateTime();
+
+			for (ConfidentialReservationData data : reservation) {
+
+				DateTime from = new DateTime(data.getFrom().toGregorianCalendar());
+				if (from.isBefore(earliestFrom)) {
+					earliestFrom = from;
+				}
+
+				DateTime until = new DateTime(data.getTo().toGregorianCalendar());
+				if (until.isAfter(latestUntil)) {
+					latestUntil = until;
+				}
+			}
+
+			if (earliestFrom.isAfter(now)) {
+				return Response
+						.status(Status.BAD_REQUEST)
+						.entity("The reservation time span lies in the future! Please try to reconnect after "
+								+ earliestFrom.toString(ISODateTimeFormat.basicDateTimeNoMillis())
+								+ "."
+						)
+						.build();
+			}
+
+			if (latestUntil.isBefore(now)) {
+				return Response
+						.status(Status.BAD_REQUEST)
+						.entity("The reservation time span lies in the past! It ended on "
+								+ latestUntil.toString(ISODateTimeFormat.basicDateTimeNoMillis())
+								+ ". You can not connect to the experiment after it has ended."
+						)
+						.build();
+			}
+
+		} catch (RSExceptionException e) {
+
+			return Response.serverError().entity(e).build();
+
+		} catch (ReservervationNotFoundExceptionException e) {
+
+			return Response
+					.status(Status.NOT_FOUND)
+					.entity("No reservation with the given secret reservation keys could be found!")
+					.build();
+		}
+
+		try {
+
 			log.error("Hier muss noch eine Controller-URL übergeben werden");
 			// TODO Hier muss noch eine Controller-URL übergeben werden
-			String experimentInstanceUrl =
-					sessions.getInstance(BeanShellHelper.copyRsToWsn(reservationKey.reservations), null);
+
+			String controllerEndpointUrl = null;
+			String experimentInstanceUrl = sessions.getInstance(
+					copyRsToWsn(reservationKey.reservations),
+					controllerEndpointUrl
+			);
 
 			URI location = new URI(Base64Helper.encode(experimentInstanceUrl) + "/");
 			log.debug("Returning instance URL {}", location.toString());
@@ -119,6 +180,18 @@ public class ExperimentResource {
 			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	private static List<eu.wisebed.api.sm.SecretReservationKey> copyRsToWsn(List<SecretReservationKey> keys) {
+		List<eu.wisebed.api.sm.SecretReservationKey> newKeys = new ArrayList<eu.wisebed.api.sm.SecretReservationKey>();
+		for (SecretReservationKey key : keys) {
+			eu.wisebed.api.sm.SecretReservationKey newKey =
+					new eu.wisebed.api.sm.SecretReservationKey();
+			newKey.setSecretReservationKey(key.getSecretReservationKey());
+			newKey.setUrnPrefix(key.getUrnPrefix());
+			newKeys.add(newKey);
+		}
+		return newKeys;
 	}
 
 	/**
@@ -138,8 +211,8 @@ public class ExperimentResource {
 	 */
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/flash")
-	public Response flashPrograms(@PathParam("experimenturl") String experimentUrlBase64,
+	@Path("{experimentUrl}/flash")
+	public Response flashPrograms(@PathParam("experimentUrl") String experimentUrlBase64,
 								  FlashProgramsRequest flashData) {
 
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
@@ -170,14 +243,19 @@ public class ExperimentResource {
 		// Invoke the call and redirect the caller
 		try {
 
-			WSN wsn = wsnCache.getOrCreate(experimentUrl);
-			String taskid = wsn.flashPrograms(nodeUrns, programIndices, programs);
+			WsnProxy wsn = wsnCache.get(experimentUrl);
+
+			if (wsn == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+
+			String taskId = wsn.flashPrograms(nodeUrns, programIndices, programs,
+					config.flashTimeoutMillis, TimeUnit.MILLISECONDS
+			);
 			UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getRequestUri()).path("{taskId}");
-			String base64EncodedTaskId = Base64Helper.encode(taskid);
+			String base64EncodedTaskId = Base64Helper.encode(taskId);
 			return Response.ok().location(uriBuilder.build(base64EncodedTaskId)).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -185,6 +263,15 @@ public class ExperimentResource {
 			);
 		}
 
+	}
+
+	private Response createExperimentNotFoundResponse(final String experimentUrlBase64) {
+		return Response
+				.status(Status.BAD_REQUEST)
+				.entity("An experiment with the experimentUrl "
+						+ experimentUrlBase64 +
+						" has not been found! Did you POST to /experiments before?"
+				).build();
 	}
 
 	private byte[] extractByteArrayFromDataURL(String dataURL) {
@@ -208,45 +295,48 @@ public class ExperimentResource {
 	 * }
 	 * </code>
 	 *
-	 * @param experimentUrl
+	 * @param experimentUrlBase64
 	 * @param requestIdBase64
 	 *
 	 * @return
 	 */
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/flash/{requestIdBase64}")
-	public Response flashProgramsStatus(@PathParam("experimenturl") final String experimentUrl,
+	@Path("{experimentUrlBase64}/flash/{requestIdBase64}")
+	public Response flashProgramsStatus(@PathParam("experimentUrlBase64") final String experimentUrlBase64,
 										@PathParam("requestIdBase64") final String requestIdBase64,
 										final NodeUrnList nodeUrnList) {
 
-		FlashProgramsStatus status = new FlashProgramsStatus();
-		status.statusList = new HashMap<String, Integer>();
-		for (String nodeUrn : nodeUrnList.nodeUrns) {
-			status.statusList.put(nodeUrn, 100);
+		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
+
+		WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+		if (wsnProxy == null) {
+			return createExperimentNotFoundResponse(experimentUrlBase64);
 		}
-		log.error("Returning fake status. Please implement me.");
-		// TODO Generate real status or return error
+
+		JobStatus status = wsnCache.getStatus(experimentUrl, Base64Helper.decode(requestIdBase64));
+
 		return Response.ok(JaxbHelper.convertToJSON(status)).build();
 	}
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/resetNodes")
-	public Response resetNodes(@PathParam("experimenturl") String experimentUrlBase64, NodeUrnList nodeUrns) {
+	@Path("{experimentUrlBase64}/resetNodes")
+	public Response resetNodes(@PathParam("experimentUrlBase64") String experimentUrlBase64, NodeUrnList nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to reset nodes: {}", nodeUrns);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future =
-					wsnAsync.resetNodes(nodeUrns.nodeUrns, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status =
+					wsnProxy.resetNodes(nodeUrns.nodeUrns, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -259,20 +349,22 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/areNodesAlive")
-	public Response areNodesAlive(@PathParam("experimenturl") String experimentUrlBase64, NodeUrnList nodeUrns) {
+	@Path("{experimentUrlBase64}/areNodesAlive")
+	public Response areNodesAlive(@PathParam("experimentUrlBase64") String experimentUrlBase64, NodeUrnList nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to check for alive nodes: {}", nodeUrns);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future =
-					wsnAsync.areNodesAlive(nodeUrns.nodeUrns, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status =
+					wsnProxy.areNodesAlive(nodeUrns.nodeUrns, config.operationTimeoutMillis, TimeUnit.MILLISECONDS)
+							.get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -285,8 +377,8 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/send")
-	public Response send(@PathParam("experimenturl") String experimentUrlBase64, SendMessageData data) {
+	@Path("{experimentUrlBase64}/send")
+	public Response send(@PathParam("experimentUrlBase64") String experimentUrlBase64, SendMessageData data) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to send data:  {}", data);
 
@@ -296,12 +388,14 @@ public class ExperimentResource {
 			message.setSourceNodeId(data.sourceNodeUrn);
 			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future = wsnAsync.send(data.nodeUrns, message, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status =
+					wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -314,20 +408,23 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/destroyVirtualLink")
-	public Response destroyVirtualLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
+	@Path("{experimentUrlBase64}/destroyVirtualLink")
+	public Response destroyVirtualLink(@PathParam("experimentUrlBase64") String experimentUrlBase64,
+									   TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to destroy virtual link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future =
-					wsnAsync.destroyVirtualLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status = wsnProxy.destroyVirtualLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -340,19 +437,21 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/disableNode")
-	public Response disableNode(@PathParam("experimenturl") String experimentUrlBase64, String nodeUrn) {
+	@Path("{experimentUrlBase64}/disableNode")
+	public Response disableNode(@PathParam("experimentUrlBase64") String experimentUrlBase64, String nodeUrn) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to disable node:  {}", nodeUrn);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future = wsnAsync.disableNode(nodeUrn, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status =
+					wsnProxy.disableNode(nodeUrn, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -365,19 +464,20 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/enableNode")
-	public Response enableNode(@PathParam("experimenturl") String experimentUrlBase64, String nodeUrn) {
+	@Path("{experimentUrlBase64}/enableNode")
+	public Response enableNode(@PathParam("experimentUrlBase64") String experimentUrlBase64, String nodeUrn) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to enable node:  {}", nodeUrn);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future = wsnAsync.enableNode(nodeUrn, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status = wsnProxy.enableNode(nodeUrn, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -390,20 +490,23 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/disablePhysicalLink")
-	public Response disablePhysicalLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
+	@Path("{experimentUrlBase64}/disablePhysicalLink")
+	public Response disablePhysicalLink(@PathParam("experimentUrlBase64") String experimentUrlBase64,
+										TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to disable physical link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future =
-					wsnAsync.disablePhysicalLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status = wsnProxy.disablePhysicalLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -416,20 +519,23 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/enablePhysicalLink")
-	public Response enablePhysicalLink(@PathParam("experimenturl") String experimentUrlBase64, TwoNodeUrns nodeUrns) {
+	@Path("{experimentUrlBase64}/enablePhysicalLink")
+	public Response enablePhysicalLink(@PathParam("experimentUrlBase64") String experimentUrlBase64,
+									   TwoNodeUrns nodeUrns) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to enable physical link:  {}->{}", nodeUrns.from, nodeUrns.to);
 
 		try {
 
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			Future<JobResult> future =
-					wsnAsync.enablePhysicalLink(nodeUrns.from, nodeUrns.to, Constants.TIMEOUT, Constants.TIMEOUT_UNIT);
-			return Response.ok(JaxbHelper.convertToJSON(convert(future.get()))).build();
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			JobStatus status = wsnProxy.enablePhysicalLink(nodeUrns.from, nodeUrns.to, config.operationTimeoutMillis,
+					TimeUnit.MILLISECONDS
+			).get();
+			return Response.ok(JaxbHelper.convertToJSON(convert(status))).build();
 
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -441,13 +547,17 @@ public class ExperimentResource {
 
 	@GET
 	@Produces({MediaType.APPLICATION_JSON})
-	@Path("{experimenturl}/network")
-	public Response getExperimentNetworkJson(@PathParam("experimenturl") String experimentUrlBase64) {
+	@Path("{experimentUrlBase64}/network")
+	public Response getExperimentNetworkJson(@PathParam("experimentUrlBase64") String experimentUrlBase64) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 
 		try {
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			String wisemlString = wsnAsync.getNetwork().get();
+
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			String wisemlString = wsnProxy.getNetwork().get();
 
 			JAXBContext jaxbContext = JAXBContext.newInstance(Wiseml.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -459,8 +569,6 @@ public class ExperimentResource {
 
 		} catch (JAXBException e) {
 			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -470,21 +578,21 @@ public class ExperimentResource {
 	}
 
 	@GET
-	@Path("{experimenturl}/network")
+	@Path("{experimentUrlBase64}/network")
 	@Produces({MediaType.APPLICATION_XML})
-	public Response getExperimentNetworkXml(@PathParam("experimenturl") String experimentUrlBase64) {
+	public Response getExperimentNetworkXml(@PathParam("experimentUrlBase64") String experimentUrlBase64) {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 
 		try {
-			IWsnAsyncWrapper wsnAsync = wsnCache.getAsyncWrapper(experimentUrl);
-			String wisemlString = wsnAsync.getNetwork().get();
+
+			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			if (wsnProxy == null) {
+				return createExperimentNotFoundResponse(experimentUrlBase64);
+			}
+			String wisemlString = wsnProxy.getNetwork().get();
 			log.debug("Returning network for experiment {} as xml: {}", experimentUrl, wisemlString);
 			return Response.ok(wisemlString).build();
 
-		} catch (JAXBException e) {
-			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
-		} catch (URISyntaxException e) {
-			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			return returnError(
 					String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
@@ -494,15 +602,15 @@ public class ExperimentResource {
 
 	}
 
-	private NodeUrnSuccessMap convert(JobResult result) {
-		NodeUrnSuccessMap nodeUrnSuccessMap = new NodeUrnSuccessMap();
+	private NodeUrnStatusMap convert(JobStatus status) {
+		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
 
-		for (String nodeUrn : result.getResults().keySet()) {
-			Result r = result.getResults().get(nodeUrn);
-			nodeUrnSuccessMap.nodeUrnSuccessMap.put(nodeUrn, r.success);
+		for (String nodeUrn : status.getNodeStates().keySet()) {
+			JobStatus.NodeStatus nodeStatus = status.getNodeStates().get(nodeUrn);
+			nodeUrnStatusMap.nodeUrnStatusMap.put(nodeUrn, nodeStatus);
 		}
 
-		return nodeUrnSuccessMap;
+		return nodeUrnStatusMap;
 	}
 
 	private Response returnError(String msg, Exception e, Status status) {

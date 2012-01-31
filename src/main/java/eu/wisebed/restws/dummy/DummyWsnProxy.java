@@ -1,99 +1,102 @@
 package eu.wisebed.restws.dummy;
 
-import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.Job.JobType;
-import de.uniluebeck.itm.wisebed.cmdlineclient.jobs.JobResult;
-import de.uniluebeck.itm.wisebed.cmdlineclient.wrapper.IWsnAsyncWrapper;
+import com.google.common.util.concurrent.ListenableFuture;
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
+import eu.wisebed.restws.proxy.Job;
+import eu.wisebed.restws.proxy.JobStatus;
+import eu.wisebed.restws.proxy.WsnProxy;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class DummyWsnAsync implements IWsnAsyncWrapper {
+public class DummyWsnProxy implements WsnProxy {
 
 	@Override
-	public Future<Void> addController(String controllerEndpointUrl) {
-		return new DummyFuture<Void>(null);
+	public ListenableFuture<Void> addController(String controllerEndpointUrl) {
+		return new DummyListenableFuture<Void>(null);
 	}
 
 	@Override
-	public Future<Void> removeController(String controllerEndpointUrl) {
-		return new DummyFuture<Void>(null);
+	public ListenableFuture<Void> removeController(String controllerEndpointUrl) {
+		return new DummyListenableFuture<Void>(null);
 	}
 
 	@Override
-	public Future<JobResult> send(List<String> nodeIds, Message message, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(nodeIds, JobType.send));
+	public ListenableFuture<JobStatus> send(List<String> nodeIds, Message message, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, Job.JobType.send));
 	}
 
 	@Override
-	public Future<JobResult> setChannelPipeline(List<String> nodes,
-												List<ChannelHandlerConfiguration> channelHandlerConfigurations,
-												int timeout,
-												TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(nodes, JobType.setChannelPipeline));
+	public ListenableFuture<JobStatus> setChannelPipeline(List<String> nodes,
+														  List<ChannelHandlerConfiguration> channelHandlerConfigurations,
+														  int timeout,
+														  TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.setChannelPipeline));
 	}
 
 	@Override
-	public Future<String> getVersion() {
-		return new DummyFuture<String>("2.3");
+	public ListenableFuture<String> getVersion() {
+		return new DummyListenableFuture<String>("2.3");
 	}
 
 	@Override
-	public Future<JobResult> areNodesAlive(List<String> nodes, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(nodes, JobType.areNodesAlive));
+	public ListenableFuture<JobStatus> areNodesAlive(List<String> nodes, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.areNodesAlive));
 	}
 
 	@Override
-	public Future<String> describeCapabilities(String capability) {
-		return new DummyFuture<String>("mächtig viel");
+	public ListenableFuture<JobStatus> destroyVirtualLink(String sourceNode, String targetNode, int timeout,
+														  TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(
+				generateResults(Arrays.asList(sourceNode), Job.JobType.destroyVirtualLink)
+		);
 	}
 
 	@Override
-	public Future<JobResult> destroyVirtualLink(String sourceNode, String targetNode, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(sourceNode), JobType.destroyVirtualLink));
+	public ListenableFuture<JobStatus> disableNode(String node, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), Job.JobType.disableNode));
 	}
 
 	@Override
-	public Future<JobResult> disableNode(String node, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(node), JobType.disableNode));
+	public ListenableFuture<JobStatus> disablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(
+				generateResults(Arrays.asList(nodeA), Job.JobType.disablePhysicalLink)
+		);
 	}
 
 	@Override
-	public Future<JobResult> disablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(nodeA), JobType.disablePhysicalLink));
+	public ListenableFuture<JobStatus> enableNode(String node, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(Arrays.asList(node), Job.JobType.enableNode));
 	}
 
 	@Override
-	public Future<JobResult> enableNode(String node, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(node), JobType.enableNode));
+	public ListenableFuture<JobStatus> enablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(
+				generateResults(Arrays.asList(nodeA), Job.JobType.enablePhysicalLink)
+		);
 	}
 
 	@Override
-	public Future<JobResult> enablePhysicalLink(String nodeA, String nodeB, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(nodeA), JobType.enablePhysicalLink));
+	public ListenableFuture<JobStatus> flashPrograms(List<String> nodeIds, List<Integer> programIndices,
+													 List<Program> programs,
+													 int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(nodeIds, Job.JobType.flashPrograms));
 	}
 
 	@Override
-	public Future<JobResult> flashPrograms(List<String> nodeIds, List<Integer> programIndices, List<Program> programs,
-										   int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(nodeIds, JobType.flashPrograms));
+	public ListenableFuture<List<String>> getFilters() {
+		return new DummyListenableFuture<List<String>>(Arrays.asList("keiner"));
 	}
 
 	@Override
-	public Future<List<String>> getFilters() {
-		return new DummyFuture<List<String>>(Arrays.asList("keiner"));
-	}
+	public ListenableFuture<String> getNetwork() {
 
-	@Override
-	public Future<String> getNetwork() {
-
-		return new DummyFuture<String>("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+		return new DummyListenableFuture<String>("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 				+ "<wiseml version=\"1.0\" xmlns=\"http://wisebed.eu/ns/wiseml/1.0\">\n"
 				+ "    <setup>\n"
 				+ "        <origin>\n"
@@ -162,34 +165,38 @@ public class DummyWsnAsync implements IWsnAsyncWrapper {
 				+ "            </capability>\n"
 				+ "        </node>\n"
 				+ "    </setup>\n"
-				+ "</wiseml>\n");
+				+ "</wiseml>\n"
+		);
 	}
 
 	@Override
-	public Future<List<ChannelHandlerDescription>> getSupportedChannelHandlers() {
+	public ListenableFuture<List<ChannelHandlerDescription>> getSupportedChannelHandlers() {
 		List<ChannelHandlerDescription> list = Arrays.asList();
-		return new DummyFuture<List<ChannelHandlerDescription>>(list);
+		return new DummyListenableFuture<List<ChannelHandlerDescription>>(list);
 	}
 
 	@Override
-	public Future<JobResult> resetNodes(List<String> nodes, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(nodes, JobType.resetNodes));
+	public ListenableFuture<JobStatus> resetNodes(List<String> nodes, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(generateResults(nodes, Job.JobType.resetNodes));
 	}
 
 	@Override
-	public Future<JobResult> setVirtualLink(String sourceNode, String targetNode, String remoteServiceInstance,
-											List<String> parameters,
-											List<String> filters, int timeout, TimeUnit timeUnit) {
-		return new DummyFuture<JobResult>(generateResults(Arrays.asList(sourceNode), JobType.setVirtualLink));
+	public ListenableFuture<JobStatus> setVirtualLink(String sourceNode, String targetNode,
+													  String remoteServiceInstance,
+													  List<String> parameters,
+													  List<String> filters, int timeout, TimeUnit timeUnit) {
+		return new DummyListenableFuture<JobStatus>(
+				generateResults(Arrays.asList(sourceNode), Job.JobType.setVirtualLink)
+		);
 	}
 
-	private JobResult generateResults(List<String> nodeIds, JobType jobType) {
-		JobResult result = new JobResult(jobType);
+	private JobStatus generateResults(List<String> nodeIds, Job.JobType jobType) {
+		JobStatus status = new JobStatus(jobType);
 		Random r = new Random();
 		for (String urn : nodeIds) {
-			result.addResult(urn, r.nextBoolean(), "no message here");
+			status.updateNodeState(urn, r.nextBoolean(), "no message here");
 		}
-		return result;
+		return status;
 	}
 
 }
