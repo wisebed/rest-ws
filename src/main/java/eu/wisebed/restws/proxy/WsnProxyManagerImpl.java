@@ -106,8 +106,7 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 	}
 
 	@Override
-	@Nonnull
-	public WsnProxy create(@Nonnull final String experimentWsnInstanceEndpointUrl, @Nonnull DateTime expiration) {
+	public void create(@Nonnull final String experimentWsnInstanceEndpointUrl, @Nonnull DateTime expiration) {
 
 		checkNotNull(experimentWsnInstanceEndpointUrl);
 		checkNotNull(expiration);
@@ -142,8 +141,6 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 		Duration d = new Duration(DateTime.now(), expiration);
 
 		proxyCache.put(experimentWsnInstanceEndpointUrl, proxyCacheEntry, d.getMillis(), TimeUnit.MILLISECONDS);
-
-		return wsnProxyService;
 	}
 
 	@Override
@@ -154,6 +151,15 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 
 		ProxyCacheEntry proxyCacheEntry = proxyCache.get(experimentWsnInstanceEndpointUrl);
 		return proxyCacheEntry == null ? null : proxyCacheEntry.getWsnProxyService();
+	}
+
+	@Override
+	public String getControllerEndpointUrl(@Nonnull final String experimentWsnInstanceEndpointUrl) {
+
+		checkNotNull(experimentWsnInstanceEndpointUrl);
+
+		ProxyCacheEntry proxyCacheEntry = proxyCache.get(experimentWsnInstanceEndpointUrl);
+		return proxyCacheEntry == null ? null : proxyCacheEntry.getControllerProxyService().getEndpointUrl();
 	}
 
 	@Override

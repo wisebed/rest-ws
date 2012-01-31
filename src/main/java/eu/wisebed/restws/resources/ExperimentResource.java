@@ -2,7 +2,6 @@ package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
 import com.sun.jersey.core.util.Base64;
-import de.uniluebeck.itm.tr.util.TimedCache;
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.rs.*;
 import eu.wisebed.api.sm.ExperimentNotRunningException_Exception;
@@ -34,11 +33,11 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,7 +64,7 @@ public class ExperimentResource {
 	private SessionManagement sessions;
 
 	@Inject
-	private WsnProxyManager wsnCache;
+	private WsnProxyManager wsnProxyManager;
 
 	@Context
 	private UriInfo uriInfo;
@@ -107,13 +106,13 @@ public class ExperimentResource {
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getInstance(SecretReservationKeyListRs reservationKey) {
 
+		DateTime now = DateTime.now();
+		DateTime earliestFrom = new DateTime();
+		DateTime latestUntil = new DateTime();
+
 		try {
 
 			List<ConfidentialReservationData> reservation = rs.getReservation(reservationKey.reservations);
-
-			DateTime now = DateTime.now();
-			DateTime earliestFrom = new DateTime();
-			DateTime latestUntil = new DateTime();
 
 			for (ConfidentialReservationData data : reservation) {
 
@@ -162,27 +161,37 @@ public class ExperimentResource {
 
 		try {
 
-			log.error("Hier muss noch eine Controller-URL übergeben werden");
-			// TODO Hier muss noch eine Controller-URL übergeben werden
-
-			String controllerEndpointUrl = afsdfasdf;
-			String experimentInstanceUrl = sessions.getInstance(
+			String experimentWsnInstanceUrl = sessions.getInstance(
 					copyRsToWsn(reservationKey.reservations),
-					controllerEndpointUrl
+					"NONE"
 			);
 
-			URI location = new URI(Base64Helper.encode(experimentInstanceUrl) + "/");
+			wsnProxyManager.create(experimentWsnInstanceUrl, latestUntil);
+			String controllerEndpointUrl = wsnProxyManager.getControllerEndpointUrl(experimentWsnInstanceUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentWsnInstanceUrl);
+			if (wsnProxy == null) {
+				throw new RuntimeException("This should not happen ever :(");
+			}
+			wsnProxy.addController(controllerEndpointUrl).get();
+
+			URI location = UriBuilder
+					.fromUri(uriInfo.getRequestUri())
+					.path("{experimentUrlBase64}")
+					.build(Base64Helper.encode(experimentWsnInstanceUrl));
+
 			log.debug("Returning instance URL {}", location.toString());
+
 			return Response.ok().location(location).build();
 
 		} catch (ExperimentNotRunningException_Exception e) {
 			return returnError("Experiment not running (yet)", e, Status.BAD_REQUEST);
 		} catch (UnknownReservationIdException_Exception e) {
 			return returnError("Reservation not known to the system", e, Status.BAD_REQUEST);
-		} catch (URISyntaxException e) {
+		} catch (InterruptedException e) {
+			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
+		} catch (ExecutionException e) {
 			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		}
-
 	}
 
 	private static List<eu.wisebed.api.sm.SecretReservationKey> copyRsToWsn(List<SecretReservationKey> keys) {
@@ -201,21 +210,21 @@ public class ExperimentResource {
 	 * <code>
 	 * {
 	 * [
-	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string },
-	 * {"nodeurns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string }
+	 * {"nodeUrns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string },
+	 * {"nodeUrns" : ["urn:...:0x1234", "urn:...:0x2345", ...], "imageBase64" : base64-string }
 	 * ]
 	 * }
 	 * </code>
 	 *
-	 * @param experimentUrlBase64
-	 * @param flashData
+	 * @param experimentUrlBase64 the base64-encoded URL of the experiment
+	 * @param flashData the data to flash onto the nodes
 	 *
-	 * @return
+	 * @return a response
 	 */
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
-	@Path("{experimentUrl}/flash")
-	public Response flashPrograms(@PathParam("experimentUrl") String experimentUrlBase64,
+	@Path("{experimentUrlBase64}/flash")
+	public Response flashPrograms(@PathParam("experimentUrlBase64") String experimentUrlBase64,
 								  FlashProgramsRequest flashData) {
 
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
@@ -246,18 +255,22 @@ public class ExperimentResource {
 		// Invoke the call and redirect the caller
 		try {
 
-			WsnProxy wsn = wsnCache.get(experimentUrl);
+			WsnProxy wsn = wsnProxyManager.get(experimentUrl);
 
 			if (wsn == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
 
-			String taskId = wsn.flashPrograms(nodeUrns, programIndices, programs,
+			String requestId = wsn.flashPrograms(nodeUrns, programIndices, programs,
 					config.flashTimeoutMillis, TimeUnit.MILLISECONDS
 			);
-			UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getRequestUri()).path("{taskId}");
-			String base64EncodedTaskId = Base64Helper.encode(taskId);
-			return Response.ok().location(uriBuilder.build(base64EncodedTaskId)).build();
+
+			URI location = UriBuilder
+					.fromUri(uriInfo.getRequestUri())
+					.path("{requestId}")
+					.build(Base64Helper.encode(requestId));
+
+			return Response.ok().location(location).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -299,26 +312,27 @@ public class ExperimentResource {
 	 * </code>
 	 *
 	 * @param experimentUrlBase64
+	 * 		the base64-encoded URL of the experiment
 	 * @param requestIdBase64
+	 * 		the base64-encoded requestId of the flash operation
 	 *
-	 * @return
+	 * @return the current state of the flash operation
 	 */
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
 	@Path("{experimentUrlBase64}/flash/{requestIdBase64}")
 	public Response flashProgramsStatus(@PathParam("experimentUrlBase64") final String experimentUrlBase64,
-										@PathParam("requestIdBase64") final String requestIdBase64,
-										final NodeUrnList nodeUrnList) {
+										@PathParam("requestIdBase64") final String requestIdBase64) {
 
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		String requestId = Base64Helper.decode(requestIdBase64);
 
-		WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+		WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 		if (wsnProxy == null) {
 			return createExperimentNotFoundResponse(experimentUrlBase64);
 		}
 
-		Job job = wsnCache.getJob(experimentUrl, requestId);
+		Job job = wsnProxyManager.getJob(experimentUrl, requestId);
 		if (job == null) {
 			return Response.status(Status.NOT_FOUND).entity("No job with requestId " + requestId + " found!").build();
 		}
@@ -346,7 +360,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -378,7 +392,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -413,7 +427,7 @@ public class ExperimentResource {
 			message.setSourceNodeId(data.sourceNodeUrn);
 			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -441,7 +455,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -473,7 +487,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -504,7 +518,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -537,7 +551,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -570,7 +584,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -601,7 +615,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -633,7 +647,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnCache.get(experimentUrl);
+			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}

@@ -31,6 +31,8 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	private Endpoint endpoint;
 
+	private String endpointUrl;
+
 	@Inject
 	public ControllerProxyService(final WisebedRestServerConfig config,
 								  @Assisted final JobObserver jobObserver,
@@ -41,6 +43,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 		this.config = config;
 		this.experimentWsnInstanceEndpointUrl = experimentWsnInstanceEndpointUrl;
 		this.asyncEventBus = asyncEventBus;
+		this.endpointUrl = constructEndpointUrl();
 	}
 
 	@Override
@@ -74,16 +77,11 @@ public class ControllerProxyService extends AbstractService implements Controlle
 	@Override
 	protected void doStart() {
 		try {
-			endpoint = Endpoint.publish(constructEndpointUrl(), this);
+			endpoint = Endpoint.publish(endpointUrl, this);
 			notifyStarted();
 		} catch (Exception e) {
 			notifyFailed(e);
 		}
-	}
-
-	private String constructEndpointUrl() {
-		return "http://" + config.webServerHostname + ":" + config.webServerPort + "/soap/controller/"
-				+ Base64Helper.encode(experimentWsnInstanceEndpointUrl);
 	}
 
 	@Override
@@ -94,5 +92,14 @@ public class ControllerProxyService extends AbstractService implements Controlle
 		} catch (Exception e) {
 			notifyFailed(e);
 		}
+	}
+
+	public String getEndpointUrl() {
+		return endpointUrl;
+	}
+
+	private String constructEndpointUrl() {
+		return "http://" + config.webServerHostname + ":" + config.webServerPort + "/soap/controller/"
+				+ Base64Helper.encode(experimentWsnInstanceEndpointUrl);
 	}
 }

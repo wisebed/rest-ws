@@ -8,7 +8,7 @@ public class JobNodeStatus {
 
 	private JobState status;
 
-	JobNodeStatus(final JobState status, final int statusCode, final String message) {
+	public JobNodeStatus(final JobState status, final int statusCode, final String message) {
 		this.message = message;
 		this.status = status;
 		this.statusCode = statusCode;

@@ -8,11 +8,13 @@ import javax.annotation.Nullable;
 
 public interface WsnProxyManager {
 
-	@Nonnull
-	WsnProxy create(@Nonnull String experimentWsnInstanceEndpointUrl, @Nonnull DateTime expiration);
+	void create(@Nonnull String experimentWsnInstanceEndpointUrl, @Nonnull DateTime expiration);
 
 	@Nullable
 	WsnProxy get(@Nonnull String experimentWsnInstanceEndpointUrl);
+	
+	@Nullable
+	String getControllerEndpointUrl(@Nonnull String experimentWsnInstanceEndpointUrl);
 
 	@Nullable
 	Job getJob(@Nonnull String experimentWsnInstanceEndpointUrl, @Nonnull String requestId);
