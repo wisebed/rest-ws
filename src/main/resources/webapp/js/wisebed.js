@@ -48,5 +48,13 @@ var Wisebed = new function() {
 			context: document.body,
 			dataType: "json"
 		});
-	}
+	};
+
+	this.deleteSecretAuthenticationKeyCookie = function() {
+		$.cookie('wisebed-secret-authentication-key', null);
+	};
+
+	this.hasSecretAuthenticationKeyCookie = function() {
+		return $.cookie('wisebed-secret-authentication-key') != null;
+	};
 };

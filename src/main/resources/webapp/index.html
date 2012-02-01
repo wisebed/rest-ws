@@ -5,8 +5,9 @@
 	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
 	<link rel="stylesheet" media="screen" href="css/wisebed-gui.css">
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
-	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
+	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
 
@@ -86,7 +87,50 @@
 			});
 		}
 
+		function showReservationsDialog() {
+			alert('TODO');
+		}
+
+		function showLoginDialog() {
+			alert('TODO');
+		}
+
 		function adaptNavigationBar(navigationData) {
+
+			var ul = $('#WisebedContainer div.WisebedNavigation ul.WisebedNavigationUl');
+
+			if (navigationData.nav == 'overview') {
+
+				ul.empty();
+				ul.append('<li class="active"><a href="#nav=overview">Testbed Overview</a></li>');
+			}
+			else if (navigationData.nav == 'testbed') {
+
+				ul.empty();
+
+				ul.append('<li><a href="#nav=overview">Testbed Overview</a></li>');
+				ul.append('<li>Running Experiments <select id="WisebedNavigationExperimentSelect" disabled="true"></select></li>');
+				ul.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
+
+
+				if (Wisebed.hasSecretAuthenticationKeyCookie()) {
+					var select = $('#WisebedNavigationExperimentSelect');
+					select[0].disabled = false;
+					fillWisebedNavigationExperimentSelect(select);
+
+					ul.append('<li><a href="javascript:logout()">Logout</a></li>');
+				} else {
+					ul.append('<li><a href="javascript:showLoginDialog()">Login</a></li>');
+				}
+			}
+		}
+
+		function logout() {
+			Wisebed.deleteSecretAuthenticationKeyCookie();
+			document.location='#';
+		}
+
+		function fillWisebedNavigationExperimentSelect(select) {
 
 		}
 
@@ -132,6 +176,9 @@
 			loadNavigationBar(function() {
 				$(window).trigger('hashchange');
 			});
+
+			console.log("cookie:");
+			console.log(document.cookie);
 		});
 
 	</script>

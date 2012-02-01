@@ -83,7 +83,7 @@ public class SnaaResource {
 		int maxAge = 60 * 60 * 24;
 		boolean secure = false;
 		String comment = "";
-		String domain = uriInfo.getRequestUri().getHost();
+		String domain = "";
 		String value = Base64Helper.encode(toJSON(loginData));
 		String name = Constants.COOKIE_SECRET_AUTH_KEY;
 		String path = "/";
