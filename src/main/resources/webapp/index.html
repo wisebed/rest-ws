@@ -3,29 +3,34 @@
 <head>
 	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
 	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
-	<style type="text/css">
-		body {
-			padding-top: 50px;
-		}
-	</style>
+	<link rel="stylesheet" media="screen" href="css/wisebed-gui.css">
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
+	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
 
-		function loadTestbedTable() {
+		function loadTestbedDetailsContainer(navigationData, parentDiv) {
+			parentDiv.append($('<h1>Testbed Details '+JSON.stringify(navigationData)+'</h1>'));
+		}
 
-			function fillTestbedTable() {
+		function loadExperimentContainer(navigationData, parentDiv) {
+			parentDiv.append($('<h1>Experiment '+JSON.stringify(navigationData)+'</h1>'));
+		}
+
+		function loadTestbedOverviewContainer(navigationData, parentDiv) {
+
+			function fillTestbedOverviewTable(parentDiv) {
 				Wisebed.getTestbeds(
 						function(data){
 							console.log(data);
 							$.each(data.testbedMap, function(key, value) {
 								var tr = $('<tr/>');
-								var tdName = $('<td><a href="">'+value.name+'</a></td>');
+								var tdName = $('<td><a href="#nav=testbed&testbed='+key+'">'+value.name+'</a></td>');
 								var tdUrnPrefixes = $('<td>'+value.urnPrefixes+'</td>');
 								var tdSessionManagementEndpointUrl = $('<td>'+value.sessionManagementEndpointUrl+'</td>');
 								tr.append(tdName, tdUrnPrefixes, tdSessionManagementEndpointUrl);
-								$('#WisebedTestbedTable').append(tr);
+								parentDiv.children('.WisebedOverviewTable').append(tr);
 							});
 
 						},
@@ -38,53 +43,88 @@
 			$.ajax({
 				url: "parts/testbed-overview.html",
 				success: function(html) {
-					$('#Wisebed').html(html);
-					fillTestbedTable();
+					parentDiv.html(html);
+					fillTestbedOverviewTable(parentDiv);
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					$('#Wisebed').html('<h1>Unable to load list of testbeds!</h1><h2>'+errorThrown+'</h2>');
+					$('#WisebedContainer').html('<h1>Unable to load list of testbeds!</h1><h2>'+errorThrown+'</h2>');
 				},
 				context: document.body,
 				dataType: "html"
 			});
 		}
 
+		var appState = {
+		};
+
+		function getAppStateKey(nav, testbed, experiment) {
+			if (nav == 'overview') {return 'overview'}
+			if (nav == 'testbed' && experiment == '') {return 'testbed'}
+			if (nav == 'testbed' && experiment != '') {return 'experiment-' + experiment}
+			return undefined;
+		}
+
+		function getCreateContentFunction(nav, testbed, experiment) {
+			if (nav == 'overview') {return loadTestbedOverviewContainer}
+			if (nav == 'testbed' && experiment == '') {return loadTestbedDetailsContainer}
+			if (nav == 'testbed' && experiment != '') {return loadExperimentContainer}
+			return undefined;
+		}
+
 		$(function () {
-			loadTestbedTable();
+
+			$(window).bind('hashchange', function(e) {
+
+				var nav = $.bbq.getState('nav') || 'overview';
+				var testbed = $.bbq.getState('testbed') || '';
+				var experiment = $.bbq.getState('experiment') || '';
+
+				var appStateKey = getAppStateKey(nav, testbed, experiment);
+				var createContentFunction = getCreateContentFunction(nav, testbed, experiment);
+				var navigationData = {nav:nav, testbed:testbed, experiment:experiment};
+
+				console.log(navigationData);
+
+				$('#WisebedContainer').children(':visible').hide();
+
+				if (appState[appStateKey]) {
+
+					console.log("Loading from appState: " + JSON.stringify(navigationData));
+					$(appState[appStateKey]).show();
+
+				} else {
+
+					console.log("Creating overview for: " + JSON.stringify(navigationData));
+
+					var parentDiv = $('<div/>');
+					$('#WisebedContainer').append(parentDiv);
+					createContentFunction(navigationData, parentDiv);
+					appState[appStateKey] = parentDiv;
+					console.log(appState);
+				}
+			});
+
+			$(window).trigger('hashchange');
 		});
+
 	</script>
 </head>
 <body>
 
-<div class="topbar-wrapper" style="z-index: 5;">
-	<div class="topbar" data-dropdown="dropdown">
-		<div class="topbar-inner">
-			<div class="container">
-				<h3><a href="index.html">WISEBED REST/WebSocket API v2.3</a></h3>
-				<ul class="nav">
-					<li class="active"><a href="index.html">Home</a></li>
-					<li><a href="login.html">Login</a></li>
-					<li><a href="listnodes.html">List Nodes</a></li>
-					<li><a href="flash.html">Flash</a></li>
-					<li><a href="websocket.html">WebSocket</a></li>
-				</ul>
-				<ul class="nav secondary-nav">
-					<li class="dropdown">
-						<a href="" class="dropdown-toggle">Playgrounds</a>
-						<ul class="dropdown-menu">
-							<li><a href="playground/localstorage.html">Local Storage</a></li>
-							<li><a href="playground/databases.html">Databases</a></li>
-							<li><a href="playground/modal-dialogs.html">Modal Dialogs</a></li>
-							<li><a href="playground/tabs.html">Tabs</a></li>
-						</ul>
-					</li>
-				</ul>
+<!--<div class="topbar-wrapper" style="z-index: 5;">
+		<div class="topbar" data-dropdown="dropdown">
+			<div class="topbar-inner">
+				<div class="container">
+					<h3><a href="index.html">FIRST</a></h3>
+					<ul class="nav">
+						<li class="active"><a href="index.html">Testbed Overview</a></li>
+					</ul>
+				</div>
 			</div>
 		</div>
-	</div>
-</div>
+	</div>-->
 
-<div id="Wisebed" class="container">
+<div id="WisebedContainer" class="container">
 
 </div>
 
