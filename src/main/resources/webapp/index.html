@@ -71,58 +71,72 @@
 			return undefined;
 		}
 
+		function loadNavigationBar(callbackDone) {
+			$.ajax({
+				url: "parts/navigation.html",
+				success: function(html) {
+					$('#WisebedContainer').append(html);
+					callbackDone();
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					$('#WisebedContainer').append('<h1>Application could not be loaded!</h1><br/><h2>Reason</h2>' + errorThrown + '<br/>' +jqXHR.responseText);
+				},
+				context: document.body,
+				dataType: "html"
+			});
+		}
+
+		function adaptNavigationBar(navigationData) {
+
+		}
+
+		function onHashChange(e) {
+
+			var nav = $.bbq.getState('nav') || 'overview';
+			var testbed = $.bbq.getState('testbed') || '';
+			var experiment = $.bbq.getState('experiment') || '';
+
+			var appStateKey = getAppStateKey(nav, testbed, experiment);
+			var createContentFunction = getCreateContentFunction(nav, testbed, experiment);
+			var navigationData = {nav:nav, testbed:testbed, experiment:experiment};
+
+			adaptNavigationBar(navigationData);
+
+			console.log(navigationData);
+
+			$('#WisebedContentContainer').children(':visible').hide();
+
+			if (appState[appStateKey]) {
+
+				console.log("Loading from appState: " + JSON.stringify(navigationData));
+				$(appState[appStateKey]).show();
+
+			} else {
+
+				console.log("Creating overview for: " + JSON.stringify(navigationData));
+
+				var parentDiv = $('<div/>');
+				$('#WisebedContentContainer').append(parentDiv);
+				createContentFunction(navigationData, parentDiv);
+				appState[appStateKey] = parentDiv;
+				console.log(appState);
+			}
+		}
+
 		$(function () {
 
-			$(window).bind('hashchange', function(e) {
+			$('#WisebedContainer').append('<div id="WisebedContentContainer"/>');
 
-				var nav = $.bbq.getState('nav') || 'overview';
-				var testbed = $.bbq.getState('testbed') || '';
-				var experiment = $.bbq.getState('experiment') || '';
+			$(window).bind('hashchange', onHashChange);
 
-				var appStateKey = getAppStateKey(nav, testbed, experiment);
-				var createContentFunction = getCreateContentFunction(nav, testbed, experiment);
-				var navigationData = {nav:nav, testbed:testbed, experiment:experiment};
-
-				console.log(navigationData);
-
-				$('#WisebedContainer').children(':visible').hide();
-
-				if (appState[appStateKey]) {
-
-					console.log("Loading from appState: " + JSON.stringify(navigationData));
-					$(appState[appStateKey]).show();
-
-				} else {
-
-					console.log("Creating overview for: " + JSON.stringify(navigationData));
-
-					var parentDiv = $('<div/>');
-					$('#WisebedContainer').append(parentDiv);
-					createContentFunction(navigationData, parentDiv);
-					appState[appStateKey] = parentDiv;
-					console.log(appState);
-				}
+			loadNavigationBar(function() {
+				$(window).trigger('hashchange');
 			});
-
-			$(window).trigger('hashchange');
 		});
 
 	</script>
 </head>
 <body>
-
-<!--<div class="topbar-wrapper" style="z-index: 5;">
-		<div class="topbar" data-dropdown="dropdown">
-			<div class="topbar-inner">
-				<div class="container">
-					<h3><a href="index.html">FIRST</a></h3>
-					<ul class="nav">
-						<li class="active"><a href="index.html">Testbed Overview</a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>-->
 
 <div id="WisebedContainer" class="container">
 
