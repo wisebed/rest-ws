@@ -12,8 +12,15 @@ public class WisebedRestServerConfig {
 	@Option(name = "--port", usage = "Port to start the web server on.")
 	public int webServerPort = 8080;
 
-	@Option(name = "--sessionManagementEndpointUrl", usage = "The endpoint URL of the testbeds Session Management API", required = true)
+	@Option(name = "--sessionManagementEndpointUrl", usage = "The endpoint URL of the testbeds Session Management API",
+			required = true)
 	public String sessionManagementEndpointUrl;
+
+	@Option(name = "--servedUrnPrefixes",
+			usage = "A comma-separated list of testbed URN prefixes served by this server "
+					+ "(e.g. \"urn:wisebed:uzl1:,urn:wisebed:uzl2:\")",
+			required = true)
+	public String servedUrnPrefixes;
 
 	@Option(name = "--logLevel",
 			usage = "Set logging level (valid values: TRACE, DEBUG, INFO, WARN, ERROR).",
@@ -26,7 +33,8 @@ public class WisebedRestServerConfig {
 	@Option(name = "--help", usage = "This help message.")
 	public boolean help = false;
 
-	@Option(name = "--operationTimeoutMillis", usage = "The milliseconds after which all non-flash operations should time out.")
+	@Option(name = "--operationTimeoutMillis",
+			usage = "The milliseconds after which all non-flash operations should time out.")
 	public int operationTimeoutMillis = 10 * 1000;
 
 	@Option(name = "--flashTimeoutMillis", usage = "The milliseconds after which a flash operation should time out.")

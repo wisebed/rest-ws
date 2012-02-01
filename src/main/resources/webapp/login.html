@@ -11,6 +11,7 @@
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/wbhelper.js"></script>
+	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
 
 		var loginFormRows = new Array();
@@ -23,15 +24,15 @@
 			}
 		}
 
-		function addRowToLoginForm() {
+		function addRowToLoginForm(urnPrefix, username, password) {
 
 			var tr = $('<tr/>');
 
 			var i = loginFormRows.length;
 
-			var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'"/>');
-			var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'"/>');
-			var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'"/>');
+			var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
+			var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
+			var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
 			loginFormRows[loginFormRows.length] = {
 				"tr" : tr,
@@ -81,13 +82,27 @@
 					console.log(jqXHR.getAllResponseHeaders()),
 					alert(JSON.stringify(data, null, '  '))
 				},
-				function(jqXHR, textStatus, errorThrown){alert("Error: " + textStatus)}
+				function(jqXHR, textStatus, errorThrown){
+					console.log(jqXHR);
+					console.log(textStatus);
+					console.log(errorThrown);
+					alert("Error logging in: " + jqXHR.responseText);
+				}
 			)
 		}
 
 		$(document).ready(function () {
-			addRowToLoginForm();
 			$("#loginForm").submit(login);
+			Wisebed.getServedUrnPrefixes(
+					function(data){
+						for (var i=0; i<data.length; i++) {
+							addRowToLoginForm(data[i], '', '');
+						}
+					},
+					function(jqXHR, textStatus, errorThrown) {
+						alert("Error while fetching served URN prefixes: " + jqXHR.responseText);
+					}
+			);
 		});
 
 	</script>
@@ -132,7 +147,7 @@
 					<td>Username</td>
 					<td>Password</td>
 					<td>
-						<input type="button" onclick="addRowToLoginForm()" value=" + "/>&nbsp;
+						<input type="button" onclick="addRowToLoginForm('', '', '')" value=" + "/>&nbsp;
 						<input type="button" onclick="removeRowFromLoginForm()" value=" - "/>
 					</td>
 				</tr>

@@ -39,4 +39,14 @@ var Wisebed = new function() {
 		}
 		return nodeUrns;
 	};
+
+	this.getServedUrnPrefixes = function(callbackDone, callbackError) {
+		$.ajax({
+			url: "/rest/2.3/experiments/servedUrnPrefixes",
+			success: callbackDone,
+			error: callbackError,
+			context: document.body,
+			dataType: "json"
+		});
+	}
 };

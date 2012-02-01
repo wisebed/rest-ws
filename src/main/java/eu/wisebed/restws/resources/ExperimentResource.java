@@ -73,6 +73,13 @@ public class ExperimentResource {
 	private WisebedRestServerConfig config;
 
 	@GET
+	@Path("servedUrnPrefixes")
+	@Produces({MediaType.APPLICATION_JSON})
+	public String[] getServedUrnPrefixes() {
+		return config.servedUrnPrefixes.split(",");
+	}
+
+	@GET
 	@Path("network")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getNetworkJson() {

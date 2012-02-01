@@ -119,10 +119,16 @@ public class SnaaResource {
 	}
 
 	private NewCookie toCookie(SecretAuthenticationKeyList loginData) {
-		return new NewCookie(Constants.COOKIE_SECRET_AUTH_KEY, Base64Helper.encode(convertToJSON(loginData)), "/",
-				uriInfo
-						.getRequestUri().getHost(), "", 60 * 60 * 24, false
-		);
+
+		int maxAge = 60 * 60 * 24;
+		boolean secure = false;
+		String comment = "";
+		String domain = uriInfo.getRequestUri().getHost();
+		String value = Base64Helper.encode(convertToJSON(loginData));
+		String name = Constants.COOKIE_SECRET_AUTH_KEY;
+		String path = "/";
+
+		return new NewCookie(name, value, path, domain, comment, maxAge, secure);
 	}
 
 	private Response returnLoginError(Exception e) {
