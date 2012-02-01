@@ -40,9 +40,9 @@ var Wisebed = new function() {
 		return nodeUrns;
 	};
 
-	this.getServedUrnPrefixes = function(callbackDone, callbackError) {
+	this.getTestbeds = function(callbackDone, callbackError) {
 		$.ajax({
-			url: "/rest/2.3/experiments/servedUrnPrefixes",
+			url: "/rest/2.3/testbeds",
 			success: callbackDone,
 			error: callbackError,
 			context: document.body,

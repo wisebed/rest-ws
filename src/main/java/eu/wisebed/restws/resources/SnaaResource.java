@@ -2,20 +2,19 @@ package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
 import eu.wisebed.api.snaa.*;
+import eu.wisebed.restws.dto.LoginData;
+import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
-import eu.wisebed.restws.util.JaxbHelper;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
+import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
-@Path("/" + Constants.WISEBED_API_VERSION + "/login")
 public class SnaaResource {
 
 	@InjectLogger
@@ -26,36 +25,6 @@ public class SnaaResource {
 
 	@Context
 	private UriInfo uriInfo;
-
-	@XmlRootElement
-	public static class LoginData {
-
-		public List<AuthenticationTriple> authenticationData;
-	}
-
-	@XmlRootElement
-	public static class SecretAuthenticationKeyList {
-
-		public List<SecretAuthenticationKey> secretAuthenticationKeys;
-
-		public SecretAuthenticationKeyList() {
-		}
-
-		public SecretAuthenticationKeyList(String json) {
-			try {
-				this.secretAuthenticationKeys = JaxbHelper.fromJSON(Base64Helper.decode(json),
-						SecretAuthenticationKeyList.class
-				).secretAuthenticationKeys;
-			} catch (Exception e) {
-				this.secretAuthenticationKeys = null;
-			}
-		}
-
-		public SecretAuthenticationKeyList(List<SecretAuthenticationKey> secretAuthenticationKeys) {
-			this.secretAuthenticationKeys = secretAuthenticationKeys;
-		}
-
-	}
 
 	/**
 	 * loginData example: <code>
@@ -85,18 +54,20 @@ public class SnaaResource {
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	public Response login(LoginData loginData) {
+	@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/login")
+	public Response login(@PathParam("testbedId") final String testbedId, final LoginData loginData) {
 
 		List<SecretAuthenticationKey> secretAuthenticationKeys;
+
 		try {
 
 			secretAuthenticationKeys = snaa.authenticate(loginData.authenticationData);
-			SecretAuthenticationKeyList loginResult = new SecretAuthenticationKeyList(secretAuthenticationKeys);
-			String jsonResponse = convertToJSON(loginResult);
+			SnaaSecretAuthenticationKeyList loginResult = new SnaaSecretAuthenticationKeyList(secretAuthenticationKeys);
+			String jsonResponse = toJSON(loginResult);
 
 			NewCookie sakCookie = toCookie(loginResult);
 
-			log.debug("Received {}, returning {}", convertToJSON(loginData), jsonResponse);
+			log.debug("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(sakCookie).build();
 
 		} catch (AuthenticationExceptionException e) {
@@ -107,24 +78,13 @@ public class SnaaResource {
 
 	}
 
-	@GET
-	public Response test() throws AuthenticationExceptionException, SNAAExceptionException {
-		List<SecretAuthenticationKey> secretAuthenticationKeys = snaa.authenticate(null);
-		SecretAuthenticationKeyList loginResult = new SecretAuthenticationKeyList(secretAuthenticationKeys);
-		String jsonResponse = convertToJSON(loginResult);
-
-		log.debug("Received {}, returning {}", "{}", jsonResponse);
-		return Response.ok(jsonResponse).cookie(toCookie(loginResult)).build();
-
-	}
-
-	private NewCookie toCookie(SecretAuthenticationKeyList loginData) {
+	private NewCookie toCookie(SnaaSecretAuthenticationKeyList loginData) {
 
 		int maxAge = 60 * 60 * 24;
 		boolean secure = false;
 		String comment = "";
 		String domain = uriInfo.getRequestUri().getHost();
-		String value = Base64Helper.encode(convertToJSON(loginData));
+		String value = Base64Helper.encode(toJSON(loginData));
 		String name = Constants.COOKIE_SECRET_AUTH_KEY;
 		String path = "/";
 

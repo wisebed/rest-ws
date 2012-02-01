@@ -18,7 +18,7 @@ import eu.wisebed.restws.proxy.WsnProxy;
 import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
-import eu.wisebed.restws.util.JaxbHelper;
+import eu.wisebed.restws.util.JSONHelper;
 import eu.wisebed.wiseml.Wiseml;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
@@ -73,13 +73,6 @@ public class ExperimentResource {
 	private WisebedRestServerConfig config;
 
 	@GET
-	@Path("servedUrnPrefixes")
-	@Produces({MediaType.APPLICATION_JSON})
-	public String[] getServedUrnPrefixes() {
-		return config.servedUrnPrefixes.split(",");
-	}
-
-	@GET
 	@Path("network")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getNetworkJson() {
@@ -90,7 +83,7 @@ public class ExperimentResource {
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
 
-			String jsonString = JaxbHelper.convertToJSON(wiseml);
+			String jsonString = JSONHelper.toJSON(wiseml);
 			log.trace("Returning JSON representation of WiseML: {}", jsonString);
 			return Response.ok(jsonString).build();
 
@@ -346,7 +339,7 @@ public class ExperimentResource {
 
 		NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
 
-		return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+		return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 	}
 
 	private NodeUrnStatusMap buildNodeUrnStatusMap(final Map<String, JobNodeStatus> jobNodeStates) {
@@ -378,7 +371,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -409,7 +402,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -440,7 +433,7 @@ public class ExperimentResource {
 			}
 			Job job = wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -473,7 +466,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -504,7 +497,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -536,7 +529,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -569,7 +562,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -603,7 +596,7 @@ public class ExperimentResource {
 					TimeUnit.MILLISECONDS
 			).get();
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JaxbHelper.convertToJSON(nodeUrnStatusMap)).build();
+			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -632,7 +625,7 @@ public class ExperimentResource {
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
 
-			String json = JaxbHelper.convertToJSON(wiseml);
+			String json = JSONHelper.toJSON(wiseml);
 			log.debug("Returning network for experiment {} as json: {}", experimentUrl, json);
 			return Response.ok(json).build();
 

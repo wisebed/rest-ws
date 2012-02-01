@@ -9,7 +9,7 @@ import eu.wisebed.restws.dto.WebSocketUpstreamMessage;
 import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
-import eu.wisebed.restws.util.JaxbHelper;
+import eu.wisebed.restws.util.JSONHelper;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
@@ -107,7 +107,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	@Override
 	public void onMessage(final String data) {
 		try {
-			onMessage(JaxbHelper.fromJSON(data, WebSocketDownstreamMessage.class));
+			onMessage(JSONHelper.fromJSON(data, WebSocketDownstreamMessage.class));
 		} catch (Exception e) {
 			sendNotification(
 					new DateTime(),
@@ -121,7 +121,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	}
 
 	private void sendUpstream(final DateTime dateTime, final String nodeUrn, final String payload) {
-		String json = JaxbHelper.convertToJSON(
+		String json = JSONHelper.toJSON(
 				new WebSocketUpstreamMessage(
 						dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
 						nodeUrn,
@@ -134,7 +134,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 
 	private void sendNotification(final DateTime dateTime, final String notification) {
 		sendMessage(
-				JaxbHelper.convertToJSON(
+				JSONHelper.toJSON(
 						new WebSocketNotificationMessage(
 								dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
 								notification

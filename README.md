@@ -16,20 +16,33 @@ Clone the repository using ```git clone git://github.com/wisebed/rest-ws.git```.
 To build, run ```mvn install```, this will build the program and place the 
 generated jar file in target/ and in your local Maven repository.
 
+Running
+======
+The project uses the Java endorsed standards override mechanism to use newer versions of libraries included in the JVM.
+If you run the project in an IDE or from command line make sure to add
+
+```
+-Djava.endorsed.dirs=target/endorsed
+```
+
+as a VM parameter after building the project at least once using maven.
+
 Use in your Maven project
 ======
 
 Add the following dependency to your pom.xml:
-  
-	<dependency>
-		<groupId>eu.wisebed</groupId>
-		<artifactId>rest-ws</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</dependency>
+
+```XML
+<dependency>
+	<groupId>eu.wisebed</groupId>
+	<artifactId>rest-ws</artifactId>
+	<version>1.0-SNAPSHOT</version>
+</dependency>
+```
 	
 Add the following repository to your pom.xml:
 
-```
+```XML
 <repositories>
 	...
 	<repository>
@@ -48,7 +61,7 @@ Add the following repository to your pom.xml:
   
 If you also want to work with SNAPSHOT dependencies, also add:
 
-```
+```XML
 <repositories>
 	...
 	<repository>

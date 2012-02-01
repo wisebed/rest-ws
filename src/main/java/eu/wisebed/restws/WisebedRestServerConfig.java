@@ -1,8 +1,12 @@
 package eu.wisebed.restws;
 
+import eu.wisebed.restws.dto.TestbedMap;
 import eu.wisebed.restws.util.Log4JLevelOptionHandler;
+import eu.wisebed.restws.util.TestbedMapOptionParser;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.Option;
+
+import java.util.Map;
 
 public class WisebedRestServerConfig {
 
@@ -16,11 +20,11 @@ public class WisebedRestServerConfig {
 			required = true)
 	public String sessionManagementEndpointUrl;
 
-	@Option(name = "--servedUrnPrefixes",
-			usage = "A comma-separated list of testbed URN prefixes served by this server "
-					+ "(e.g. \"urn:wisebed:uzl1:,urn:wisebed:uzl2:\")",
-			required = true)
-	public String servedUrnPrefixes;
+	@Option(name = "--testbedMap",
+			usage = "A JSON-based configuration file containing the testbeds to be served by this server.",
+			required = true,
+			handler = TestbedMapOptionParser.class)
+	public TestbedMap testbedMap;
 
 	@Option(name = "--logLevel",
 			usage = "Set logging level (valid values: TRACE, DEBUG, INFO, WARN, ERROR).",

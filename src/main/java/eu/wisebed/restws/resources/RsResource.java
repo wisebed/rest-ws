@@ -7,8 +7,8 @@ import eu.wisebed.api.rs.*;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.dto.ConfidentialReservationDataList;
 import eu.wisebed.restws.dto.PublicReservationDataList;
+import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
 import eu.wisebed.restws.dto.SecretReservationKeyListRs;
-import eu.wisebed.restws.resources.SnaaResource.SecretAuthenticationKeyList;
 import eu.wisebed.restws.util.InjectLogger;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 
-import static eu.wisebed.restws.util.JaxbHelper.convertToJSON;
+import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/reservations/")
 public class RsResource {
@@ -36,21 +36,21 @@ public class RsResource {
 	@GET
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response listReservations(
-			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
 			@QueryParam("from") String from, @QueryParam("to") String to) {
 
-		log.debug("Cookie (secret authentication key): {}", secretAuthCookie);
+		log.debug("Cookie (secret authentication key): {}", snaaSecretAuthCookie);
 
 		try {
 			Tuple<XMLGregorianCalendar, XMLGregorianCalendar> duration = convertToDuration(from, to);
 			XMLGregorianCalendar fromDate = duration.getFirst();
 			XMLGregorianCalendar toDate = duration.getSecond();
 
-			if (secretAuthCookie == null) {
+			if (snaaSecretAuthCookie == null) {
 
 				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
 				PublicReservationDataList list = new PublicReservationDataList(reservations);
-				String jsonResponse = convertToJSON(list);
+				String jsonResponse = toJSON(list);
 
 				log.debug("Listing public reservations from {} until {}: {}",
 						new Object[]{fromDate, toDate, jsonResponse}
@@ -64,9 +64,9 @@ public class RsResource {
 				gr.setTo(toDate);
 
 				List<ConfidentialReservationData> reservations = rs.getConfidentialReservations(
-						copySnaaToRs(secretAuthCookie.secretAuthenticationKeys), gr
+						copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys), gr
 				);
-				String jsonResponse = convertToJSON(new ConfidentialReservationDataList(reservations));
+				String jsonResponse = toJSON(new ConfidentialReservationDataList(reservations));
 
 				log.debug("Listing confidential reservations from {} until {}: {}",
 						new Object[]{fromDate, toDate, jsonResponse}
@@ -86,24 +86,24 @@ public class RsResource {
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response makeReservation(
-			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
 			PublicReservationData request) {
 
-		if (secretAuthCookie == null) {
+		if (snaaSecretAuthCookie == null) {
 			return returnError("Not logged in", new Exception("Not logged in"), Status.FORBIDDEN);
 		}
 
 		try {
 
 			ConfidentialReservationData confidentialReservation =
-					createFrom(secretAuthCookie.secretAuthenticationKeys, request);
+					createFrom(snaaSecretAuthCookie.secretAuthenticationKeys, request);
 
 			List<SecretReservationKey> reservation =
-					rs.makeReservation(copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+					rs.makeReservation(copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys),
 							confidentialReservation
 					);
 
-			String jsonResponse = convertToJSON(new SecretReservationKeyListRs(reservation));
+			String jsonResponse = toJSON(new SecretReservationKeyListRs(reservation));
 			log.debug("Made reservation: {}", jsonResponse);
 			return Response.ok(jsonResponse).build();
 
@@ -125,14 +125,14 @@ public class RsResource {
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response deleteReservation(
-			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SecretAuthenticationKeyList secretAuthCookie,
+			@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY) SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
 			SecretReservationKeyListRs secretReservationKeys) {
 
-		log.debug("Cookie (secret authentication key): {}", secretAuthCookie);
+		log.debug("Cookie (secret authentication key): {}", snaaSecretAuthCookie);
 
-		if (secretAuthCookie != null) {
+		if (snaaSecretAuthCookie != null) {
 			try {
-				rs.deleteReservation(copySnaaToRs(secretAuthCookie.secretAuthenticationKeys),
+				rs.deleteReservation(copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys),
 						secretReservationKeys.reservations
 				);
 				return Response.ok("Ok, deleted reservation").build();
@@ -163,8 +163,8 @@ public class RsResource {
 		try {
 
 			List<ConfidentialReservationData> reservation = rs.getReservation(secretReservationKeys.reservations);
-			String jsonResponse = convertToJSON(new ConfidentialReservationDataList(reservation));
-			log.debug("Get reservation data for {}: {}", convertToJSON(secretReservationKeys), jsonResponse);
+			String jsonResponse = toJSON(new ConfidentialReservationDataList(reservation));
+			log.debug("Get reservation data for {}: {}", toJSON(secretReservationKeys), jsonResponse);
 			return Response.ok(jsonResponse).build();
 
 		} catch (RSExceptionException e) {

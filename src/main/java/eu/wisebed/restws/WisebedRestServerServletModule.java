@@ -6,6 +6,7 @@ import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import eu.wisebed.restws.resources.ExperimentResource;
+import eu.wisebed.restws.resources.RootResource;
 import eu.wisebed.restws.resources.RsResource;
 import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.ws.WsnWebSocketFactory;
@@ -21,6 +22,7 @@ public class WisebedRestServerServletModule extends ServletModule {
 	@Override
 	protected void configureServlets() {
 
+		bind(RootResource.class);
 		bind(SnaaResource.class);
 		bind(RsResource.class);
 		bind(ExperimentResource.class);

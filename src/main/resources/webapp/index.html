@@ -10,6 +10,49 @@
 	</style>
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
+	<script type="text/javascript" src="js/wisebed.js"></script>
+	<script type="text/javascript">
+
+		function loadTestbedTable() {
+
+			function fillTestbedTable() {
+				Wisebed.getTestbeds(
+						function(data){
+							console.log(data);
+							$.each(data.testbedMap, function(key, value) {
+								var tr = $('<tr/>');
+								var tdName = $('<td><a href="">'+value.name+'</a></td>');
+								var tdUrnPrefixes = $('<td>'+value.urnPrefixes+'</td>');
+								var tdSessionManagementEndpointUrl = $('<td>'+value.sessionManagementEndpointUrl+'</td>');
+								tr.append(tdName, tdUrnPrefixes, tdSessionManagementEndpointUrl);
+								$('#WisebedTestbedTable').append(tr);
+							});
+
+						},
+						function(jqXHR, textStatus, errorThrown) {
+							alert("Error while fetching testbed list: " + jqXHR.responseText);
+						}
+				);
+			}
+
+			$.ajax({
+				url: "parts/testbed-overview.html",
+				success: function(html) {
+					$('#Wisebed').html(html);
+					fillTestbedTable();
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					$('#Wisebed').html('<h1>Unable to load list of testbeds!</h1><h2>'+errorThrown+'</h2>');
+				},
+				context: document.body,
+				dataType: "html"
+			});
+		}
+
+		$(function () {
+			loadTestbedTable();
+		});
+	</script>
 </head>
 <body>
 
@@ -39,6 +82,10 @@
 			</div>
 		</div>
 	</div>
+</div>
+
+<div id="Wisebed" class="container">
+
 </div>
 
 </body>

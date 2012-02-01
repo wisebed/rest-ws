@@ -93,10 +93,11 @@
 
 		$(document).ready(function () {
 			$("#loginForm").submit(login);
-			Wisebed.getServedUrnPrefixes(
+			Wisebed.getTestbeds(
 					function(data){
-						for (var i=0; i<data.length; i++) {
-							addRowToLoginForm(data[i], '', '');
+						console.log(data);
+						for (var i=0; i<data.testbeds[0].urnPrefixes.length; i++) {
+							addRowToLoginForm(data.testbeds[0].urnPrefixes[i], '', '');
 						}
 					},
 					function(jqXHR, textStatus, errorThrown) {
