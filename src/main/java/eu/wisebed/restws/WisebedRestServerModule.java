@@ -9,6 +9,7 @@ import eu.wisebed.api.snaa.SNAA;
 import eu.wisebed.restws.dummy.*;
 import eu.wisebed.restws.proxy.ControllerProxyServiceFactory;
 import eu.wisebed.restws.proxy.WsnProxyManager;
+import eu.wisebed.restws.proxy.WsnProxyManagerImpl;
 import eu.wisebed.restws.proxy.WsnProxyServiceFactory;
 import eu.wisebed.restws.util.Log4JTypeListener;
 
@@ -16,8 +17,19 @@ public class WisebedRestServerModule extends AbstractModule {
 
 	private final WisebedRestServerConfig wisebedRestServerConfig;
 
-	public WisebedRestServerModule(final WisebedRestServerConfig wisebedRestServerConfig) {
+	private final SNAA snaa;
+
+	private final RS rs;
+
+	private final SessionManagement sm;
+
+	public WisebedRestServerModule(final WisebedRestServerConfig wisebedRestServerConfig, final SNAA snaa, final RS rs,
+								   final SessionManagement sm) {
+
 		this.wisebedRestServerConfig = wisebedRestServerConfig;
+		this.snaa = snaa;
+		this.rs = rs;
+		this.sm = sm;
 	}
 
 	@Override
@@ -25,12 +37,11 @@ public class WisebedRestServerModule extends AbstractModule {
 
 		bind(WisebedRestServerConfig.class).toInstance(wisebedRestServerConfig);
 
-		bind(SNAA.class).to(DummySnaa.class);
-		bind(RS.class).to(DummyRS.class);
-		bind(SessionManagement.class).to(DummySessionManagement.class);
+		bind(SNAA.class).toInstance(snaa);
+		bind(RS.class).toInstance(rs);
+		bind(SessionManagement.class).toInstance(sm);
 		
-		bind(OperationStatus.class).to(DummyOperationStatus.class);
-		bind(WsnProxyManager.class).to(DummyWsnProxyManager.class);
+		bind(WsnProxyManager.class).to(WsnProxyManagerImpl.class);
 
 		install(new FactoryModuleBuilder().build(ControllerProxyServiceFactory.class));
 		install(new FactoryModuleBuilder().build(WsnProxyServiceFactory.class));

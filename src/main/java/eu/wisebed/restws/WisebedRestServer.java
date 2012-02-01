@@ -3,11 +3,21 @@ package eu.wisebed.restws;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.uniluebeck.itm.tr.util.Logging;
+import eu.wisebed.api.common.KeyValuePair;
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.sm.SessionManagement;
+import eu.wisebed.api.snaa.SNAA;
+import eu.wisebed.restws.util.RSServiceHelper;
+import eu.wisebed.restws.util.SNAAServiceHelper;
+import eu.wisebed.restws.util.WSNServiceHelper;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.ws.Holder;
+import java.util.List;
 
 /**
  * This class must not be modified.
@@ -31,7 +41,18 @@ public class WisebedRestServer {
 
 		log.debug("Starting up with the following configuration " + config);
 
-		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config));
+		SessionManagement sm = WSNServiceHelper.getSessionManagementService(config.sessionManagementEndpointUrl);
+		
+		final Holder<String> rsEndpointUrlHolder = new Holder<String>();
+		final Holder<String> snaaEndpointUrlHolder = new Holder<String>();
+		final Holder<List<KeyValuePair>> optionsHolder = new Holder<List<KeyValuePair>>();
+
+		sm.getConfiguration(rsEndpointUrlHolder, snaaEndpointUrlHolder, optionsHolder);
+
+		RS rs = RSServiceHelper.getRSService(rsEndpointUrlHolder.value);
+		SNAA snaa = SNAAServiceHelper.getSNAAService(snaaEndpointUrlHolder.value);
+
+		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config, snaa, rs, sm));
 		final WisebedRestServerService serverService = injector.getInstance(WisebedRestServerService.class);
 
 		try {

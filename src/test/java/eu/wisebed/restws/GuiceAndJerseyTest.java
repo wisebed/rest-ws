@@ -15,7 +15,9 @@ public abstract class GuiceAndJerseyTest extends JerseyTest {
 	@Override
 	protected AppDescriptor configure() {
 
-		Injector injector = Guice.createInjector(new WisebedRestServerModule(new WisebedRestServerConfig()));
+		Injector injector = Guice.createInjector(new WisebedRestServerModule(new WisebedRestServerConfig(), null, null,
+				null
+		));
 		injector.injectMembers(this);
 
 		setTestContainerFactory(new GuiceInMemoryTestContainerFactory(injector));

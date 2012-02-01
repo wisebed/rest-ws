@@ -6,28 +6,30 @@ import org.kohsuke.args4j.Option;
 
 public class WisebedRestServerConfig {
 
-	@Option(name = "-n", aliases = {"--hostname"}, usage = "Hostname to start the web server on.", required = true)
+	@Option(name = "--hostname", usage = "Hostname to start the web server on.", required = true)
 	public String webServerHostname;
 
-	@Option(name = "-p", aliases = {"--port"}, usage = "Port to start the web server on.", required = false)
+	@Option(name = "--port", usage = "Port to start the web server on.")
 	public int webServerPort = 8080;
 
-	@Option(name = "-l", aliases = {"--logLevel"},
-			usage = "Set logging level (valid values: TRACE, DEBUG, INFO, WARN, ERROR).", required = false,
+	@Option(name = "--sessionManagementEndpointUrl", usage = "The endpoint URL of the testbeds Session Management API", required = true)
+	public String sessionManagementEndpointUrl;
+
+	@Option(name = "--logLevel",
+			usage = "Set logging level (valid values: TRACE, DEBUG, INFO, WARN, ERROR).",
 			handler = Log4JLevelOptionHandler.class)
 	public Level logLevel = null;
 
-	@Option(name = "-v", aliases = {"--verbose"}, usage = "Verbose (DEBUG) logging output (default: INFO).",
-			required = false)
+	@Option(name = "--verbose", usage = "Verbose (DEBUG) logging output (default: INFO).")
 	public boolean verbose = false;
 
-	@Option(name = "-h", aliases = {"--help"}, usage = "This help message.", required = false)
+	@Option(name = "--help", usage = "This help message.")
 	public boolean help = false;
 
-	@Option(name = "--operationTimeoutMillis", usage = "The milliseconds after which all non-flash operations should time out.", required = false)
+	@Option(name = "--operationTimeoutMillis", usage = "The milliseconds after which all non-flash operations should time out.")
 	public int operationTimeoutMillis = 10 * 1000;
 
-	@Option(name = "--flashTimeoutMillis", usage = "The milliseconds after which a flash operation should time out.", required = false)
+	@Option(name = "--flashTimeoutMillis", usage = "The milliseconds after which a flash operation should time out.")
 	public int flashTimeoutMillis = 2 * 60 * 1000;
 
 	@Override
