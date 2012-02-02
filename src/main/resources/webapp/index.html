@@ -12,11 +12,11 @@
 	<script type="text/javascript">
 
 		function loadTestbedDetailsContainer(navigationData, parentDiv) {
-			parentDiv.append($('<h1>Testbed Details '+JSON.stringify(navigationData)+'</h1>'));
+			parentDiv.append($('<h1>Testbed Details '+navigationData.testbed+'</h1>'));
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {
-			parentDiv.append($('<h1>Experiment '+JSON.stringify(navigationData)+'</h1>'));
+			parentDiv.append($('<h1>Experiment '+navigationData.testbed+' '+navigationData.experiment+'</h1>'));
 		}
 
 		function loadTestbedOverviewContainer(navigationData, parentDiv) {
@@ -60,8 +60,8 @@
 
 		function getAppStateKey(nav, testbed, experiment) {
 			if (nav == 'overview') {return 'overview'}
-			if (nav == 'testbed' && experiment == '') {return 'testbed'}
-			if (nav == 'testbed' && experiment != '') {return 'experiment-' + experiment}
+			if (nav == 'testbed' && experiment == '') {return 'testbed=' + testbed}
+			if (nav == 'testbed' && experiment != '') {return 'testbed=' + testbed + '&experiment=' + experiment}
 			return undefined;
 		}
 
@@ -131,7 +131,7 @@
 		}
 
 		function fillWisebedNavigationExperimentSelect(select) {
-
+			console.log('TODO fillWisebedNavigationExperimentSelect');
 		}
 
 		function onHashChange(e) {
@@ -148,19 +148,22 @@
 
 			console.log(navigationData);
 
-			$('#WisebedContentContainer').children(':visible').hide();
+			$('#WisebedContainer .WisebedContentContainer').children(':visible').hide();
+
+			console.log("appStateKey=" + appStateKey);
+			console.log("appState["+appStateKey+"]=" + appState[appStateKey]);
 
 			if (appState[appStateKey]) {
 
-				console.log("Loading from appState: " + JSON.stringify(navigationData));
+				console.log("Loading container for: " + JSON.stringify(navigationData));
 				$(appState[appStateKey]).show();
 
 			} else {
 
-				console.log("Creating overview for: " + JSON.stringify(navigationData));
+				console.log("Creating container for: " + JSON.stringify(navigationData));
 
 				var parentDiv = $('<div/>');
-				$('#WisebedContentContainer').append(parentDiv);
+				$('#WisebedContainer .WisebedContentContainer').append(parentDiv);
 				createContentFunction(navigationData, parentDiv);
 				appState[appStateKey] = parentDiv;
 				console.log(appState);
@@ -169,7 +172,7 @@
 
 		$(function () {
 
-			$('#WisebedContainer').append('<div id="WisebedContentContainer"/>');
+			$('#WisebedContainer').append('<div class="WisebedContentContainer"/>');
 
 			$(window).bind('hashchange', onHashChange);
 
