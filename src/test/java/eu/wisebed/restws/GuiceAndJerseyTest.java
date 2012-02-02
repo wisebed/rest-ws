@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.LowLevelAppDescriptor;
+
 import eu.wisebed.restws.resources.RsResource;
 
 /**

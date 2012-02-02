@@ -1,23 +1,15 @@
 package eu.wisebed.restws;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import de.uniluebeck.itm.tr.util.Logging;
-import eu.wisebed.api.common.KeyValuePair;
-import eu.wisebed.api.rs.RS;
-import eu.wisebed.api.sm.SessionManagement;
-import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.restws.util.RSServiceHelper;
-import eu.wisebed.restws.util.SNAAServiceHelper;
-import eu.wisebed.restws.util.WSNServiceHelper;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.ws.Holder;
-import java.util.List;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import de.uniluebeck.itm.tr.util.Logging;
 
 /**
  * This class must not be modified.

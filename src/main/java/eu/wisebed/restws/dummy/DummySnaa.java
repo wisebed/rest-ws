@@ -1,9 +1,14 @@
 package eu.wisebed.restws.dummy;
 
-import eu.wisebed.api.snaa.*;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import eu.wisebed.api.snaa.Action;
+import eu.wisebed.api.snaa.AuthenticationExceptionException;
+import eu.wisebed.api.snaa.AuthenticationTriple;
+import eu.wisebed.api.snaa.SNAA;
+import eu.wisebed.api.snaa.SNAAExceptionException;
+import eu.wisebed.api.snaa.SecretAuthenticationKey;
 
 public class DummySnaa implements SNAA {
 

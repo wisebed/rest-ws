@@ -1,18 +1,22 @@
 package eu.wisebed.restws.ws;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.net.URISyntaxException;
+
+import org.eclipse.jetty.websocket.WebSocket;
+import org.eclipse.jetty.websocket.WebSocketServlet;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 @ThreadSafe
 public class WsnWebSocketServlet extends WebSocketServlet {
+
+	private static final long serialVersionUID = 160812781199698413L;
 
 	@Inject
 	private WsnWebSocketFactory wsnWebSocketFactory;

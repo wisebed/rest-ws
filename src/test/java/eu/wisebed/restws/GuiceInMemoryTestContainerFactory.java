@@ -1,5 +1,8 @@
 package eu.wisebed.restws;
 
+import java.net.URI;
+import java.util.Map;
+
 import com.google.inject.Injector;
 import com.google.inject.Scope;
 import com.google.inject.servlet.ServletScopes;
@@ -14,9 +17,6 @@ import com.sun.jersey.test.framework.LowLevelAppDescriptor;
 import com.sun.jersey.test.framework.impl.container.inmemory.TestResourceClientHandler;
 import com.sun.jersey.test.framework.spi.container.TestContainer;
 import com.sun.jersey.test.framework.spi.container.TestContainerFactory;
-
-import java.net.URI;
-import java.util.Map;
 
 /**
  * @author Rune Peter Bjrønstad <runepeter@gmail.com>

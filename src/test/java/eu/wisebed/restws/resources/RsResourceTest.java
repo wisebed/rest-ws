@@ -1,7 +1,8 @@
 package eu.wisebed.restws.resources;
 
-import eu.wisebed.restws.GuiceAndJerseyTest;
 import org.junit.Test;
+
+import eu.wisebed.restws.GuiceAndJerseyTest;
 
 /**
  * Test case example that runs tests against the phone book REST service.

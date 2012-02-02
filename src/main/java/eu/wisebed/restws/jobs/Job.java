@@ -23,18 +23,22 @@
 
 package eu.wisebed.restws.jobs;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniluebeck.itm.tr.util.ListenerManager;
 import de.uniluebeck.itm.tr.util.ListenerManagerImpl;
 import eu.wisebed.api.controller.RequestStatus;
 import eu.wisebed.api.controller.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.*;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 
 public class Job {
 

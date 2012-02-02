@@ -1,9 +1,10 @@
 package eu.wisebed.restws.dto;
 
-import eu.wisebed.restws.jobs.JobNodeStatus;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
+
+import eu.wisebed.restws.jobs.JobNodeStatus;
 
 @XmlRootElement
 public class NodeUrnStatusMap {

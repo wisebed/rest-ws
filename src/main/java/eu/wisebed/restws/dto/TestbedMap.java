@@ -1,7 +1,8 @@
 package eu.wisebed.restws.dto;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class TestbedMap {

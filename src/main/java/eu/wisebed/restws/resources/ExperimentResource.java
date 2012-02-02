@@ -1,17 +1,59 @@
 package eu.wisebed.restws.resources;
 
+import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
+
+import java.io.StringReader;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.DatatypeFactory;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+
 import com.google.inject.Inject;
 import com.sun.jersey.core.util.Base64;
+
 import eu.wisebed.api.common.Message;
-import eu.wisebed.api.rs.*;
+import eu.wisebed.api.rs.ConfidentialReservationData;
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.rs.RSExceptionException;
+import eu.wisebed.api.rs.ReservervationNotFoundExceptionException;
+import eu.wisebed.api.rs.SecretReservationKey;
 import eu.wisebed.api.sm.ExperimentNotRunningException_Exception;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.sm.UnknownReservationIdException_Exception;
 import eu.wisebed.api.wsn.Program;
 import eu.wisebed.api.wsn.ProgramMetaData;
 import eu.wisebed.restws.WisebedRestServerConfig;
-import eu.wisebed.restws.dto.*;
+import eu.wisebed.restws.dto.FlashProgramsRequest;
 import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
+import eu.wisebed.restws.dto.NodeUrnList;
+import eu.wisebed.restws.dto.NodeUrnStatusMap;
+import eu.wisebed.restws.dto.SecretReservationKeyListRs;
+import eu.wisebed.restws.dto.SendMessageData;
+import eu.wisebed.restws.dto.TwoNodeUrns;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobNodeStatus;
 import eu.wisebed.restws.proxy.UnknownTestbedIdException;
@@ -22,27 +64,6 @@ import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JSONHelper;
 import eu.wisebed.wiseml.Wiseml;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.DatatypeFactory;
-import java.io.StringReader;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
 
 /**
  * TODO: The following WISEBED functions are not implemented yet:

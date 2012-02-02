@@ -1,14 +1,15 @@
 package eu.wisebed.restws.proxy;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.util.concurrent.ListenableFuture;
+
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
 import eu.wisebed.api.wsn.Program;
 import eu.wisebed.restws.jobs.Job;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public interface WsnProxy {
 

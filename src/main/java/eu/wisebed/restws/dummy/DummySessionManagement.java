@@ -1,21 +1,17 @@
 package eu.wisebed.restws.dummy;
 
+import java.util.List;
+
+import javax.jws.WebParam;
+import javax.xml.ws.Holder;
+
 import eu.wisebed.api.common.KeyValuePair;
 import eu.wisebed.api.sm.ExperimentNotRunningException_Exception;
 import eu.wisebed.api.sm.SecretReservationKey;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.sm.UnknownReservationIdException_Exception;
-import eu.wisebed.restws.util.InjectLogger;
-import org.slf4j.Logger;
-
-import javax.jws.WebParam;
-import javax.xml.ws.Holder;
-import java.util.List;
 
 public class DummySessionManagement implements SessionManagement {
-
-	@InjectLogger
-	private Logger log;
 
 	@Override
 	public String areNodesAlive(@WebParam(name = "nodes", targetNamespace = "") final List<String> nodes,

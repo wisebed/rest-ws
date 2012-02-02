@@ -1,11 +1,9 @@
 package eu.wisebed.restws;
 
-import com.google.common.util.concurrent.AbstractService;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.servlet.GuiceFilter;
-import eu.wisebed.restws.servlet.InvalidRequestServlet;
-import eu.wisebed.restws.util.InjectLogger;
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+
 import org.eclipse.jetty.http.spi.JettyHttpServerProvider;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -16,8 +14,13 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 
-import javax.servlet.DispatcherType;
-import java.util.EnumSet;
+import com.google.common.util.concurrent.AbstractService;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.servlet.GuiceFilter;
+
+import eu.wisebed.restws.servlet.InvalidRequestServlet;
+import eu.wisebed.restws.util.InjectLogger;
 
 @Singleton
 public class WisebedRestServerService extends AbstractService {

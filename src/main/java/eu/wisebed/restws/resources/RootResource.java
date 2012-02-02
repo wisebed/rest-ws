@@ -1,16 +1,16 @@
 package eu.wisebed.restws.resources;
 
-import com.google.inject.Inject;
-import eu.wisebed.restws.WisebedRestServerConfig;
-import eu.wisebed.restws.dto.TestbedMap;
-import eu.wisebed.restws.util.Base64Helper;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 
-import static eu.wisebed.restws.util.JSONHelper.toJSON;
+import com.google.inject.Inject;
+
+import eu.wisebed.restws.WisebedRestServerConfig;
+import eu.wisebed.restws.dto.TestbedMap;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/")
 public class RootResource {
@@ -25,9 +25,6 @@ public class RootResource {
 		return config.testbedMap;
 	}
 	
-	
-	@Context
-	private UriInfo uriInfo;
 	
 	@GET
 	@Path("cookies")

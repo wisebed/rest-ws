@@ -1,7 +1,20 @@
 package eu.wisebed.restws.ws;
 
+import java.io.IOException;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.jetty.websocket.WebSocket;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
 import eu.wisebed.restws.dto.WebSocketDownstreamMessage;
 import eu.wisebed.restws.dto.WebSocketNotificationMessage;
@@ -10,17 +23,6 @@ import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JSONHelper;
-import org.eclipse.jetty.websocket.WebSocket;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 

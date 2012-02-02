@@ -1,30 +1,39 @@
 package eu.wisebed.restws.proxy;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.common.util.concurrent.*;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
-import de.uniluebeck.itm.tr.util.ExecutorUtils;
-import eu.wisebed.api.common.Message;
-import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
-import eu.wisebed.api.wsn.ChannelHandlerDescription;
-import eu.wisebed.api.wsn.Program;
-import eu.wisebed.api.wsn.WSN;
-import eu.wisebed.restws.jobs.*;
-import eu.wisebed.restws.util.WSNServiceHelper;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
+import de.uniluebeck.itm.tr.util.ExecutorUtils;
+import eu.wisebed.api.common.Message;
+import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
+import eu.wisebed.api.wsn.ChannelHandlerDescription;
+import eu.wisebed.api.wsn.Program;
+import eu.wisebed.api.wsn.WSN;
+import eu.wisebed.restws.jobs.Job;
+import eu.wisebed.restws.jobs.JobListener;
+import eu.wisebed.restws.jobs.JobObserver;
+import eu.wisebed.restws.jobs.JobType;
+import eu.wisebed.restws.util.WSNServiceHelper;
 
 public class WsnProxyService extends AbstractService implements WsnProxy {
 

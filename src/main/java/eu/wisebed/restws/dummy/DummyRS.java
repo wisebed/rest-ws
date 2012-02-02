@@ -1,12 +1,23 @@
 package eu.wisebed.restws.dummy;
 
-import eu.wisebed.api.rs.*;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.Arrays;
-import java.util.List;
+
+import eu.wisebed.api.rs.AuthorizationExceptionException;
+import eu.wisebed.api.rs.ConfidentialReservationData;
+import eu.wisebed.api.rs.Data;
+import eu.wisebed.api.rs.GetReservations;
+import eu.wisebed.api.rs.PublicReservationData;
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.rs.RSExceptionException;
+import eu.wisebed.api.rs.ReservervationConflictExceptionException;
+import eu.wisebed.api.rs.ReservervationNotFoundExceptionException;
+import eu.wisebed.api.rs.SecretAuthenticationKey;
+import eu.wisebed.api.rs.SecretReservationKey;
 
 public class DummyRS implements RS {
 

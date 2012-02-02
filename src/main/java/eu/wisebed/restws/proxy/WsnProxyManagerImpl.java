@@ -1,8 +1,24 @@
 package eu.wisebed.restws.proxy;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
 import de.uniluebeck.itm.tr.util.TimedCache;
 import de.uniluebeck.itm.tr.util.TimedCacheListener;
@@ -10,19 +26,6 @@ import de.uniluebeck.itm.tr.util.Tuple;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.util.InjectLogger;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
 
 @Singleton
 public class WsnProxyManagerImpl implements WsnProxyManager {
@@ -100,7 +103,6 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 	@Inject
 	private WsnProxyServiceFactory wsnProxyServiceFactory;
 
-	@SuppressWarnings("unused")
 	public WsnProxyManagerImpl() {
 		proxyCache.setListener(experimentExpirationListener);
 	}

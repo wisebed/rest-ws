@@ -1,10 +1,10 @@
 package eu.wisebed.restws.proxy;
 
+import javax.annotation.Nonnull;
+
 import eu.wisebed.api.rs.RS;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.snaa.SNAA;
-
-import javax.annotation.Nonnull;
 
 public interface WebServiceEndpointManager {
 

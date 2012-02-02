@@ -1,10 +1,11 @@
 package eu.wisebed.restws.proxy;
 
-import eu.wisebed.restws.jobs.Job;
-import org.joda.time.DateTime;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.joda.time.DateTime;
+
+import eu.wisebed.restws.jobs.Job;
 
 public interface WsnProxyManager {
 

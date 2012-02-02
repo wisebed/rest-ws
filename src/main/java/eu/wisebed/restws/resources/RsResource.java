@@ -1,9 +1,43 @@
 package eu.wisebed.restws.resources;
 
+import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
+import static eu.wisebed.restws.util.JSONHelper.toJSON;
+
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
+
 import de.uniluebeck.itm.tr.util.Tuple;
-import eu.wisebed.api.rs.*;
+import eu.wisebed.api.rs.AuthorizationExceptionException;
+import eu.wisebed.api.rs.ConfidentialReservationData;
+import eu.wisebed.api.rs.Data;
+import eu.wisebed.api.rs.GetReservations;
+import eu.wisebed.api.rs.PublicReservationData;
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.rs.RSExceptionException;
+import eu.wisebed.api.rs.ReservervationConflictExceptionException;
+import eu.wisebed.api.rs.ReservervationNotFoundExceptionException;
+import eu.wisebed.api.rs.SecretReservationKey;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.dto.ConfidentialReservationDataList;
 import eu.wisebed.restws.dto.PublicReservationDataList;
@@ -12,20 +46,6 @@ import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
 import eu.wisebed.restws.proxy.UnknownTestbedIdException;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.InjectLogger;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.List;
-
-import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
-import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/reservations/")
 public class RsResource {

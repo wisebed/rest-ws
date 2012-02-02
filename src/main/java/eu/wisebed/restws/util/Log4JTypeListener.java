@@ -1,11 +1,12 @@
 package eu.wisebed.restws.util;
 
+import java.lang.reflect.Field;
+
+import org.slf4j.Logger;
+
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import org.slf4j.Logger;
-
-import java.lang.reflect.Field;
 
 public class Log4JTypeListener implements TypeListener {
 
