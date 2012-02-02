@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-tabs-1.4.0.js"></script>
 	<script type="text/javascript" src="js/prettify.js"></script>
@@ -52,6 +53,22 @@
 
 						var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbed);
 						descriptionTab.append(wiseML.setup.description);
+
+						var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbed);
+						var nodes = wiseML.setup.node;
+
+						var tableHead = ["URN", "Type"];
+						var tableRows = [];
+
+						for (var i=0; i<nodes.length; i++) {
+							tableRows[i] = [];
+							tableRows[i][0] = nodes[i].id;
+							tableRows[i][1] = nodes[i].nodeType;
+						}
+
+						var table = buildTable(tableHead, tableRows);
+						table.tablesorter({ sortList: [[0,0]] });
+						nodesTab.append(table);
 					},
 					onAjaxError
 			);
@@ -77,32 +94,48 @@
 					function(data) {
 						var reservations = data.reservations;
 						var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbed);
-						var reservationsTable = $('<table class="zebra-striped">'
-								+ '	<thead>'
-								+ '		<tr>'
-								+ '			<td>From</td>'
-								+ '			<td>Until</td>'
-								+ '			<td>User Data</td>'
-								+ '			<td>Node URNs</td>'
-								+ '		</tr>'
-								+ '	</thead>'
-								+ '	<tbody>'
-								+ '	</tbody>'
-								+ '</table>');
-						reservationsTab.append(reservationsTable);
-						var reservationsTableBody = reservationsTable.children('tbody');
+
+						var tableHead = ["From", "Until", "User Data", "Node URNs"];
+						var tableRows = [];
 						for (var i=0; i<reservations.length; i++) {
-							var reservationRow = $('<tr>'
-									+ '	<td>'+new Date(reservations[i].from).toString()+'</td>'
-									+ '	<td>'+new Date(reservations[i].to).toString()+'</td>'
-									+ '	<td>'+reservations[i].userData+'</td>'
-									+ '	<td>'+reservations[i].nodeURNs.join("<br/>")+'</td>'
-									+ '</tr>');
-							reservationsTableBody.append(reservationRow);
+							tableRows[i] = [];
+							tableRows[i][0] = new Date(reservations[i].from).toString();
+							tableRows[i][1] = new Date(reservations[i].to).toString();
+							tableRows[i][2] = reservations[i].userData;
+							tableRows[i][3] = reservations[i].nodeURNs.join("<br/>");
 						}
+
+						var table = buildTable(tableHead, tableRows);
+						reservationsTab.append(table);
+						table.tablesorter({ sortList: [[0,0]] });
 					},
 					onAjaxError
 			);
+		}
+
+		function buildTable(tableHead, tableRows) {
+
+			var table = $('<table class="zebra-striped"/>"');
+			var thead = $('<thead/>');
+			var theadRow = $('<tr/>');
+			thead.append(theadRow);
+
+			for (var i=0; i<tableHead.length; i++) {
+				theadRow.append('<th>'+tableHead[i]+'</th>');
+			}
+
+			var tbody = $('<tbody/>');
+			for (var k=0; k<tableRows.length; k++) {
+				var row = $('<tr/>');
+				tbody.append(row);
+				for (var l=0; l<tableRows[k].length; l++) {
+					row.append('<td>'+tableRows[k][l]+'</td>');
+				}
+			}
+
+			table.append(thead, tbody);
+
+			return table;
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {
@@ -243,8 +276,6 @@
 
 			adaptNavigationBar(navigationData);
 
-			console.log(navigationData);
-
 			$('#WisebedContainer .WisebedContentContainer').children(':visible').hide();
 
 			console.log("appStateKey=" + appStateKey);
@@ -263,7 +294,6 @@
 				$('#WisebedContainer .WisebedContentContainer').append(parentDiv);
 				createContentFunction(navigationData, parentDiv);
 				appState[appStateKey] = parentDiv;
-				console.log(appState);
 
 				$('.tabs').tabs();
 			}
@@ -277,9 +307,6 @@
 				$('#WisebedContainer').append('<div class="WisebedContentContainer"/>');
 				$(window).trigger('hashchange');
 			});
-
-			console.log("cookie:");
-			console.log(document.cookie);
 		});
 
 	</script>

@@ -56,7 +56,6 @@ var Wisebed = new function() {
 		var queryUrl = "/rest/2.3/" + testbedId + "/reservations?" +
 				(from ? ("from=" + from.toISOString() + "&") : "") +
 				(to ? ("to="+to.toISOString() + "&") : "");
-		console.log(queryUrl);
 		$.ajax({
 			url: queryUrl,
 			success: callbackDone,
