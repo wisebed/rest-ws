@@ -9,6 +9,7 @@
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
+	<script type="text/javascript" src="js/bootstrap-tabs-1.4.0.js"></script>
 	<script type="text/javascript" src="js/prettify.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
@@ -31,18 +32,18 @@
 				);
 			}
 
-			$.ajax({
-				url: "parts/testbed-details.html",
-				success: function(html) {
-					parentDiv.html(html);
-					fillTestbedDetailsContainer(parentDiv);
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					$('#WisebedContainer').html('<h1>Unable to load list of testbeds!</h1><h2>'+errorThrown+'</h2>');
-				},
-				context: document.body,
-				dataType: "html"
-			});
+			var tabs = $('<ul class="tabs">'
+					+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbed+'">Description</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbed+'">Nodes</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbed+'">Reservations</a></li>'
+					+ '</ul>'
+					+ '<div class="tab-content">'
+					+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbed+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbed+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbed+'"/>'
+					+ '</div>');
+
+			parentDiv.append(tabs);
 
 		}
 
@@ -205,6 +206,8 @@
 				createContentFunction(navigationData, parentDiv);
 				appState[appStateKey] = parentDiv;
 				console.log(appState);
+
+				$('.tabs').tabs();
 			}
 		}
 
