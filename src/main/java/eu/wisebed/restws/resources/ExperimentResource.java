@@ -14,6 +14,8 @@ import eu.wisebed.restws.dto.*;
 import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobNodeStatus;
+import eu.wisebed.restws.proxy.UnknownTestbedIdException;
+import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.proxy.WsnProxy;
 import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.util.Base64Helper;
@@ -40,6 +42,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
+
 /**
  * TODO: The following WISEBED functions are not implemented yet:
  * <p/>
@@ -51,17 +55,14 @@ import java.util.concurrent.TimeUnit;
  * parameters,<br/>
  * List<String> filters);
  */
-@Path("/" + Constants.WISEBED_API_VERSION + "/experiments/")
+@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/experiments/")
 public class ExperimentResource {
 
 	@InjectLogger
 	private Logger log;
 
 	@Inject
-	private RS rs;
-
-	@Inject
-	private SessionManagement sessions;
+	private WebServiceEndpointManager endpointManager;
 
 	@Inject
 	private WsnProxyManager wsnProxyManager;
@@ -75,9 +76,13 @@ public class ExperimentResource {
 	@GET
 	@Path("network")
 	@Produces({MediaType.APPLICATION_JSON})
-	public Response getNetworkJson() {
-		String wisemlString = sessions.getNetwork();
+	public Response getNetworkJson(@PathParam("testbedId") final String testbedId) {
+
+
 		try {
+
+			SessionManagement sessions = endpointManager.getSmEndpoint(testbedId);
+			String wisemlString = sessions.getNetwork();
 
 			JAXBContext jaxbContext = JAXBContext.newInstance(Wiseml.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -89,22 +94,31 @@ public class ExperimentResource {
 
 		} catch (JAXBException e) {
 			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
+		} catch (UnknownTestbedIdException e) {
+			return createUnknownTestbedIdResponse(testbedId);
 		}
 	}
 
 	@GET
 	@Path("network")
 	@Produces({MediaType.APPLICATION_XML})
-	public Response getNetworkXml() {
-		String wisemlString = sessions.getNetwork();
-		log.trace("Returning WiseML: {}", wisemlString);
-		return Response.ok(wisemlString).build();
+	public Response getNetworkXml(@PathParam("testbedId") final String testbedId) {
+		try {
+
+			SessionManagement sessions = endpointManager.getSmEndpoint(testbedId);
+			String wisemlString = sessions.getNetwork();
+			log.trace("Returning WiseML: {}", wisemlString);
+			return Response.ok(wisemlString).build();
+
+		} catch (UnknownTestbedIdException e) {
+			return createUnknownTestbedIdResponse(testbedId);
+		}
 	}
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.TEXT_PLAIN})
-	public Response getInstance(SecretReservationKeyListRs reservationKey) {
+	public Response getInstance(@PathParam("testbedId") final String testbedId, SecretReservationKeyListRs reservationKey) {
 
 		DateTime now = DateTime.now();
 		DateTime earliestFrom = new DateTime();
@@ -112,6 +126,7 @@ public class ExperimentResource {
 
 		try {
 
+			RS rs = endpointManager.getRsEndpoint(testbedId);
 			List<ConfidentialReservationData> reservation = rs.getReservation(reservationKey.reservations);
 
 			for (ConfidentialReservationData data : reservation) {
@@ -157,10 +172,13 @@ public class ExperimentResource {
 					.status(Status.NOT_FOUND)
 					.entity("No reservation with the given secret reservation keys could be found!")
 					.build();
+		} catch (UnknownTestbedIdException e) {
+			return createUnknownTestbedIdResponse(testbedId);
 		}
 
 		try {
 
+			SessionManagement sessions = endpointManager.getSmEndpoint(testbedId);
 			String experimentWsnInstanceUrl = sessions.getInstance(
 					copyRsToWsn(reservationKey.reservations),
 					"NONE"
@@ -191,6 +209,8 @@ public class ExperimentResource {
 			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (ExecutionException e) {
 			return returnError("Internal error on URL generation", e, Status.INTERNAL_SERVER_ERROR);
+		} catch (UnknownTestbedIdException e) {
+			return createUnknownTestbedIdResponse(testbedId);
 		}
 	}
 
@@ -224,8 +244,8 @@ public class ExperimentResource {
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Path("{experimentUrlBase64}/flash")
-	public Response flashPrograms(@PathParam("experimentUrlBase64") String experimentUrlBase64,
-								  FlashProgramsRequest flashData) {
+	public Response flashPrograms(@PathParam("experimentUrlBase64") final String experimentUrlBase64,
+								  final FlashProgramsRequest flashData) {
 
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 

@@ -15,10 +15,6 @@ public class WisebedRestServerConfig {
 	@Option(name = "--port", usage = "Port to start the web server on.")
 	public int webServerPort = 8080;
 
-	@Option(name = "--sessionManagementEndpointUrl", usage = "The endpoint URL of the testbeds Session Management API",
-			required = true)
-	public String sessionManagementEndpointUrl;
-
 	@Option(name = "--testbedMap",
 			usage = "A JSON-based configuration file containing the testbeds to be served by this server.",
 			required = true,

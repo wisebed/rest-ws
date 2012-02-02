@@ -1,18 +1,28 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
-import eu.wisebed.api.snaa.*;
+import eu.wisebed.api.snaa.AuthenticationExceptionException;
+import eu.wisebed.api.snaa.SNAA;
+import eu.wisebed.api.snaa.SNAAExceptionException;
+import eu.wisebed.api.snaa.SecretAuthenticationKey;
+import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.dto.LoginData;
 import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
+import eu.wisebed.restws.proxy.UnknownTestbedIdException;
+import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
 
+import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
+import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 public class SnaaResource {
@@ -21,10 +31,10 @@ public class SnaaResource {
 	private Logger log;
 
 	@Inject
-	private SNAA snaa;
+	private WebServiceEndpointManager endpointManager;
 
-	@Context
-	private UriInfo uriInfo;
+	@Inject
+	private WisebedRestServerConfig config;
 
 	/**
 	 * loginData example: <code>
@@ -47,9 +57,12 @@ public class SnaaResource {
 	 * }
 	 * </code>
 	 *
+	 * @param testbedId
+	 * 		the ID of the testbed
 	 * @param loginData
+	 * 		login data
 	 *
-	 * @return
+	 * @return a response
 	 */
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
@@ -61,37 +74,41 @@ public class SnaaResource {
 
 		try {
 
+			SNAA snaa = endpointManager.getSnaaEndpoint(testbedId);
+
 			secretAuthenticationKeys = snaa.authenticate(loginData.authenticationData);
 			SnaaSecretAuthenticationKeyList loginResult = new SnaaSecretAuthenticationKeyList(secretAuthenticationKeys);
 			String jsonResponse = toJSON(loginResult);
 
-			NewCookie sakCookie = toCookie(loginResult);
+			NewCookie sakCookie = createCookie(testbedId, loginResult);
 
 			log.debug("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(sakCookie).build();
 
 		} catch (AuthenticationExceptionException e) {
-			return returnLoginError(e);
+			return createLoginErrorResponse(e);
 		} catch (SNAAExceptionException e) {
-			return returnLoginError(e);
+			return createLoginErrorResponse(e);
+		} catch (UnknownTestbedIdException e) {
+			return createUnknownTestbedIdResponse(testbedId);
 		}
 
 	}
 
-	private NewCookie toCookie(SnaaSecretAuthenticationKeyList loginData) {
+	private NewCookie createCookie(final String testbedId, SnaaSecretAuthenticationKeyList loginData) {
 
 		int maxAge = 60 * 60 * 24;
 		boolean secure = false;
 		String comment = "";
 		String domain = "";
 		String value = Base64Helper.encode(toJSON(loginData));
-		String name = Constants.COOKIE_SECRET_AUTH_KEY;
+		String name = createSecretAuthenticationKeyCookieName(testbedId);
 		String path = "/";
 
 		return new NewCookie(name, value, path, domain, comment, maxAge, secure);
 	}
 
-	private Response returnLoginError(Exception e) {
+	private Response createLoginErrorResponse(Exception e) {
 		log.debug("Login failed :" + e, e);
 		String errorMessage = String.format("Login failed: %s (%s)", e, e.getMessage());
 		return Response.status(Status.FORBIDDEN).entity(errorMessage).build();

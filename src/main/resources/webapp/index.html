@@ -98,29 +98,36 @@
 		function adaptNavigationBar(navigationData) {
 
 			var ul = $('#WisebedContainer div.WisebedNavigation ul.WisebedNavigationUl');
+			var experimentsContainer = $('#WisebedNavigationExperimentsForm');
+			var secondaryUl = $('#WisebedContainer div.WisebedNavigation ul.WisebedNavigationSecondaryUl');
 
 			if (navigationData.nav == 'overview') {
 
 				ul.empty();
+				secondaryUl.empty();
+				experimentsContainer.empty();
+
 				ul.append('<li class="active"><a href="#nav=overview">Testbed Overview</a></li>');
-			}
-			else if (navigationData.nav == 'testbed') {
+
+			} else if (navigationData.nav == 'testbed') {
 
 				ul.empty();
+				secondaryUl.empty();
+				experimentsContainer.empty();
 
 				ul.append('<li><a href="#nav=overview">Testbed Overview</a></li>');
-				ul.append('<li>Running Experiments <select id="WisebedNavigationExperimentSelect" disabled="true"></select></li>');
-				ul.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
+				experimentsContainer.append('Running Experiments <select id="WisebedNavigationExperimentSelect" disabled="true"></select>');
 
+				secondaryUl.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
 
 				if (Wisebed.hasSecretAuthenticationKeyCookie()) {
 					var select = $('#WisebedNavigationExperimentSelect');
 					select[0].disabled = false;
 					fillWisebedNavigationExperimentSelect(select);
 
-					ul.append('<li><a href="javascript:logout()">Logout</a></li>');
+					secondaryUl.append('<li><a href="javascript:logout()">Logout</a></li>');
 				} else {
-					ul.append('<li><a href="javascript:showLoginDialog()">Login</a></li>');
+					secondaryUl.append('<li><a href="javascript:showLoginDialog()">Login</a></li>');
 				}
 			}
 		}
@@ -172,11 +179,10 @@
 
 		$(function () {
 
-			$('#WisebedContainer').append('<div class="WisebedContentContainer"/>');
-
 			$(window).bind('hashchange', onHashChange);
 
 			loadNavigationBar(function() {
+				$('#WisebedContainer').append('<div class="WisebedContentContainer"/>');
 				$(window).trigger('hashchange');
 			});
 
@@ -187,6 +193,10 @@
 	</script>
 </head>
 <body>
+
+<div class="container">
+	Real-World G-Lab / WISEBED / Spitfire Testbed GUI
+</div>
 
 <div id="WisebedContainer" class="container">
 

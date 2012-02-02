@@ -41,18 +41,7 @@ public class WisebedRestServer {
 
 		log.debug("Starting up with the following configuration " + config);
 
-		SessionManagement sm = WSNServiceHelper.getSessionManagementService(config.sessionManagementEndpointUrl);
-		
-		final Holder<String> rsEndpointUrlHolder = new Holder<String>();
-		final Holder<String> snaaEndpointUrlHolder = new Holder<String>();
-		final Holder<List<KeyValuePair>> optionsHolder = new Holder<List<KeyValuePair>>();
-
-		sm.getConfiguration(rsEndpointUrlHolder, snaaEndpointUrlHolder, optionsHolder);
-
-		RS rs = RSServiceHelper.getRSService(rsEndpointUrlHolder.value);
-		SNAA snaa = SNAAServiceHelper.getSNAAService(snaaEndpointUrlHolder.value);
-
-		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config, snaa, rs, sm));
+		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config));
 		final WisebedRestServerService serverService = injector.getInstance(WisebedRestServerService.class);
 
 		try {

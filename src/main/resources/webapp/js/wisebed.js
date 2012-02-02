@@ -20,15 +20,8 @@ var Wisebed = new function() {
 			context: document.body
 		});
 
-		request.done(function(data, textStatus, jqXHR) {
-			callbackDone(data, textStatus, jqXHR);
-		});
-
-		if (callbackError) {
-			request.fail(function(jqXHR, textStatus, errorThrown) {
-				callbackError(jqXHR, textStatus, errorThrown);
-			});
-		}
+		request.done(callbackDone);
+		request.fail(callbackError);
 	};
 
 	this.getNodeList = function(network) {
