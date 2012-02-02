@@ -1,12 +1,11 @@
 package eu.wisebed.restws;
 
-import eu.wisebed.restws.dto.TestbedMap;
-import eu.wisebed.restws.util.Log4JLevelOptionHandler;
-import eu.wisebed.restws.util.TestbedMapOptionParser;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.Option;
 
-import java.util.Map;
+import eu.wisebed.restws.dto.TestbedMap;
+import eu.wisebed.restws.util.Log4JLevelOptionHandler;
+import eu.wisebed.restws.util.TestbedMapOptionParser;
 
 public class WisebedRestServerConfig {
 

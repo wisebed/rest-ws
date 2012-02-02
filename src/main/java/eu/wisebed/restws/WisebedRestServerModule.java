@@ -3,10 +3,10 @@ package eu.wisebed.restws;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.matcher.Matchers;
+
 import eu.wisebed.api.rs.RS;
 import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.restws.dummy.*;
 import eu.wisebed.restws.proxy.ControllerProxyServiceFactory;
 import eu.wisebed.restws.proxy.WsnProxyManager;
 import eu.wisebed.restws.proxy.WsnProxyManagerImpl;
