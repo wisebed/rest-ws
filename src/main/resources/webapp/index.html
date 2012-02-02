@@ -3,16 +3,47 @@
 <head>
 	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
 	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
+	<link rel="stylesheet" media="screen" href="css/prettify.css">
 	<link rel="stylesheet" media="screen" href="css/wisebed-gui.css">
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
+	<script type="text/javascript" src="js/prettify.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
 
 		function loadTestbedDetailsContainer(navigationData, parentDiv) {
+
 			parentDiv.append($('<h1>Testbed Details '+navigationData.testbed+'</h1>'));
+
+			function fillTestbedDetailsContainer(parentDiv) {
+				Wisebed.getWiseML(
+						navigationData.testbed,
+						null,
+						function(wiseML) {
+							var descriptionDiv = parentDiv.children('#TestbedDetailsTab #description');
+							var pre = $('<pre class="prettyprint" style="height:100px"/>');
+							pre.append(JSON.stringify(wiseML, null, '  '));
+							descriptionDiv.append(pre);
+							//prettyPrint();
+						}
+				);
+			}
+
+			$.ajax({
+				url: "parts/testbed-details.html",
+				success: function(html) {
+					parentDiv.html(html);
+					fillTestbedDetailsContainer(parentDiv);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					$('#WisebedContainer').html('<h1>Unable to load list of testbeds!</h1><h2>'+errorThrown+'</h2>');
+				},
+				context: document.body,
+				dataType: "html"
+			});
+
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {
@@ -120,24 +151,24 @@
 
 				secondaryUl.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
 
-				if (Wisebed.hasSecretAuthenticationKeyCookie()) {
+				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbed)) {
 					var select = $('#WisebedNavigationExperimentSelect');
 					select[0].disabled = false;
-					fillWisebedNavigationExperimentSelect(select);
+					fillWisebedNavigationExperimentSelect(select, navigationData);
 
-					secondaryUl.append('<li><a href="javascript:logout()">Logout</a></li>');
+					secondaryUl.append('<li><a href="javascript:logout(\''+navigationData.testbed+'\')">Logout</a></li>');
 				} else {
-					secondaryUl.append('<li><a href="javascript:showLoginDialog()">Login</a></li>');
+					secondaryUl.append('<li><a href="javascript:showLoginDialog(\''+navigationData.testbed+'\')">Login</a></li>');
 				}
 			}
 		}
 
-		function logout() {
-			Wisebed.deleteSecretAuthenticationKeyCookie();
+		function logout(testbedId) {
+			Wisebed.deleteSecretAuthenticationKeyCookie(testbedId);
 			document.location='#';
 		}
 
-		function fillWisebedNavigationExperimentSelect(select) {
+		function fillWisebedNavigationExperimentSelect(select, navigationData) {
 			console.log('TODO fillWisebedNavigationExperimentSelect');
 		}
 

@@ -1,32 +1,33 @@
 var Wisebed = new function() {
 
-	this.getAvailableNodeUrns = function(callbackDone, callbackError, experimentId) {
+	this.getNodeUrnArray = function(testbedId, experimentId, callbackDone, callbackError) {
 
-		this.getNetwork(
-				function(data, textStatus, jqXHR) {
-					callbackDone(Wisebed.getNodeList(data));
+		this.getWiseML(
+				testbedId,
+				experimentId,
+				function(wiseML, textStatus, jqXHR) {
+					callbackDone(Wisebed.getNodeUrnArrayFromWiseML(wiseML), textStatus, jqXHR);
 				},
-				function(jqXHR, textStatus, errorThrown) {callbackError(jqXHR, textStatus, errorThrown);},
-				experimentId
+				callbackError
 		);
 	};
 
-	this.getNetwork = function(callbackDone, callbackError, experimentId) {
+	this.getWiseML = function(testbedId, experimentId, callbackDone, callbackError) {
 
-		var request = $.ajax({
-			url: (experimentId !== undefined ?
-					"/rest/2.3/experiments/" + experimentId + "/network" :
-					"/rest/2.3/experiments/network"),
-			context: document.body
+		$.ajax({
+			url      : (experimentId ?
+					    "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/network" :
+					    "/rest/2.3/" + testbedId + "/experiments/network"),
+			context  : document.body,
+			success  : callbackDone,
+			error    : callbackError,
+			dataType : "json"
 		});
-
-		request.done(callbackDone);
-		request.fail(callbackError);
 	};
 
-	this.getNodeList = function(network) {
+	this.getNodeUrnArrayFromWiseML = function(wiseML) {
 		var nodeUrns = new Array();
-		var nodes = network.setup.node;
+		var nodes = wiseML.setup.node;
 		for (var i=0; i<nodes.length; i++) {
 			nodeUrns[i] = nodes[i].id;
 		}
@@ -43,11 +44,11 @@ var Wisebed = new function() {
 		});
 	};
 
-	this.deleteSecretAuthenticationKeyCookie = function() {
-		$.cookie('wisebed-secret-authentication-key', null);
+	this.deleteSecretAuthenticationKeyCookie = function(testbedId) {
+		$.cookie('wisebed-secret-authentication-key-' + testbedId, null);
 	};
 
-	this.hasSecretAuthenticationKeyCookie = function() {
-		return $.cookie('wisebed-secret-authentication-key') != null;
+	this.hasSecretAuthenticationKeyCookie = function(testbedId) {
+		return $.cookie('wisebed-secret-authentication-key-' + testbedId) != null;
 	};
 };

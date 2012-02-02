@@ -68,7 +68,9 @@
 		}
 
 		function populateSendMessageNodeUrnBox() {
-			Wisebed.getAvailableNodeUrns(
+			Wisebed.getNodeUrnArray(
+					testbedId,
+					experimentId,
 					function(nodeUrns) {
 						var nodeUrnOptions = [];
 						for (var i=0; i<nodeUrns.length; i++) {
@@ -83,8 +85,7 @@
 					},
 					function(jqXHR, textStatus, errorThrown) {
 						alert(textStatus + " : " + errorThrown);
-					},
-					experimentId
+					}
 			);
 		}
 
