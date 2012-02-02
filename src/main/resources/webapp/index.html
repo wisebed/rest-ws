@@ -14,37 +14,95 @@
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
 
+		function onAjaxError(jqXHR, textStatus, errorThrown) {
+			console.log(jqXHR);
+			console.log(textStatus);
+			console.log(errorThrown);
+			alert("Error while loading data: " + errorThrown);
+		}
+
 		function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 			parentDiv.append($('<h1>Testbed Details '+navigationData.testbed+'</h1>'));
-
-			function fillTestbedDetailsContainer(parentDiv) {
-				Wisebed.getWiseML(
-						navigationData.testbed,
-						null,
-						function(wiseML) {
-							var descriptionDiv = parentDiv.children('#TestbedDetailsTab #description');
-							var pre = $('<pre class="prettyprint" style="height:100px"/>');
-							pre.append(JSON.stringify(wiseML, null, '  '));
-							descriptionDiv.append(pre);
-							//prettyPrint();
-						}
-				);
-			}
 
 			var tabs = $('<ul class="tabs">'
 					+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbed+'">Description</a></li>'
 					+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbed+'">Nodes</a></li>'
 					+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbed+'">Reservations</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed+'">WiseML (JSON)</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed+'">WiseML (XML)</a></li>'
 					+ '</ul>'
 					+ '<div class="tab-content">'
 					+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbed+'"/>'
 					+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbed+'"/>'
 					+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbed+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed+'"/>'
 					+ '</div>');
 
 			parentDiv.append(tabs);
 
+			Wisebed.getWiseMLAsJSON(
+					navigationData.testbed,
+					null,
+					function(wiseML) {
+
+						var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed);
+						jsonTab.append($('<pre>'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
+
+						var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbed);
+						descriptionTab.append(wiseML.setup.description);
+					},
+					onAjaxError
+			);
+			
+			Wisebed.getWiseMLAsXML(
+					navigationData.testbed,
+					null,
+					function(wiseML) {
+						var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed);
+						xmlTab.append($('<pre lang="xml">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
+					},
+					onAjaxError
+			);
+
+			var now = new Date();
+			var tomorrowSameTime = new Date();
+			tomorrowSameTime.setDate(now.getDate() + 1);
+
+			Wisebed.getReservations(
+					navigationData.testbed,
+					now,
+					tomorrowSameTime,
+					function(data) {
+						var reservations = data.reservations;
+						var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbed);
+						var reservationsTable = $('<table class="zebra-striped">'
+								+ '	<thead>'
+								+ '		<tr>'
+								+ '			<td>From</td>'
+								+ '			<td>Until</td>'
+								+ '			<td>User Data</td>'
+								+ '			<td>Node URNs</td>'
+								+ '		</tr>'
+								+ '	</thead>'
+								+ '	<tbody>'
+								+ '	</tbody>'
+								+ '</table>');
+						reservationsTab.append(reservationsTable);
+						var reservationsTableBody = reservationsTable.children('tbody');
+						for (var i=0; i<reservations.length; i++) {
+							var reservationRow = $('<tr>'
+									+ '	<td>'+new Date(reservations[i].from).toString()+'</td>'
+									+ '	<td>'+new Date(reservations[i].to).toString()+'</td>'
+									+ '	<td>'+reservations[i].userData+'</td>'
+									+ '	<td>'+reservations[i].nodeURNs.join("<br/>")+'</td>'
+									+ '</tr>');
+							reservationsTableBody.append(reservationRow);
+						}
+					},
+					onAjaxError
+			);
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {

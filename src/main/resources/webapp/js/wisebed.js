@@ -6,13 +6,13 @@ var Wisebed = new function() {
 				testbedId,
 				experimentId,
 				function(wiseML, textStatus, jqXHR) {
-					callbackDone(Wisebed.getNodeUrnArrayFromWiseML(wiseML), textStatus, jqXHR);
+					callbackDone(this.getNodeUrnArrayFromWiseML(wiseML), textStatus, jqXHR);
 				},
 				callbackError
 		);
 	};
 
-	this.getWiseML = function(testbedId, experimentId, callbackDone, callbackError) {
+	this.getWiseML = function(testbedId, experimentId, callbackDone, callbackError, jsonOrXml) {
 
 		$.ajax({
 			url      : (experimentId ?
@@ -21,8 +21,16 @@ var Wisebed = new function() {
 			context  : document.body,
 			success  : callbackDone,
 			error    : callbackError,
-			dataType : "json"
+			dataType : (!jsonOrXml ? "json" : jsonOrXml)
 		});
+	};
+
+	this.getWiseMLAsJSON = function(testbedId, experimentId, callbackDone, callbackError) {
+		this.getWiseML(testbedId, experimentId, callbackDone, callbackError, "json");
+	};
+
+	this.getWiseMLAsXML = function(testbedId, experimentId, callbackDone, callbackError) {
+		this.getWiseML(testbedId, experimentId, callbackDone, callbackError, "xml");
 	};
 
 	this.getNodeUrnArrayFromWiseML = function(wiseML) {
@@ -37,6 +45,20 @@ var Wisebed = new function() {
 	this.getTestbeds = function(callbackDone, callbackError) {
 		$.ajax({
 			url: "/rest/2.3/testbeds",
+			success: callbackDone,
+			error: callbackError,
+			context: document.body,
+			dataType: "json"
+		});
+	};
+
+	this.getReservations = function(testbedId, from, to, callbackDone, callbackError) {
+		var queryUrl = "/rest/2.3/" + testbedId + "/reservations?" +
+				(from ? ("from=" + from.toISOString() + "&") : "") +
+				(to ? ("to="+to.toISOString() + "&") : "");
+		console.log(queryUrl);
+		$.ajax({
+			url: queryUrl,
 			success: callbackDone,
 			error: callbackError,
 			context: document.body,

@@ -11,6 +11,9 @@ public class SecretReservationKeyListRs {
 
 	public List<SecretReservationKey> reservations;
 
+	public SecretReservationKeyListRs() {
+	}
+
 	public SecretReservationKeyListRs(List<SecretReservationKey> reservations) {
 		this.reservations = reservations;
 	}

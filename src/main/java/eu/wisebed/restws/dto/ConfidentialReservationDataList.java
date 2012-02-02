@@ -9,7 +9,10 @@ import eu.wisebed.api.rs.ConfidentialReservationData;
 @XmlRootElement
 public class ConfidentialReservationDataList {
 
-	List<ConfidentialReservationData> reservations;
+	public List<ConfidentialReservationData> reservations;
+
+	public ConfidentialReservationDataList() {
+	}
 
 	public ConfidentialReservationDataList(List<ConfidentialReservationData> reservations) {
 		this.reservations = reservations;

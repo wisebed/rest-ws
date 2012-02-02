@@ -47,7 +47,7 @@ import eu.wisebed.restws.proxy.UnknownTestbedIdException;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.InjectLogger;
 
-@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/reservations/")
+@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/reservations")
 public class RsResource {
 
 	@InjectLogger
@@ -73,7 +73,7 @@ public class RsResource {
 			XMLGregorianCalendar fromDate = duration.getFirst();
 			XMLGregorianCalendar toDate = duration.getSecond();
 
-			if (snaaSecretAuthCookie == null) {
+			if (snaaSecretAuthCookie == null || snaaSecretAuthCookie.secretAuthenticationKeys == null) {
 
 				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
 				PublicReservationDataList list = new PublicReservationDataList(reservations);
@@ -86,6 +86,7 @@ public class RsResource {
 				return Response.ok(jsonResponse).build();
 
 			} else {
+
 				GetReservations gr = new GetReservations();
 				gr.setFrom(fromDate);
 				gr.setTo(toDate);

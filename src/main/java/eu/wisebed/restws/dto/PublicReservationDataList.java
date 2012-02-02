@@ -9,7 +9,10 @@ import eu.wisebed.api.rs.PublicReservationData;
 @XmlRootElement
 public class PublicReservationDataList {
 
-	List<PublicReservationData> reservations;
+	public List<PublicReservationData> reservations;
+
+	public PublicReservationDataList() {
+	}
 
 	public PublicReservationDataList(List<PublicReservationData> reservations) {
 		this.reservations = reservations;
