@@ -11,6 +11,7 @@
 	<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-tabs-1.4.0.js"></script>
+	<script type="text/javascript" src="js/bootstrap-modal-1.4.0.js"></script>
 	<script type="text/javascript" src="js/prettify.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript">
@@ -92,6 +93,7 @@
 					now,
 					tomorrowSameTime,
 					function(data) {
+
 						var reservations = data.reservations;
 						var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbed);
 
@@ -215,7 +217,7 @@
 		}
 
 		function showLoginDialog() {
-			alert('TODO');
+
 		}
 
 		function adaptNavigationBar(navigationData) {
@@ -250,7 +252,23 @@
 
 					secondaryUl.append('<li><a href="javascript:logout(\''+navigationData.testbed+'\')">Logout</a></li>');
 				} else {
-					secondaryUl.append('<li><a href="javascript:showLoginDialog(\''+navigationData.testbed+'\')">Login</a></li>');
+					var loginDialogDiv = $('<div id="WisebedNavigationLoginDialog-'+navigationData.testbed+'" class="modal hide">'
+							+ '	<div class="modal-header">'
+							+ '		<a href="#" class="close">&times;</a>'
+							+ '		<h3>Modal Heading</h3>'
+							+ '	</div>'
+							+ '	<div class="modal-body">'
+							+ '		<p>One fine body...</p>'
+							+ '	</div>'
+							+ '	<div class="modal-footer">'
+							+ '		<a href="javascript:;" class="btn secondary" onclick="$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').hide()">Cancel</a>'
+							+ '		<a href="javascript:;" class="btn primary" onclick="$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').hide()">OK</a>'
+							+ '	</div>'
+							+ '</div>');
+					$('#WisebedContainer').append(loginDialogDiv);
+					secondaryUl.append('<li>'
+							+ '	<a href="javascript:$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').modal(\'show\')" data-backdrop="static">Login</a>'
+							+ '</li>');
 				}
 			}
 		}
