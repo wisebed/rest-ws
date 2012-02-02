@@ -4,7 +4,7 @@
 	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
 	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
 	<link rel="stylesheet" media="screen" href="css/prettify.css">
-	<link rel="stylesheet" media="screen" href="css/wisebed-gui.css">
+	<link rel="stylesheet" media="screen" href="css/wisegui.css">
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/jquery.cookie.js"></script>
@@ -14,6 +14,7 @@
 	<script type="text/javascript" src="js/bootstrap-modal-1.4.0.js"></script>
 	<script type="text/javascript" src="js/prettify.js"></script>
 	<script type="text/javascript" src="js/wisebed.js"></script>
+	<script type="text/javascript" src="js/wisegui.js"></script>
 	<script type="text/javascript">
 
 		function onAjaxError(jqXHR, textStatus, errorThrown) {
@@ -25,37 +26,37 @@
 
 		function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
-			parentDiv.append($('<h1>Testbed Details '+navigationData.testbed+'</h1>'));
+			parentDiv.append($('<h1>Testbed Details '+navigationData.testbedId+'</h1>'));
 
 			var tabs = $('<ul class="tabs">'
-					+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbed+'">Description</a></li>'
-					+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbed+'">Nodes</a></li>'
-					+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbed+'">Reservations</a></li>'
-					+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed+'">WiseML (JSON)</a></li>'
-					+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed+'">WiseML (XML)</a></li>'
+					+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbedId+'">Description</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbedId+'">Nodes</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'">WiseML (JSON)</a></li>'
+					+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'">WiseML (XML)</a></li>'
 					+ '</ul>'
 					+ '<div class="tab-content">'
-					+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbed+'"/>'
-					+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbed+'"/>'
-					+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbed+'"/>'
-					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed+'"/>'
-					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed+'"/>'
+					+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbedId+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbedId+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbedId+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'"/>'
+					+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'"/>'
 					+ '</div>');
 
 			parentDiv.append(tabs);
 
 			Wisebed.getWiseMLAsJSON(
-					navigationData.testbed,
+					navigationData.testbedId,
 					null,
 					function(wiseML) {
 
-						var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbed);
+						var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId);
 						jsonTab.append($('<pre>'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
 
-						var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbed);
+						var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbedId);
 						descriptionTab.append(wiseML.setup.description);
 
-						var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbed);
+						var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 						var nodes = wiseML.setup.node;
 
 						var tableHead = ["URN", "Type"];
@@ -68,17 +69,19 @@
 						}
 
 						var table = buildTable(tableHead, tableRows);
-						table.tablesorter({ sortList: [[0,0]] });
+						if (tableRows.length > 0) {
+							table.tablesorter({ sortList: [[0,0]] });
+						}
 						nodesTab.append(table);
 					},
 					onAjaxError
 			);
 			
 			Wisebed.getWiseMLAsXML(
-					navigationData.testbed,
+					navigationData.testbedId,
 					null,
 					function(wiseML) {
-						var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbed);
+						var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId);
 						xmlTab.append($('<pre lang="xml">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
 					},
 					onAjaxError
@@ -89,13 +92,13 @@
 			tomorrowSameTime.setDate(now.getDate() + 1);
 
 			Wisebed.getReservations(
-					navigationData.testbed,
+					navigationData.testbedId,
 					now,
 					tomorrowSameTime,
 					function(data) {
 
 						var reservations = data.reservations;
-						var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbed);
+						var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbedId);
 
 						var tableHead = ["From", "Until", "User Data", "Node URNs"];
 						var tableRows = [];
@@ -109,7 +112,9 @@
 
 						var table = buildTable(tableHead, tableRows);
 						reservationsTab.append(table);
-						table.tablesorter({ sortList: [[0,0]] });
+						if (tableRows.length > 0) {
+							table.tablesorter({ sortList: [[0,0]] });
+						}
 					},
 					onAjaxError
 			);
@@ -141,7 +146,7 @@
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {
-			parentDiv.append($('<h1>Experiment '+navigationData.testbed+' '+navigationData.experiment+'</h1>'));
+			parentDiv.append($('<h1>Experiment '+navigationData.testbedId+' '+navigationData.experiment+'</h1>'));
 		}
 
 		function loadTestbedOverviewContainer(navigationData, parentDiv) {
@@ -152,7 +157,7 @@
 							console.log(data);
 							$.each(data.testbedMap, function(key, value) {
 								var tr = $('<tr/>');
-								var tdName = $('<td><a href="#nav=testbed&testbed='+key+'">'+value.name+'</a></td>');
+								var tdName = $('<td><a href="#nav=testbed&testbedId='+key+'">'+value.name+'</a></td>');
 								var tdUrnPrefixes = $('<td>'+value.urnPrefixes+'</td>');
 								var tdSessionManagementEndpointUrl = $('<td>'+value.sessionManagementEndpointUrl+'</td>');
 								tr.append(tdName, tdUrnPrefixes, tdSessionManagementEndpointUrl);
@@ -183,17 +188,21 @@
 		var appState = {
 		};
 
-		function getAppStateKey(nav, testbed, experiment) {
-			if (nav == 'overview') {return 'overview'}
-			if (nav == 'testbed' && experiment == '') {return 'testbed=' + testbed}
-			if (nav == 'testbed' && experiment != '') {return 'testbed=' + testbed + '&experiment=' + experiment}
+		function getAppStateKey(navigationData) {
+			if (navigationData.nav == 'overview') {
+				return 'overview';
+			} else if (navigationData.nav == 'testbed' && navigationData.experiment == '') {
+				return 'testbedId=' + navigationData.testbedId;
+			} else if (navigationData.nav == 'testbed' && navigationData.experiment != '') {
+				return 'testbedId=' + navigationData.testbedId + '&experiment=' + navigationData.experiment;
+			}
 			return undefined;
 		}
 
-		function getCreateContentFunction(nav, testbed, experiment) {
-			if (nav == 'overview') {return loadTestbedOverviewContainer}
-			if (nav == 'testbed' && experiment == '') {return loadTestbedDetailsContainer}
-			if (nav == 'testbed' && experiment != '') {return loadExperimentContainer}
+		function getCreateContentFunction(navigationData) {
+			if (navigationData.nav == 'overview') {return loadTestbedOverviewContainer;}
+			if (navigationData.nav == 'testbed' && navigationData.experiment == '') {return loadTestbedDetailsContainer;}
+			if (navigationData.nav == 'testbed' && navigationData.experiment != '') {return loadExperimentContainer;}
 			return undefined;
 		}
 
@@ -214,10 +223,6 @@
 
 		function showReservationsDialog() {
 			alert('TODO');
-		}
-
-		function showLoginDialog() {
-
 		}
 
 		function adaptNavigationBar(navigationData) {
@@ -245,30 +250,18 @@
 
 				secondaryUl.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
 
-				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbed)) {
+				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbedId)) {
 					var select = $('#WisebedNavigationExperimentSelect');
 					select[0].disabled = false;
 					fillWisebedNavigationExperimentSelect(select, navigationData);
 
-					secondaryUl.append('<li><a href="javascript:logout(\''+navigationData.testbed+'\')">Logout</a></li>');
+					secondaryUl.append('<li><a href="javascript:logout(\''+navigationData.testbedId+'\')">Logout</a></li>');
 				} else {
-					var loginDialogDiv = $('<div id="WisebedNavigationLoginDialog-'+navigationData.testbed+'" class="modal hide">'
-							+ '	<div class="modal-header">'
-							+ '		<a href="#" class="close">&times;</a>'
-							+ '		<h3>Modal Heading</h3>'
-							+ '	</div>'
-							+ '	<div class="modal-body">'
-							+ '		<p>One fine body...</p>'
-							+ '	</div>'
-							+ '	<div class="modal-footer">'
-							+ '		<a href="javascript:;" class="btn secondary" onclick="$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').hide()">Cancel</a>'
-							+ '		<a href="javascript:;" class="btn primary" onclick="$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').hide()">OK</a>'
-							+ '	</div>'
-							+ '</div>');
-					$('#WisebedContainer').append(loginDialogDiv);
-					secondaryUl.append('<li>'
-							+ '	<a href="javascript:$(\'#WisebedNavigationLoginDialog-'+navigationData.testbed+'\').modal(\'show\')" data-backdrop="static">Login</a>'
-							+ '</li>');
+
+					var loginLink = $('<a href="javascript:$(\'#WisebedLoginDialog-'+navigationData.testbedId+'\').show();">Login</a>');
+					var loginLi = $('<li/>');
+					loginLi.append(loginLink);
+					secondaryUl.append(loginLi);
 				}
 			}
 		}
@@ -282,15 +275,21 @@
 			console.log('TODO fillWisebedNavigationExperimentSelect');
 		}
 
-		function onHashChange(e) {
+		function getNavigationData() {
 
 			var nav = $.bbq.getState('nav') || 'overview';
-			var testbed = $.bbq.getState('testbed') || '';
+			var testbedId = $.bbq.getState('testbedId') || '';
 			var experiment = $.bbq.getState('experiment') || '';
 
-			var appStateKey = getAppStateKey(nav, testbed, experiment);
-			var createContentFunction = getCreateContentFunction(nav, testbed, experiment);
-			var navigationData = {nav:nav, testbed:testbed, experiment:experiment};
+			return {nav:nav, testbedId:testbedId, experiment:experiment};
+		}
+
+		function onHashChange(e) {
+
+			var navigationData = getNavigationData();
+
+			var appStateKey = getAppStateKey(navigationData);
+			var createContentFunction = getCreateContentFunction(navigationData);
 
 			adaptNavigationBar(navigationData);
 
@@ -308,10 +307,15 @@
 
 				console.log("Creating container for: " + JSON.stringify(navigationData));
 
-				var parentDiv = $('<div/>');
-				$('#WisebedContainer .WisebedContentContainer').append(parentDiv);
-				createContentFunction(navigationData, parentDiv);
-				appState[appStateKey] = parentDiv;
+				var container = $('<div id="WisebedContentContainer'+(navigationData.testbedId ? '-' + navigationData.testbedId : '')+'"/>');
+				$('#WisebedContainer .WisebedContentContainer').append(container);
+				createContentFunction(navigationData, container);
+
+				appState[appStateKey] = container;
+
+				if (navigationData.testbedId) {
+					WiseGuiLoginDialog.createLoginDialogIfNotExisting(navigationData.testbedId, onAjaxError);
+				}
 
 				$('.tabs').tabs();
 			}

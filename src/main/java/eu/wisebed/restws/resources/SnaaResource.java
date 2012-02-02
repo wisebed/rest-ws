@@ -31,6 +31,7 @@ import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 
+@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/login")
 public class SnaaResource {
 
 	@InjectLogger
@@ -70,7 +71,6 @@ public class SnaaResource {
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
-	@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/login")
 	public Response login(@PathParam("testbedId") final String testbedId, final LoginData loginData) {
 
 		List<SecretAuthenticationKey> secretAuthenticationKeys;

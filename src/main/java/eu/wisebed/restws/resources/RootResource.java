@@ -19,7 +19,7 @@ public class RootResource {
 	private WisebedRestServerConfig config;
 
 	@GET
-	@Path("testbeds")
+	@Path("/testbeds")
 	@Produces({MediaType.APPLICATION_JSON})
 	public TestbedMap getTestbedList() {
 		return config.testbedMap;
@@ -27,7 +27,7 @@ public class RootResource {
 	
 	
 	@GET
-	@Path("cookies")
+	@Path("/cookies")
 	public Response getCookies() {
 
 		int maxAge = 60 * 60 * 24;

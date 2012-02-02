@@ -1,5 +1,10 @@
 body {
-	padding-top: 50px;
+	padding-top: 10px;
+}
+
+.modal {
+	width: 800px;
+	margin: -250px 0 0 -400px;
 }
 
 .topbar-wrapper {
@@ -7,10 +12,12 @@ body {
 	height: 40px;
 	margin: 5px 0 15px;
 }
+
 .topbar-wrapper .topbar {
 	position: absolute;
 	margin: 0 -20px;
 }
+
 .topbar-wrapper .topbar .topbar-inner {
 	padding-left: 20px;
 	padding-right: 20px;
