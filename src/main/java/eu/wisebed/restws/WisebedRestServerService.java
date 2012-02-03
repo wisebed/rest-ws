@@ -12,6 +12,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -47,30 +48,22 @@ public class WisebedRestServerService extends AbstractService {
 
 			FilterHolder guiceFilterHolder = new FilterHolder(guiceFilter);
 
-			ServletContextHandler guiceHandler = new ServletContextHandler();
-			guiceHandler.setContextPath("/");
-			guiceHandler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
-			guiceHandler.addFilter(guiceFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
+			ServletContextHandler guiceContextHandler = new ServletContextHandler();
+			guiceContextHandler.setContextPath("/");
+			guiceContextHandler.addFilter(guiceFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
+			guiceContextHandler.addServlet(DefaultServlet.class, "/");
 
 			// set up JAX-WS support for Jetty
-			JettyHttpServerProvider.setServer(server);
-			System.setProperty("com.sun.net.httpserver.HttpServerProvider",
+			System.setProperty(
+					"com.sun.net.httpserver.HttpServerProvider",
 					JettyHttpServerProvider.class.getCanonicalName()
 			);
+			JettyHttpServerProvider.setServer(server);
 
-			// set up static file delivery for HTTP requests to "/"
-			String webDir = this.getClass().getClassLoader().getResource("webapp").toExternalForm();
-			log.info("Using webapp path=" + webDir);
+			ContextHandlerCollection contexts = new ContextHandlerCollection();
+			contexts.setHandlers(new Handler[]{ guiceContextHandler });
 
-			ResourceHandler resourceHandler = new ResourceHandler();
-			resourceHandler.setDirectoriesListed(false);
-			resourceHandler.setWelcomeFiles(new String[]{"index.html"});
-			resourceHandler.setResourceBase(webDir);
-
-			HandlerList handlers = new HandlerList();
-			handlers.setHandlers(new Handler[]{resourceHandler, guiceHandler, new ContextHandlerCollection()});
-
-			server.setHandler(handlers);
+			server.setHandler(contexts);
 			server.start();
 
 			log.info("Started server on port {}", config.webServerPort);

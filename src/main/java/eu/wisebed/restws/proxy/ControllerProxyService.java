@@ -6,6 +6,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.ws.Endpoint;
 
+import eu.wisebed.restws.util.InjectLogger;
 import org.joda.time.DateTime;
 
 import com.google.common.eventbus.AsyncEventBus;
@@ -19,11 +20,15 @@ import eu.wisebed.api.controller.RequestStatus;
 import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.util.Base64Helper;
+import org.slf4j.Logger;
 
 @WebService(serviceName = "ControllerService", targetNamespace = "urn:ControllerService",
 		portName = "ControllerPort", endpointInterface = "eu.wisebed.api.controller.Controller")
 public class ControllerProxyService extends AbstractService implements Controller {
 
+	@InjectLogger
+	private Logger log;
+	
 	private final JobObserver jobObserver;
 
 	private final WisebedRestServerConfig config;
@@ -80,6 +85,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 	@Override
 	protected void doStart() {
 		try {
+			log.info("Starting SOAP controller endpoint on " + endpointUrl);
 			endpoint = Endpoint.publish(endpointUrl, this);
 			notifyStarted();
 		} catch (Exception e) {
