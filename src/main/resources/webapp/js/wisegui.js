@@ -182,16 +182,6 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	this.html.append(filter);
 
 
-	console.log("All nodes:" + nodes.length);
-	/*
-
-	var f1 = "(true)";
-	var f2 = '(e.nodeType == "isense")';
-	var f3 = '(e.nodeType == "isense" && e.position.x == 25)';
-	var f4 = '($(e.capability).filter(function (index) {return this.name.indexOf("temperature") > 0;}).length > 0)';
-	var f = f3 + "&&" + f4;
-	*/
-
 	if(f != null && f.length > 0) {
 		filter_input.attr("value", f);
 		// Filter
@@ -201,8 +191,6 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 		});
 	}
 
-
-	console.log("Filtered nodes:" + nodes.length);
 
 	this.table = $('<table class="bordered-table zebra-striped"></table>');
 
@@ -296,19 +284,3 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 	}
 	return selected;
 }
-
-/**
- * #################################################################
- * WiseGuiFilter
- * #################################################################
- */
-
-var WiseGuiFilter = new function(wiseML) {
-
-
-}
-
-
-/*
-
-*/
