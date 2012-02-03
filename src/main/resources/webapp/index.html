@@ -277,7 +277,9 @@
 								experimentSelect.attr('disabled', false);
 								experimentSelect.bind('change', function(e) {
 									var reservation = experimentSelect.find('option:selected').first().data('reservation');
-									navigateToExperiment(navigationData.testbedId, reservation);
+									if (reservation) {
+										navigateToExperiment(navigationData.testbedId, reservation);
+									}
 								});
 							},
 							onAjaxError
