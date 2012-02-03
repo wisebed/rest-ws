@@ -155,6 +155,7 @@
 
 		function loadExperimentContainer(navigationData, parentDiv) {
 			parentDiv.append($('<h1>Experiment '+navigationData.testbedId+' '+navigationData.experiment+'</h1>'));
+			parentDiv.append($('<textarea></textarea>'));
 		}
 
 		function loadTestbedOverviewContainer(navigationData, parentDiv) {
@@ -325,7 +326,10 @@
 		function navigateToExperiment(testbedId, reservation) {
 			console.log('navigateToExperiment(testbedId='+testbedId+', reservation='+JSON.stringify(reservation)+')');
 			Wisebed.experiments.getUrl(testbedId, reservation, function(experimentUrl){
-				console.log(experimentUrl);
+				var experimentId = experimentUrl.substr(experimentUrl.lastIndexOf('/') + 1);
+				var navigationData = getNavigationData();
+				navigationData.experiment = experimentId;
+				$.bbq.pushState(navigationData);
 			}, onAjaxError);
 		}
 
