@@ -23,8 +23,14 @@
 
 package eu.wisebed.restws.jobs;
 
-import static com.google.common.collect.Sets.newHashSet;
+import de.uniluebeck.itm.tr.util.TimedCache;
+import de.uniluebeck.itm.tr.util.TimedCacheListener;
+import de.uniluebeck.itm.tr.util.Tuple;
+import eu.wisebed.api.controller.RequestStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -32,15 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.uniluebeck.itm.tr.util.TimedCache;
-import de.uniluebeck.itm.tr.util.TimedCacheListener;
-import de.uniluebeck.itm.tr.util.Tuple;
-import eu.wisebed.api.controller.RequestStatus;
+import static com.google.common.collect.Sets.newHashSet;
 
 public class JobObserver {
 

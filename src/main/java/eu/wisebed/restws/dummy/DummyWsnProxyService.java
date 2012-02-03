@@ -1,14 +1,7 @@
 package eu.wisebed.restws.dummy;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
@@ -17,9 +10,16 @@ import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobNodeStatus;
 import eu.wisebed.restws.jobs.JobState;
 import eu.wisebed.restws.jobs.JobType;
-import eu.wisebed.restws.proxy.WsnProxy;
+import eu.wisebed.restws.proxy.WsnProxyService;
 
-public class DummyWsnProxy implements WsnProxy {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import static com.google.common.collect.Lists.newArrayList;
+
+public class DummyWsnProxyService extends AbstractService implements WsnProxyService {
 
 	@Override
 	public ListenableFuture<Void> addController(String controllerEndpointUrl) {
@@ -204,4 +204,13 @@ public class DummyWsnProxy implements WsnProxy {
 		return job;
 	}
 
+	@Override
+	protected void doStart() {
+		notifyStarted();
+	}
+
+	@Override
+	protected void doStop() {
+		notifyStopped();
+	}
 }

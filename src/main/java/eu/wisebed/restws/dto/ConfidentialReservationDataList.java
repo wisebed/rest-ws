@@ -1,10 +1,9 @@
 package eu.wisebed.restws.dto;
 
-import java.util.List;
+import eu.wisebed.api.rs.ConfidentialReservationData;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-import eu.wisebed.api.rs.ConfidentialReservationData;
+import java.util.List;
 
 @XmlRootElement
 public class ConfidentialReservationDataList {

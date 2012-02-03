@@ -23,6 +23,11 @@
 
 package eu.wisebed.restws.util;
 
+import de.uniluebeck.itm.tr.util.FileUtils;
+import eu.wisebed.api.rs.RS;
+import eu.wisebed.api.rs.RSService;
+
+import javax.xml.ws.BindingProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,12 +35,6 @@ import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.xml.ws.BindingProvider;
-
-import de.uniluebeck.itm.tr.util.FileUtils;
-import eu.wisebed.api.rs.RS;
-import eu.wisebed.api.rs.RSService;
 
 
 public class RSServiceHelper {

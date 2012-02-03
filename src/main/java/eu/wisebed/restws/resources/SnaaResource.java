@@ -1,24 +1,6 @@
 package eu.wisebed.restws.resources;
 
-import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
-import static eu.wisebed.restws.util.JSONHelper.toJSON;
-
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.slf4j.Logger;
-
 import com.google.inject.Inject;
-
 import eu.wisebed.api.snaa.AuthenticationExceptionException;
 import eu.wisebed.api.snaa.SNAA;
 import eu.wisebed.api.snaa.SNAAExceptionException;
@@ -28,6 +10,17 @@ import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
+import org.slf4j.Logger;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.List;
+
+import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
+import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/login")
 public class SnaaResource {

@@ -1,16 +1,7 @@
 package eu.wisebed.restws.proxy;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.ws.Holder;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 import eu.wisebed.api.common.KeyValuePair;
 import eu.wisebed.api.rs.RS;
 import eu.wisebed.api.sm.SessionManagement;
@@ -21,6 +12,13 @@ import eu.wisebed.restws.exceptions.UnknownTestbedIdException;
 import eu.wisebed.restws.util.RSServiceHelper;
 import eu.wisebed.restws.util.SNAAServiceHelper;
 import eu.wisebed.restws.util.WSNServiceHelper;
+
+import javax.xml.ws.Holder;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 @Singleton
 public class WebServiceEndpointManagerImpl implements WebServiceEndpointManager {

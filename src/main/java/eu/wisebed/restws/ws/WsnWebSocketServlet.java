@@ -1,16 +1,15 @@
 package eu.wisebed.restws.ws;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.annotation.concurrent.ThreadSafe;
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import eu.wisebed.restws.util.Base64Helper;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.annotation.concurrent.ThreadSafe;
+import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Singleton
 @ThreadSafe
@@ -39,7 +38,7 @@ public class WsnWebSocketServlet extends WebSocketServlet {
 			return null;
 		}
 
-		String experimentUrl = splitPath[2];
+		String experimentUrl = Base64Helper.decode(splitPath[2]);
 
 		return wsnWebSocketFactory.create(experimentUrl);
 	}

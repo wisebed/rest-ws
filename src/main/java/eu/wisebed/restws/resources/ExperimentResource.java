@@ -15,8 +15,8 @@ import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobNodeStatus;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
-import eu.wisebed.restws.proxy.WsnProxy;
-import eu.wisebed.restws.proxy.WsnProxyManager;
+import eu.wisebed.restws.proxy.WsnProxyManagerService;
+import eu.wisebed.restws.proxy.WsnProxyService;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JSONHelper;
@@ -62,7 +62,7 @@ public class ExperimentResource {
 	private WebServiceEndpointManager endpointManager;
 
 	@Inject
-	private WsnProxyManager wsnProxyManager;
+	private WsnProxyManagerService wsnProxyManagerService;
 
 	@Context
 	private UriInfo uriInfo;
@@ -173,9 +173,9 @@ public class ExperimentResource {
 					"NONE"
 			);
 
-			wsnProxyManager.create(experimentWsnInstanceUrl, latestUntil);
-			String controllerEndpointUrl = wsnProxyManager.getControllerEndpointUrl(experimentWsnInstanceUrl);
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentWsnInstanceUrl);
+			wsnProxyManagerService.create(experimentWsnInstanceUrl, latestUntil);
+			String controllerEndpointUrl = wsnProxyManagerService.getControllerEndpointUrl(experimentWsnInstanceUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentWsnInstanceUrl);
 			if (wsnProxy == null) {
 				throw new RuntimeException("This should not happen ever :(");
 			}
@@ -264,7 +264,7 @@ public class ExperimentResource {
 		// Invoke the call and redirect the caller
 		try {
 
-			WsnProxy wsn = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsn = wsnProxyManagerService.get(experimentUrl);
 
 			if (wsn == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
@@ -336,12 +336,12 @@ public class ExperimentResource {
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		String requestId = Base64Helper.decode(requestIdBase64);
 
-		WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+		WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 		if (wsnProxy == null) {
 			return createExperimentNotFoundResponse(experimentUrlBase64);
 		}
 
-		Job job = wsnProxyManager.getJob(experimentUrl, requestId);
+		Job job = wsnProxyManagerService.getJob(experimentUrl, requestId);
 		if (job == null) {
 			return Response.status(Status.NOT_FOUND).entity("No job with requestId " + requestId + " found!").build();
 		}
@@ -369,7 +369,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -401,7 +401,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -436,7 +436,7 @@ public class ExperimentResource {
 			message.setSourceNodeId(data.sourceNodeUrn);
 			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -464,7 +464,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -496,7 +496,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -527,7 +527,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -560,7 +560,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -593,7 +593,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -624,7 +624,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
@@ -656,7 +656,7 @@ public class ExperimentResource {
 
 		try {
 
-			WsnProxy wsnProxy = wsnProxyManager.get(experimentUrl);
+			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}

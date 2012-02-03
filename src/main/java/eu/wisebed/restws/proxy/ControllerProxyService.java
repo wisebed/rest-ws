@@ -1,26 +1,26 @@
 package eu.wisebed.restws.proxy;
 
-import java.util.List;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import javax.xml.ws.Endpoint;
-
-import eu.wisebed.restws.util.InjectLogger;
-import org.joda.time.DateTime;
-
-import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.controller.Controller;
 import eu.wisebed.api.controller.RequestStatus;
 import eu.wisebed.restws.WisebedRestServerConfig;
+import eu.wisebed.restws.event.ExperimentEndedEvent;
+import eu.wisebed.restws.event.NotificationsEvent;
+import eu.wisebed.restws.event.UpstreamMessageEvent;
 import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.util.Base64Helper;
+import eu.wisebed.restws.util.InjectLogger;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.xml.ws.Endpoint;
+import java.util.List;
 
 @WebService(serviceName = "ControllerService", targetNamespace = "urn:ControllerService",
 		portName = "ControllerPort", endpointInterface = "eu.wisebed.api.controller.Controller")
@@ -28,12 +28,12 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@InjectLogger
 	private Logger log;
-	
+
+	private final WsnProxyManagerService wsnProxyManagerService;
+
 	private final JobObserver jobObserver;
 
 	private final WisebedRestServerConfig config;
-
-	private final AsyncEventBus asyncEventBus;
 
 	private final String experimentWsnInstanceEndpointUrl;
 
@@ -43,26 +43,31 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@Inject
 	public ControllerProxyService(final WisebedRestServerConfig config,
+								  final WsnProxyManagerService wsnProxyManagerService,
 								  @Assisted final JobObserver jobObserver,
-								  @Assisted final String experimentWsnInstanceEndpointUrl,
-								  @Assisted final AsyncEventBus asyncEventBus) {
+								  @Assisted final String experimentWsnInstanceEndpointUrl) {
 
-		this.jobObserver = jobObserver;
 		this.config = config;
+		this.wsnProxyManagerService = wsnProxyManagerService;
+		this.jobObserver = jobObserver;
 		this.experimentWsnInstanceEndpointUrl = experimentWsnInstanceEndpointUrl;
-		this.asyncEventBus = asyncEventBus;
 		this.endpointUrl = constructEndpointUrl();
 	}
 
 	@Override
 	public void experimentEnded() {
-		asyncEventBus.post(new ExperimentEndedEvent());
+		ExperimentEndedEvent event = new ExperimentEndedEvent(experimentWsnInstanceEndpointUrl);
+		getEventBus().post(event);
+	}
+
+	private EventBus getEventBus() {
+		return wsnProxyManagerService.getEventBus(experimentWsnInstanceEndpointUrl);
 	}
 
 	@Override
 	public void receive(@WebParam(name = "msg", targetNamespace = "") final List<Message> messages) {
 		for (Message message : messages) {
-			asyncEventBus.post(new UpstreamMessageEvent(
+			getEventBus().post(new UpstreamMessageEvent(
 					new DateTime(message.getTimestamp().toGregorianCalendar()),
 					message.getSourceNodeId(),
 					message.getBinaryData()
@@ -73,7 +78,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@Override
 	public void receiveNotification(@WebParam(name = "msg", targetNamespace = "") final List<String> notifications) {
-		asyncEventBus.post(new NotificationsEvent(notifications));
+		getEventBus().post(new NotificationsEvent(notifications));
 	}
 
 	@Override

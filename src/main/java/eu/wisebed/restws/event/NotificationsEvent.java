@@ -1,4 +1,4 @@
-package eu.wisebed.restws.proxy;
+package eu.wisebed.restws.event;
 
 public class NotificationsEvent {
 

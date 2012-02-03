@@ -1,24 +1,9 @@
 package eu.wisebed.restws.proxy;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Throwables.propagate;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-
 import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
 import de.uniluebeck.itm.tr.util.TimedCache;
 import de.uniluebeck.itm.tr.util.TimedCacheListener;
@@ -26,15 +11,30 @@ import de.uniluebeck.itm.tr.util.Tuple;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.util.InjectLogger;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.collect.Maps.newHashMap;
 
 @Singleton
-public class WsnProxyManagerImpl implements WsnProxyManager {
+public class WsnProxyManagerServiceImpl extends AbstractService implements WsnProxyManagerService {
 
 	private static class ProxyCacheEntry {
 
 		private final ExecutorService executorService;
 
-		private final WsnProxyService wsnProxyService;
+		private final WsnProxyServiceImpl wsnProxyServiceImpl;
 
 		private final JobObserver jobObserver;
 
@@ -42,12 +42,12 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 
 		private ProxyCacheEntry(final ControllerProxyService controllerProxyService,
 								final ExecutorService executorService,
-								final WsnProxyService wsnProxyService,
+								final WsnProxyServiceImpl wsnProxyServiceImpl,
 								final JobObserver jobObserver) {
 
 			this.controllerProxyService = controllerProxyService;
 			this.executorService = executorService;
-			this.wsnProxyService = wsnProxyService;
+			this.wsnProxyServiceImpl = wsnProxyServiceImpl;
 			this.jobObserver = jobObserver;
 		}
 
@@ -59,8 +59,8 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 			return executorService;
 		}
 
-		public WsnProxyService getWsnProxyService() {
-			return wsnProxyService;
+		public WsnProxyServiceImpl getWsnProxyService() {
+			return wsnProxyServiceImpl;
 		}
 
 		public JobObserver getJobObserver() {
@@ -103,8 +103,24 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 	@Inject
 	private WsnProxyServiceFactory wsnProxyServiceFactory;
 
-	public WsnProxyManagerImpl() {
+	private final Map<String, AsyncEventBus> eventBusMap = newHashMap();
+
+	private ExecutorService executor;
+
+	public WsnProxyManagerServiceImpl() {
 		proxyCache.setListener(experimentExpirationListener);
+	}
+
+	@Override
+	protected void doStart() {
+		executor = Executors.newCachedThreadPool();
+		notifyStarted();
+	}
+
+	@Override
+	protected void doStop() {
+		ExecutorUtils.shutdown(executor, 10, TimeUnit.SECONDS);
+		notifyStopped();
 	}
 
 	@Override
@@ -120,24 +136,22 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 
 		ControllerProxyService controllerProxyService = controllerProxyServiceFactory.create(
 				experimentWsnInstanceEndpointUrl,
-				jobObserver,
-				asyncEventBus
+				jobObserver
 		);
 
-		WsnProxyService wsnProxyService = wsnProxyServiceFactory.create(
+		WsnProxyServiceImpl wsnProxyServiceImpl = wsnProxyServiceFactory.create(
 				jobObserver,
-				experimentWsnInstanceEndpointUrl,
-				asyncEventBus
+				experimentWsnInstanceEndpointUrl
 		);
 
 		try {
 			controllerProxyService.start().get();
-			wsnProxyService.start().get();
+			wsnProxyServiceImpl.start().get();
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 
-		ProxyCacheEntry proxyCacheEntry = new ProxyCacheEntry(controllerProxyService, executor, wsnProxyService,
+		ProxyCacheEntry proxyCacheEntry = new ProxyCacheEntry(controllerProxyService, executor, wsnProxyServiceImpl,
 				jobObserver
 		);
 		Duration d = new Duration(DateTime.now(), expiration);
@@ -147,7 +161,7 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 
 	@Override
 	@Nullable
-	public WsnProxy get(@Nonnull final String experimentWsnInstanceEndpointUrl) {
+	public WsnProxyService get(@Nonnull final String experimentWsnInstanceEndpointUrl) {
 
 		checkNotNull(experimentWsnInstanceEndpointUrl);
 
@@ -178,5 +192,15 @@ public class WsnProxyManagerImpl implements WsnProxyManager {
 		}
 
 		return proxyCacheEntry.getJobObserver().getJob(requestId);
+	}
+
+	@Override
+	public synchronized AsyncEventBus getEventBus(@Nonnull final String experimentWsnInstanceEndpointUrl) {
+		AsyncEventBus eventBus = eventBusMap.get(experimentWsnInstanceEndpointUrl);
+		if (eventBus == null) {
+			eventBus = new AsyncEventBus(executor);
+			eventBusMap.put(experimentWsnInstanceEndpointUrl, eventBus);
+		}
+		return eventBus;
 	}
 }

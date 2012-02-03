@@ -1,12 +1,11 @@
 package eu.wisebed.restws.dto;
 
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlRootElement;
-
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.JSONHelper;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 @XmlRootElement
 public class SnaaSecretAuthenticationKeyList {

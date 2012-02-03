@@ -1,8 +1,7 @@
 package eu.wisebed.restws.util;
 
-import java.io.File;
-import java.nio.charset.Charset;
-
+import com.google.common.io.Files;
+import eu.wisebed.restws.dto.TestbedMap;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -10,9 +9,8 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
-import com.google.common.io.Files;
-
-import eu.wisebed.restws.dto.TestbedMap;
+import java.io.File;
+import java.nio.charset.Charset;
 
 public class TestbedMapOptionParser extends OptionHandler<TestbedMap> {
 

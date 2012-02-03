@@ -140,8 +140,100 @@
 		}
 
 		function loadExperimentContainer(navigationData, parentDiv) {
-			parentDiv.append($('<h1>Experiment '+navigationData.testbedId+' '+navigationData.experiment+'</h1>'));
-			parentDiv.append($('<textarea></textarea>'));
+
+			parentDiv.append($('<h1>Experimentation View</h1>'));
+
+			var sendMessagesDivId = 'WisebedExperimentationSendDiv-'+navigationData.testbedId+'-'+navigationData.experimentId;
+			var sendMessagesDiv = $('<div id="'+sendMessagesDivId+'">'
+					+ '	<h3>Send Messages</h3>#'
+					+ '	Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).<br/>'
+					+ '	Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>'
+					+ '	<form>'
+					+ '		<fieldset>'
+					+ '			<select name="nodeUrn" id="nodeUrn" class="span4"></select>'
+					+ '			<input type="text" id="message"  name="message" value="" class="span8"/>'
+					+ '			<input type="submit" value="Send to Node" class="span4"/>'
+					+ '		</fieldset>'
+					+ '	</form>'
+					+ '</div>');
+
+			var outputTabsDivId = 'WisebedExperimentationOutputDiv-'+navigationData.testbedId+'-'+navigationData.experimentId;
+			var outputTabs = $('<div id="'+outputTabsDivId+'">'
+					+ '	<ul class="tabs">'
+					+ '		<li class="active"><a href="#nodeOutputsTab">Node Outputs</a></li>'
+					+ '		<li><a href="#notificationsTab">Backend Notifications</a></li>'
+					+ '	</ul>'
+					+ '	<div id="outputTabs" class="tab-content error">'
+					+ '		<div class="active tab-pane" id="nodeOutputsTab">'
+					+ '			<textarea class="nodeOutputsTextArea" style="width: 100%; height:300px;" readonly></textarea>'
+					+ '		</div>'
+					+ '		<div class="tab-pane" id="notificationsTab">'
+					+ '			<textarea class="notificationsTextArea" style="width: 100%; height:300px;" readonly></textarea>'
+					+ '		</div>'
+					+ '	</div>'
+					+ '</div>');
+
+			parentDiv.append(sendMessagesDiv);
+			parentDiv.append(outputTabs);
+
+			function onWebSocketMessageEvent(event) {
+
+				var message = JSON.parse(event.data);
+
+				if (!message.type) {
+					console.log('Received message with unknown content: ' + event.data);
+					return;
+				}
+
+				if (message.type == 'upstream') {
+
+					var nodeOutputsTextArea = outputTabs.find('.nodeOutputsTextArea').first();
+					nodeOutputsTextArea.append(message.timestamp + " | " + message.sourceNodeUrn + " | " + atob(message.payloadBase64) + '\n');
+
+				} else if (message.type == 'notification') {
+
+					var notificationsTextArea = outputTabs.find('.notificationsTextArea').first();
+					notificationsTextArea.append(message.timestamp + " | " + message.message + '\n');
+
+				}
+			}
+
+			var socket;
+			if (!window.WebSocket) {
+				window.WebSocket = window.MozWebSocket;
+			}
+
+			if (window.WebSocket) {
+
+				socket = new WebSocket('ws://localhost:8880/ws/experiments/'+navigationData.experimentId);
+				socket.onmessage = onWebSocketMessageEvent;
+				socket.onopen = function(event) {
+					// TODO show connectivity status
+				};
+				socket.onclose = function(event) {
+					// TODO show connectivity status
+				};
+
+			} else {
+				alert("Your browser does not support Web Sockets.");
+			}
+
+			function send(message) {
+				if (!window.WebSocket) { return; }
+				if (socket.readyState == WebSocket.OPEN) {
+					socket.send(message);
+				} else {
+					alert("The socket is not open.");
+				}
+			}
+
+			sendMessagesDiv.find('form').first().submit(function(event){
+				var message = {
+					targetNodeUrn : event.target.elements.nodeUrn.value,
+					payloadBase64 : btoa(event.target.elements.message.value)
+				};
+				socket.send(JSON.stringify(message));
+			});
 		}
 
 		function loadTestbedOverviewContainer(navigationData, parentDiv) {
@@ -186,18 +278,18 @@
 		function getAppStateKey(navigationData) {
 			if (navigationData.nav == 'overview') {
 				return 'overview';
-			} else if (navigationData.nav == 'testbed' && navigationData.experiment == '') {
+			} else if (navigationData.nav == 'testbed' && navigationData.experimentId == '') {
 				return 'testbedId=' + navigationData.testbedId;
-			} else if (navigationData.nav == 'testbed' && navigationData.experiment != '') {
-				return 'testbedId=' + navigationData.testbedId + '&experiment=' + navigationData.experiment;
+			} else if (navigationData.nav == 'testbed' && navigationData.experimentId != '') {
+				return 'testbedId=' + navigationData.testbedId + '&experimentId=' + navigationData.experimentId;
 			}
 			return undefined;
 		}
 
 		function getCreateContentFunction(navigationData) {
 			if (navigationData.nav == 'overview') {return loadTestbedOverviewContainer;}
-			if (navigationData.nav == 'testbed' && navigationData.experiment == '') {return loadTestbedDetailsContainer;}
-			if (navigationData.nav == 'testbed' && navigationData.experiment != '') {return loadExperimentContainer;}
+			if (navigationData.nav == 'testbed' && navigationData.experimentId == '') {return loadTestbedDetailsContainer;}
+			if (navigationData.nav == 'testbed' && navigationData.experimentId != '') {return loadExperimentContainer;}
 			return undefined;
 		}
 
@@ -310,22 +402,29 @@
 		}
 
 		function navigateToExperiment(testbedId, reservation) {
-			console.log('navigateToExperiment(testbedId='+testbedId+', reservation='+JSON.stringify(reservation)+')');
-			Wisebed.experiments.getUrl(testbedId, reservation, function(experimentUrl){
-				var experimentId = experimentUrl.substr(experimentUrl.lastIndexOf('/') + 1);
-				var navigationData = getNavigationData();
-				navigationData.experiment = experimentId;
-				$.bbq.pushState(navigationData);
-			}, onAjaxError);
+
+			Wisebed.experiments.getUrl(
+					testbedId,
+					reservation,
+					function(experimentUrl){
+
+						var experimentId = experimentUrl.substr(experimentUrl.lastIndexOf('/') + 1);
+						var navigationData = getNavigationData();
+						navigationData.experimentId = experimentId;
+						$.bbq.pushState(navigationData);
+
+					},
+					onAjaxError
+			);
 		}
 
 		function getNavigationData() {
 
-			var nav = $.bbq.getState('nav') || 'overview';
-			var testbedId = $.bbq.getState('testbedId') || '';
-			var experiment = $.bbq.getState('experiment') || '';
-
-			return {nav:nav, testbedId:testbedId, experiment:experiment};
+			return {
+				nav          : $.bbq.getState('nav')          || 'overview',
+				testbedId    : $.bbq.getState('testbedId')    || '',
+				experimentId : $.bbq.getState('experimentId') || ''
+			};
 		}
 
 		function onHashChange(e) {

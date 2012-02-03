@@ -3,13 +3,7 @@ package eu.wisebed.restws;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.matcher.Matchers;
-
-import eu.wisebed.restws.proxy.ControllerProxyServiceFactory;
-import eu.wisebed.restws.proxy.WebServiceEndpointManager;
-import eu.wisebed.restws.proxy.WebServiceEndpointManagerImpl;
-import eu.wisebed.restws.proxy.WsnProxyManager;
-import eu.wisebed.restws.proxy.WsnProxyManagerImpl;
-import eu.wisebed.restws.proxy.WsnProxyServiceFactory;
+import eu.wisebed.restws.proxy.*;
 import eu.wisebed.restws.util.Log4JTypeListener;
 
 public class WisebedRestServerModule extends AbstractModule {
@@ -26,7 +20,7 @@ public class WisebedRestServerModule extends AbstractModule {
 		bind(WisebedRestServerConfig.class).toInstance(config);
 		bind(WebServiceEndpointManager.class).to(WebServiceEndpointManagerImpl.class);
 		
-		bind(WsnProxyManager.class).to(WsnProxyManagerImpl.class);
+		bind(WsnProxyManagerService.class).to(WsnProxyManagerServiceImpl.class);
 
 		install(new FactoryModuleBuilder().build(ControllerProxyServiceFactory.class));
 		install(new FactoryModuleBuilder().build(WsnProxyServiceFactory.class));

@@ -1,15 +1,14 @@
 package eu.wisebed.restws;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import de.uniluebeck.itm.tr.util.Logging;
+import eu.wisebed.restws.proxy.WsnProxyManagerService;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
-import de.uniluebeck.itm.tr.util.Logging;
 
 /**
  * This class must not be modified.
@@ -36,7 +35,10 @@ public class WisebedRestServer {
 		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config));
 		final WisebedRestServerService serverService = injector.getInstance(WisebedRestServerService.class);
 
+		final WsnProxyManagerService wsnProxyManagerService = injector.getInstance(WsnProxyManagerService.class);
+
 		try {
+			wsnProxyManagerService.start().get();
 			serverService.start().get();
 		} catch (Exception e) {
 			log.warn("Exception while starting server: " + e, e);
@@ -49,6 +51,11 @@ public class WisebedRestServer {
 				log.info("Received EXIT signal. Shutting down server...");
 				try {
 					serverService.stop().get();
+				} catch (Exception e) {
+					log.warn("Exception caught while shutting server: " + e, e);
+				}
+				try {
+					wsnProxyManagerService.stop().get();
 				} catch (Exception e) {
 					log.warn("Exception caught while shutting server: " + e, e);
 				}
