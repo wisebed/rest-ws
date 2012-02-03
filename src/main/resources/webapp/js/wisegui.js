@@ -182,9 +182,11 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		thead_tr.append(thead_th_checkbox);
 	}
 	var thead_th_node_urn = $('<th class="header">Node URN</th>');
+	var thead_th_type = $('<th class="header">Type</th>');
 	var thead_th_position = $('<th class="header">Position</th>');
 	var thead_th_sensors = $('<th class="header">Sensors</th>');
 	thead_tr.append(thead_th_node_urn);
+	thead_tr.append(thead_th_type);
 	thead_tr.append(thead_th_position);
 	thead_tr.append(thead_th_sensors);
 	thead.append(thead_tr);
@@ -214,12 +216,14 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		}
 
 		var td_id = $('<td>' + n.id + '</td>')
+		var td_type = $('<td>' + n.nodeType + '</td>')
 		var td_position = $('<td>(' + n.position.x + ',' + n.position.x + ',' + n.position.x + ')</td>')
 		var td_sensors = $('<td>' + implode(",", cap) + '</td>')
 
 		var tr = $("<tr></tr>");
 		tr.append(td_checkbox);
 		tr.append(td_id);
+		tr.append(td_type);
 		tr.append(td_position);
 		tr.append(td_sensors);
 
@@ -228,7 +232,12 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 
 	// Add to the parent elemenet and add the sorter
 	this.parent.append(this.table);
-	$(this.table).tablesorter({headers:{0:{sorter:false}}});
+
+	if(this.showCheckboxes) {
+		$(this.table).tablesorter({headers:{0:{sorter:false}}});
+	} else {
+		$(this.table).tablesorter();
+	}
 }
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
