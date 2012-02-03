@@ -1,12 +1,15 @@
 package eu.wisebed.restws;
 
-import java.util.EnumSet;
-
-import javax.servlet.DispatcherType;
-
+import com.google.common.util.concurrent.AbstractService;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.servlet.GuiceFilter;
+import eu.wisebed.restws.servlet.InvalidRequestServlet;
+import eu.wisebed.restws.util.InjectLogger;
 import org.eclipse.jetty.http.spi.JettyHttpServerProvider;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -14,13 +17,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 
-import com.google.common.util.concurrent.AbstractService;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.servlet.GuiceFilter;
-
-import eu.wisebed.restws.servlet.InvalidRequestServlet;
-import eu.wisebed.restws.util.InjectLogger;
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
 
 @Singleton
 public class WisebedRestServerService extends AbstractService {
@@ -49,9 +47,6 @@ public class WisebedRestServerService extends AbstractService {
 
 			FilterHolder guiceFilterHolder = new FilterHolder(guiceFilter);
 
-			String webDir = this.getClass().getClassLoader().getResource("webapp").toExternalForm();
-			log.info("Using webapp path=" + webDir);
-
 			ServletContextHandler guiceHandler = new ServletContextHandler();
 			guiceHandler.setContextPath("/");
 			guiceHandler.addServlet(new ServletHolder(new InvalidRequestServlet()), "/*");
@@ -64,13 +59,16 @@ public class WisebedRestServerService extends AbstractService {
 			);
 
 			// set up static file delivery for HTTP requests to "/"
+			String webDir = this.getClass().getClassLoader().getResource("webapp").toExternalForm();
+			log.info("Using webapp path=" + webDir);
+
 			ResourceHandler resourceHandler = new ResourceHandler();
 			resourceHandler.setDirectoriesListed(false);
 			resourceHandler.setWelcomeFiles(new String[]{"index.html"});
 			resourceHandler.setResourceBase(webDir);
 
 			HandlerList handlers = new HandlerList();
-			handlers.setHandlers(new Handler[]{resourceHandler, guiceHandler});
+			handlers.setHandlers(new Handler[]{resourceHandler, guiceHandler, new ContextHandlerCollection()});
 
 			server.setHandler(handlers);
 			server.start();

@@ -17,6 +17,7 @@ import eu.wisebed.api.sm.SessionManagement;
 import eu.wisebed.api.snaa.SNAA;
 import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.dto.TestbedMap;
+import eu.wisebed.restws.exceptions.UnknownTestbedIdException;
 import eu.wisebed.restws.util.RSServiceHelper;
 import eu.wisebed.restws.util.SNAAServiceHelper;
 import eu.wisebed.restws.util.WSNServiceHelper;

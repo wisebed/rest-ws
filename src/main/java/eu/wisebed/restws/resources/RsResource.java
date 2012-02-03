@@ -1,51 +1,32 @@
 package eu.wisebed.restws.resources;
 
-import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
-import static eu.wisebed.restws.util.JSONHelper.toJSON;
-
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-
 import de.uniluebeck.itm.tr.util.Tuple;
-import eu.wisebed.api.rs.AuthorizationExceptionException;
-import eu.wisebed.api.rs.ConfidentialReservationData;
-import eu.wisebed.api.rs.Data;
-import eu.wisebed.api.rs.GetReservations;
-import eu.wisebed.api.rs.PublicReservationData;
-import eu.wisebed.api.rs.RS;
-import eu.wisebed.api.rs.RSExceptionException;
-import eu.wisebed.api.rs.ReservervationConflictExceptionException;
-import eu.wisebed.api.rs.ReservervationNotFoundExceptionException;
-import eu.wisebed.api.rs.SecretReservationKey;
+import eu.wisebed.api.rs.*;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.dto.ConfidentialReservationDataList;
 import eu.wisebed.restws.dto.PublicReservationDataList;
 import eu.wisebed.restws.dto.SecretReservationKeyListRs;
 import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
-import eu.wisebed.restws.proxy.UnknownTestbedIdException;
+import eu.wisebed.restws.exceptions.NotLoggedInException;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
+import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
+import eu.wisebed.restws.util.JSONHelper;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.List;
+
+import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
+import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/reservations")
 public class RsResource {
@@ -56,73 +37,53 @@ public class RsResource {
 	@Inject
 	private WebServiceEndpointManager endpointManager;
 
+	@Inject
+
+	@Context
+	private HttpHeaders httpHeaders;
+
 	@GET
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response listReservations(@PathParam("testbedId") final String testbedId,
-									 @CookieParam(Constants.COOKIE_SECRET_AUTH_KEY)
-									 final SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
-									 @QueryParam("from") final String from, @QueryParam("to") final String to) {
-
-		log.debug("Cookie (secret authentication key): {}", snaaSecretAuthCookie);
+									 @QueryParam("from") final String from,
+									 @QueryParam("to") final String to,
+									 @QueryParam("userOnly") @DefaultValue("false") final boolean userOnly) {
 
 		try {
 
-			RS rs = endpointManager.getRsEndpoint(testbedId);
+			Object response = userOnly ?
+					getConfidentialReservations(testbedId, getSnaaSecretAuthCookie(testbedId), from, to) :
+					getPublicReservations(testbedId, from, to);
 
-			Tuple<XMLGregorianCalendar, XMLGregorianCalendar> duration = convertToDuration(from, to);
-			XMLGregorianCalendar fromDate = duration.getFirst();
-			XMLGregorianCalendar toDate = duration.getSecond();
-
-			if (snaaSecretAuthCookie == null || snaaSecretAuthCookie.secretAuthenticationKeys == null) {
-
-				List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
-				PublicReservationDataList list = new PublicReservationDataList(reservations);
-				String jsonResponse = toJSON(list);
-
-				log.debug("Listing public reservations from {} until {}: {}",
-						new Object[]{fromDate, toDate, jsonResponse}
-				);
-
-				return Response.ok(jsonResponse).build();
-
-			} else {
-
-				GetReservations gr = new GetReservations();
-				gr.setFrom(fromDate);
-				gr.setTo(toDate);
-
-				List<ConfidentialReservationData> reservations = rs.getConfidentialReservations(
-						copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys), gr
-				);
-				String jsonResponse = toJSON(new ConfidentialReservationDataList(reservations));
-
-				log.debug("Listing confidential reservations from {} until {}: {}",
-						new Object[]{fromDate, toDate, jsonResponse}
-				);
-				return Response.ok(jsonResponse).build();
-			}
+			return Response.ok(toJSON(response)).build();
 
 		} catch (IllegalArgumentException e) {
 			return returnError("Wrong input, please encode from and to as XMLGregorianCalendar", e, Status.BAD_REQUEST);
 		} catch (RSExceptionException e) {
 			return returnError("Error while loading data from the reservation system", e, Status.BAD_REQUEST);
-		} catch (UnknownTestbedIdException e) {
-			return createUnknownTestbedIdResponse(testbedId);
 		}
 
+	}
+
+	private PublicReservationDataList getPublicReservations(final String testbedId, final String from, final String to)
+			throws RSExceptionException {
+		RS rs = endpointManager.getRsEndpoint(testbedId);
+
+		Tuple<XMLGregorianCalendar, XMLGregorianCalendar> duration = convertToDuration(from, to);
+		XMLGregorianCalendar fromDate = duration.getFirst();
+		XMLGregorianCalendar toDate = duration.getSecond();
+
+		List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
+		return new PublicReservationDataList(reservations);
 	}
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response makeReservation(@PathParam("testbedId") final String testbedId,
-									@CookieParam(Constants.COOKIE_SECRET_AUTH_KEY)
-									SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
 									PublicReservationData request) {
 
-		if (snaaSecretAuthCookie == null) {
-			return returnError("Not logged in", new Exception("Not logged in"), Status.FORBIDDEN);
-		}
+		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(testbedId);
 
 		try {
 
@@ -146,8 +107,6 @@ public class RsResource {
 			return returnError("Error in the reservation system", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (ReservervationConflictExceptionException e) {
 			return returnError("Another reservation is in conflict with yours", e, Status.BAD_REQUEST);
-		} catch (UnknownTestbedIdException e) {
-			return createUnknownTestbedIdResponse(testbedId);
 		}
 
 	}
@@ -157,7 +116,6 @@ public class RsResource {
 	 * List<SecretReservationKey> secretReservationKey)
 	 *
 	 * @param testbedId
-	 * @param snaaSecretAuthCookie
 	 * @param secretReservationKeys
 	 *
 	 * @return
@@ -166,9 +124,9 @@ public class RsResource {
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response deleteReservation(@PathParam("testbedId") final String testbedId,
-									  @CookieParam(Constants.COOKIE_SECRET_AUTH_KEY)
-									  SnaaSecretAuthenticationKeyList snaaSecretAuthCookie,
 									  SecretReservationKeyListRs secretReservationKeys) {
+
+		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(testbedId);
 
 		log.debug("Cookie (secret authentication key): {}", snaaSecretAuthCookie);
 
@@ -187,8 +145,6 @@ public class RsResource {
 				);
 			} catch (ReservervationNotFoundExceptionException e) {
 				return returnError("Reservation not found", e, Status.BAD_REQUEST);
-			} catch (UnknownTestbedIdException e) {
-				return createUnknownTestbedIdResponse(testbedId);
 			}
 		}
 		return returnError("Not logged in", new Exception("Not logged in"), Status.FORBIDDEN);
@@ -226,8 +182,6 @@ public class RsResource {
 			);
 		} catch (ReservervationNotFoundExceptionException e) {
 			return returnError("Reservation not found", e, Status.BAD_REQUEST);
-		} catch (UnknownTestbedIdException e) {
-			return createUnknownTestbedIdResponse(testbedId);
 		}
 	}
 
@@ -301,6 +255,46 @@ public class RsResource {
 		}
 
 		return secretAuthKeys;
+	}
+
+	private ConfidentialReservationDataList getConfidentialReservations(final String testbedId,
+																		final SnaaSecretAuthenticationKeyList snaaSecretAuthenticationKeyList,
+																		final String from, final String to)
+			throws RSExceptionException {
+		RS rs = endpointManager.getRsEndpoint(testbedId);
+
+		Tuple<XMLGregorianCalendar, XMLGregorianCalendar> duration = convertToDuration(from, to);
+		XMLGregorianCalendar fromDate = duration.getFirst();
+		XMLGregorianCalendar toDate = duration.getSecond();
+
+		GetReservations getReservations = new GetReservations();
+		getReservations.setFrom(fromDate);
+		getReservations.setTo(toDate);
+
+		List<eu.wisebed.api.rs.SecretAuthenticationKey> rsSAKs =
+				copySnaaToRs(snaaSecretAuthenticationKeyList.secretAuthenticationKeys);
+
+		return new ConfidentialReservationDataList(rs.getConfidentialReservations(rsSAKs, getReservations));
+	}
+
+	private SnaaSecretAuthenticationKeyList getSnaaSecretAuthCookie(final String testbedId) {
+
+		try {
+
+			Cookie snaaSecretAuthCookie = httpHeaders.getCookies().get(
+					createSecretAuthenticationKeyCookieName(testbedId)
+			);
+
+			return JSONHelper.fromJSON(
+					Base64Helper.decode(snaaSecretAuthCookie.getValue()),
+					SnaaSecretAuthenticationKeyList.class
+			);
+
+		} catch (Exception e) {
+
+			log.warn("Cookie with secret authentication key could not be parsed. Reason: " + e, e);
+			throw new NotLoggedInException(testbedId);
+		}
 	}
 
 }

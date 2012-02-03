@@ -1,5 +1,70 @@
 var Wisebed = new function() {
 
+	this.helper = new function() {
+
+		this.serializeSecretReservationKey = function(reservation) {
+			var items = [];
+			$(reservation.data).each(function(index, data) {items[index] = data.urnPrefix + "," + data.secretReservationKey});
+			return items.join(";");
+		}
+	};
+
+	this.reservations = new function() {
+
+		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
+			var queryUrl = "/rest/2.3/" + testbedId + "/reservations?userOnly=true" +
+					(from ? ("&from=" + from.toISOString()) : "") +
+					(to ? ("&to="+to.toISOString()) : "");
+			$.ajax({
+				url: queryUrl,
+				success: callbackDone,
+				error: callbackError,
+				context: document.body,
+				dataType: "json"
+			});
+		};
+
+		this.getPublic = function(testbedId, from, to, callbackDone, callbackError) {
+			var queryUrl = "/rest/2.3/" + testbedId + "/reservations?" +
+					(from ? ("from=" + from.toISOString() + "&") : "") +
+					(to ? ("to="+to.toISOString() + "&") : "");
+			$.ajax({
+				url: queryUrl,
+				success: callbackDone,
+				error: callbackError,
+				context: document.body,
+				dataType: "json"
+			});
+		};
+	};
+
+	this.experiments = new function() {
+
+		this.getUrl = function(testbedId, reservation, callbackDone, callbackError) {
+
+			var secretReservationKeys = {
+				reservations : []
+			};
+
+			$(reservation.data).each(function(index, elem) {
+				secretReservationKeys.reservations[index] = {
+					urnPrefix : elem.urnPrefix,
+					secretReservationKey : elem.secretReservationKey
+				}
+			});
+
+			$.ajax({
+				url			:	"/rest/2.3/" + testbedId + "/experiments",
+				type		:	"POST",
+				data		:	JSON.stringify(secretReservationKeys, null, '  '),
+				contentType	:	"application/json; charset=utf-8",
+				dataType	:	"json",
+				success		: 	function(data, textStatus, jqXHR) {callbackDone(jqXHR.getResponseHeader("Location"))},
+				error		: 	callbackError
+			});
+		};
+	};
+
 	this.getNodeUrnArray = function(testbedId, experimentId, callbackDone, callbackError) {
 
 		this.getWiseML(
@@ -45,19 +110,6 @@ var Wisebed = new function() {
 	this.getTestbeds = function(callbackDone, callbackError) {
 		$.ajax({
 			url: "/rest/2.3/testbeds",
-			success: callbackDone,
-			error: callbackError,
-			context: document.body,
-			dataType: "json"
-		});
-	};
-
-	this.getReservations = function(testbedId, from, to, callbackDone, callbackError) {
-		var queryUrl = "/rest/2.3/" + testbedId + "/reservations?" +
-				(from ? ("from=" + from.toISOString() + "&") : "") +
-				(to ? ("to="+to.toISOString() + "&") : "");
-		$.ajax({
-			url: queryUrl,
 			success: callbackDone,
 			error: callbackError,
 			context: document.body,

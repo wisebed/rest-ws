@@ -1,7 +1,6 @@
 package eu.wisebed.restws.resources;
 
 import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
-import static eu.wisebed.restws.resources.ResourceHelper.createUnknownTestbedIdResponse;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 import java.util.List;
@@ -26,7 +25,6 @@ import eu.wisebed.api.snaa.SNAAExceptionException;
 import eu.wisebed.api.snaa.SecretAuthenticationKey;
 import eu.wisebed.restws.dto.LoginData;
 import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
-import eu.wisebed.restws.proxy.UnknownTestbedIdException;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
@@ -92,8 +90,6 @@ public class SnaaResource {
 			return createLoginErrorResponse(e);
 		} catch (SNAAExceptionException e) {
 			return createLoginErrorResponse(e);
-		} catch (UnknownTestbedIdException e) {
-			return createUnknownTestbedIdResponse(testbedId);
 		}
 
 	}

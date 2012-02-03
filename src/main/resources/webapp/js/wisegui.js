@@ -123,7 +123,10 @@ var WiseGuiLoginDialog = new function() {
 			data		:	JSON.stringify(readLoginDataFromForm(testbedId), null, '  '),
 			contentType	:	"application/json; charset=utf-8",
 			dataType	:	"json",
-			success		: 	function(data, textStatus, jqXHR) { WiseGuiLoginDialog.hide(testbedId); },
+			success		: 	function(data, textStatus, jqXHR) {
+								WiseGuiLoginDialog.hide(testbedId);
+								$(window).trigger('hashchange');
+							},
 			error		: 	function(jqXHR, textStatus, errorThrown){
 								console.log(jqXHR);
 								console.log(textStatus);

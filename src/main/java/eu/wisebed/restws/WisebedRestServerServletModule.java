@@ -2,10 +2,9 @@ package eu.wisebed.restws;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
-
 import eu.wisebed.restws.resources.ExperimentResource;
 import eu.wisebed.restws.resources.RootResource;
 import eu.wisebed.restws.resources.RsResource;
@@ -18,7 +17,7 @@ import eu.wisebed.restws.ws.WsnWebSocketServlet;
  * more information please check
  * http://jersey.java.net/nonav/apidocs/latest/contribs/jersey-guice/com/sun/jersey/guice/spi/container/servlet/package-summary.html.
  */
-public class WisebedRestServerServletModule extends ServletModule {
+public class WisebedRestServerServletModule extends JerseyServletModule {
 
 	@Override
 	protected void configureServlets() {

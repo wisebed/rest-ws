@@ -1,20 +1,28 @@
 <!DOCTYPE html >
 <meta charset="utf-8">
 <head>
+
 	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
+
 	<link rel="stylesheet" media="screen" href="css/bootstrap.css">
 	<link rel="stylesheet" media="screen" href="css/prettify.css">
 	<link rel="stylesheet" media="screen" href="css/wisegui.css">
+
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery.ba-bbq.min.js"></script>
 	<script type="text/javascript" src="js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+	<script type="text/javascript" src="js/jquery.dateformat-1.0.js"></script>
+
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-tabs-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-modal-1.4.0.js"></script>
+
 	<script type="text/javascript" src="js/prettify.js"></script>
+
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript" src="js/wisegui.js"></script>
+
 	<script type="text/javascript">
 
 		function onAjaxError(jqXHR, textStatus, errorThrown) {
@@ -91,7 +99,7 @@
 			var tomorrowSameTime = new Date();
 			tomorrowSameTime.setDate(now.getDate() + 1);
 
-			Wisebed.getReservations(
+			Wisebed.reservations.getPublic(
 					navigationData.testbedId,
 					now,
 					tomorrowSameTime,
@@ -246,33 +254,77 @@
 				experimentsContainer.empty();
 
 				ul.append('<li><a href="#nav=overview">Testbed Overview</a></li>');
-				experimentsContainer.append('Running Experiments <select id="WisebedNavigationExperimentSelect" disabled="true"></select>');
+				experimentsContainer.append('<a>Running Experiments</a>'
+						+ '<select style="width:500px" id="WisebedNavigationExperimentSelect-'+navigationData.testbedId+'" disabled="true"></select>');
+
+				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbedId)) {
+					Wisebed.reservations.getPersonal(
+							navigationData.testbedId,
+							null,
+							null,
+							function(reservations) {
+								var experimentSelect = $('#WisebedNavigationExperimentSelect-'+navigationData.testbedId);
+								var option = $('<option/>');
+								experimentSelect.append(option);
+								$.each(reservations.reservations, function(index, reservation) {
+									var from = new Date(reservation.from);
+									var to = new Date(reservation.to);
+									var option = $('<option>' + $.format.date(from, "yyyy-MM-dd HH:mm") + ' - ' + $.format.date(to, "yyyy-MM-dd HH:mm") + ' | ' + reservation.userData + '</option>');
+									option.data('reservation', this);
+									experimentSelect.append(option);
+									console.log(option);
+								});
+								experimentSelect.attr('disabled', false);
+								experimentSelect.bind('change', function(e) {
+									var reservation = experimentSelect.find('option:selected').first().data('reservation');
+									navigateToExperiment(navigationData.testbedId, reservation);
+								});
+							},
+							onAjaxError
+					);
+				}
 
 				secondaryUl.append('<li><a href="javascript:showReservationsDialog()">Reservations</a></li>');
 
 				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbedId)) {
-					var select = $('#WisebedNavigationExperimentSelect');
+
+					var select = $('#WisebedNavigationExperimentSelect-'+navigationData.testbedId);
 					select[0].disabled = false;
+
 					fillWisebedNavigationExperimentSelect(select, navigationData);
 
-					secondaryUl.append('<li><a href="javascript:logout(\''+navigationData.testbedId+'\')">Logout</a></li>');
-				} else {
+					secondaryUl.append('<li><a href="javascript:;" id="WisebedLogoutButton-'+navigationData.testbedId+'">Logout</a></li>');
+					$('#WisebedLogoutButton-'+navigationData.testbedId+':first').bind(
+							'click',
+							{testbedId:navigationData.testbedId},
+							function(e){
+								Wisebed.deleteSecretAuthenticationKeyCookie(e.data.testbedId);
+								$(window).trigger('hashchange');
+							}
+					)
 
-					var loginLink = $('<a href="javascript:$(\'#WisebedLoginDialog-'+navigationData.testbedId+'\').show();">Login</a>');
-					var loginLi = $('<li/>');
-					loginLi.append(loginLink);
-					secondaryUl.append(loginLi);
+				} else {
+					secondaryUl.append('<li><a href="javascript:;" id="WisebedLoginButton-'+navigationData.testbedId+'">Login</a></li>');
+					$('#WisebedLoginButton-'+navigationData.testbedId+':first').bind(
+							'click',
+							{testbedId:navigationData.testbedId},
+							function(e){
+								WiseGuiLoginDialog.show(e.data.testbedId);
+							}
+					);
 				}
 			}
 		}
 
-		function logout(testbedId) {
-			Wisebed.deleteSecretAuthenticationKeyCookie(testbedId);
-			document.location='#';
-		}
-
 		function fillWisebedNavigationExperimentSelect(select, navigationData) {
 			console.log('TODO fillWisebedNavigationExperimentSelect');
+		}
+
+		function navigateToExperiment(testbedId, reservation) {
+			console.log('navigateToExperiment(testbedId='+testbedId+', reservation='+JSON.stringify(reservation)+')');
+			Wisebed.experiments.getUrl(testbedId, reservation, function(experimentUrl){
+				console.log(experimentUrl);
+			}, onAjaxError);
 		}
 
 		function getNavigationData() {
