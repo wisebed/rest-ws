@@ -1,3 +1,8 @@
+/**
+ * #################################################################
+ * WiseGuiLoginDialog
+ * #################################################################
+ */
 var WiseGuiLoginDialog = new function() {
 
 	var loginFormRows = {};
@@ -136,3 +141,88 @@ var WiseGuiLoginDialog = new function() {
 		});
 	};
 };
+
+/**
+ * #################################################################
+ * WiseGuiNodeTable
+ * #################################################################
+ */
+var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
+	this.checkboxes = [];
+	this.wiseML = wiseML;
+	this.parent = parent;
+	this.showCheckboxes = showCheckboxes;
+	this.table = null;
+	this.generateTable();
+};
+
+WiseGuiNodeTable.prototype.generateTable = function () {
+	// TODO: use buildTable(...)
+	this.table = $('<table class="bordered-table zebra-striped"></table>');
+
+	// Generate table header
+	var thead = $('<thead></thead>');
+	var thead_tr = $('<tr></tr>');
+	if(this.showCheckboxes) {
+		var thead_th_checkbox = $('<th class="header"><input type="checkbox"/></th>');
+		thead_tr.append(thead_th_checkbox);
+	}
+	var thead_th_node_urn = $('<th class="header">Node URN</th>');
+	var thead_th_position = $('<th class="header">Position</th>');
+	var thead_th_sensors = $('<th class="header">Sensors</th>');
+	thead_tr.append(thead_th_node_urn);
+	thead_tr.append(thead_th_position);
+	thead_tr.append(thead_th_sensors);
+	thead.append(thead_tr);
+	this.table.append(thead);
+
+	// Generate table body
+	var tbody = $('<tbody></tbody>');
+	this.table.append(tbody);
+
+	// Iterate all nodes and add the to the table
+	var nodes = this.wiseML.setup.node;
+	this.checkboxes = [];
+	for(i = 0; i < nodes.length; i++) {
+		var n = nodes[i];
+
+		var cap = [];
+		for(j = 0; j < n.capability.length; j++) {
+			parts = explode(":", n.capability[j].name);
+			cap[j] = parts[parts.length-1];
+		}
+
+		if(this.showCheckboxes) {
+			var checkbox = $('<input type="checkbox" name="' + n.id + '"/>');
+			this.checkboxes[i] = checkbox;
+			var td_checkbox = $('<td></td>');
+			td_checkbox.append(checkbox);
+		}
+
+		var td_id = $('<td>' + n.id + '</td>')
+		var td_position = $('<td>(' + n.position.x + ',' + n.position.x + ',' + n.position.x + ')</td>')
+		var td_sensors = $('<td>' + implode(",", cap) + '</td>')
+
+		var tr = $("<tr></tr>");
+		tr.append(td_checkbox);
+		tr.append(td_id);
+		tr.append(td_position);
+		tr.append(td_sensors);
+
+		tbody.append(tr);
+	}
+
+	// Add to the parent elemenet and add the sorter
+	this.parent.append(this.table);
+	$(this.table).tablesorter();
+}
+
+WiseGuiNodeTable.prototype.getSelectedNodes = function () {
+	var selected = [];
+	if(this.table != null) {
+		this.table.find("input:checked").each(function() {
+			selected.push($(this).attr('name'));
+		});
+	}
+	return selected;
+}
