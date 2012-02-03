@@ -158,13 +158,27 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
 
 WiseGuiNodeTable.prototype.generateTable = function () {
 	// TODO: use buildTable(...)
+	var that = this;
 	this.table = $('<table class="bordered-table zebra-striped"></table>');
 
 	// Generate table header
 	var thead = $('<thead></thead>');
 	var thead_tr = $('<tr></tr>');
 	if(this.showCheckboxes) {
-		var thead_th_checkbox = $('<th class="header"><input type="checkbox"/></th>');
+		var thead_th_checkbox = $('<th class="header"></th>');
+		var thead_th_checkbox_checkbox = $('<input type="checkbox"/>');
+
+		thead_th_checkbox_checkbox.click(function() {
+			var checked = $(this).is(':checked');
+			if(that.table != null) {
+				var inputs = that.table.find("input");
+				inputs.each(function() {
+					$(this).attr('checked', checked);
+				});
+			}
+		});
+		thead_th_checkbox.append(thead_th_checkbox_checkbox);
+
 		thead_tr.append(thead_th_checkbox);
 	}
 	var thead_th_node_urn = $('<th class="header">Node URN</th>');
@@ -214,7 +228,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 
 	// Add to the parent elemenet and add the sorter
 	this.parent.append(this.table);
-	$(this.table).tablesorter();
+	$(this.table).tablesorter({headers:{0:{sorter:false}}});
 }
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
