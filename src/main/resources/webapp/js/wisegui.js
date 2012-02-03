@@ -153,12 +153,57 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
 	this.parent = parent;
 	this.showCheckboxes = showCheckboxes;
 	this.table = null;
-	this.generateTable();
+	this.html = null;
+	this.generateTable(null);
 };
 
-WiseGuiNodeTable.prototype.generateTable = function () {
+WiseGuiNodeTable.prototype.generateTable = function (f) {
 	// TODO: use buildTable(...)
+
 	var that = this;
+	var nodes = this.wiseML.setup.node;
+	this.html = $("<div></div>");
+
+	// Filter
+	var filter = $("<p></p>");
+	var filter_submit = $('<input type="submit" value="GO" style="width:10%;float:right;">');
+	filter_submit.click(
+		function () {
+			var f = this;
+			var expr = $(this).prev().val();
+			that.parent.empty();
+			that.generateTable(expr);
+		}
+	);
+
+	var filter_input = $('<input type"text" style="width:87%">');
+	filter.append(filter_input);
+	filter.append(filter_submit);
+	this.html.append(filter);
+
+
+	console.log("All nodes:" + nodes.length);
+	/*
+
+	var f1 = "(true)";
+	var f2 = '(e.nodeType == "isense")';
+	var f3 = '(e.nodeType == "isense" && e.position.x == 25)';
+	var f4 = '($(e.capability).filter(function (index) {return this.name.indexOf("temperature") > 0;}).length > 0)';
+	var f = f3 + "&&" + f4;
+	*/
+
+	if(f != null && f.length > 0) {
+		filter_input.attr("value", f);
+		// Filter
+		nodes = $(nodes).filter(function(index) {
+			e = this;
+			return (eval(f));
+		});
+	}
+
+
+	console.log("Filtered nodes:" + nodes.length);
+
 	this.table = $('<table class="bordered-table zebra-striped"></table>');
 
 	// Generate table header
@@ -181,6 +226,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 
 		thead_tr.append(thead_th_checkbox);
 	}
+
 	var thead_th_node_urn = $('<th class="header">Node URN</th>');
 	var thead_th_type = $('<th class="header">Type</th>');
 	var thead_th_position = $('<th class="header">Position</th>');
@@ -197,7 +243,6 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	this.table.append(tbody);
 
 	// Iterate all nodes and add the to the table
-	var nodes = this.wiseML.setup.node;
 	this.checkboxes = [];
 	for(i = 0; i < nodes.length; i++) {
 		var n = nodes[i];
@@ -230,8 +275,10 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		tbody.append(tr);
 	}
 
+	this.html.append(this.table);
+
 	// Add to the parent elemenet and add the sorter
-	this.parent.append(this.table);
+	this.parent.append(this.html);
 
 	if(this.showCheckboxes) {
 		$(this.table).tablesorter({headers:{0:{sorter:false}}});
@@ -249,3 +296,19 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 	}
 	return selected;
 }
+
+/**
+ * #################################################################
+ * WiseGuiFilter
+ * #################################################################
+ */
+
+var WiseGuiFilter = new function(wiseML) {
+
+
+}
+
+
+/*
+
+*/
