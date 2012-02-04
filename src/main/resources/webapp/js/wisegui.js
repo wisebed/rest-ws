@@ -480,7 +480,9 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 				function(event) {
 					event.data.dialog.dialogDiv.hide();
 					event.data.dialog.dialogDiv.remove();
-					callbackCancel();
+					if (callbackCancel) {
+						callbackCancel();
+					}
 				}
 		);
 
@@ -534,6 +536,9 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 
 WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
 	this.resetSelectedNodeUrns = selectedNodeUrns;
+	if (selectedNodeUrns.length > 0) {
+		this.setResetButtonDisabled(false);
+	}
 	var selectNodeUrnsDiv = this.view.find('.selectedNodeUrnsDiv').first();
 	selectNodeUrnsDiv.empty();
 	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
@@ -565,16 +570,23 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 	);
 };
 
+WiseGuiExperimentationView.prototype.setResetButtonDisabled = function(disabled) {
+	this.view.find('#'+this.resetDivId + ' button.resetNodeUrns').first().attr('disabled', disabled);
+};
+
 WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 
+	this.setResetButtonDisabled(true);
+	var self = this;
 	Wisebed.experiments.resetNodes(
 			this.testbedId,
 			this.experimentId,
 			this.resetSelectedNodeUrns,
 			function(result) {
-				alert(JSON.stringify(result, null, '  '));
+				self.setResetButtonDisabled(false);
 			},
 			function(jqXHR, textStatus, errorThrown) {
+				self.setResetButtonDisabled(false);
 				alert('TODO handle error in WiseGuiExperimentationView');
 			}
 	);
@@ -593,9 +605,10 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '		<div class="active tab-pane" id="'+this.sendDivId+'"></div>'
 			+ '		<div class="tab-pane" id="'+this.flashDivId+'"></div>'
 			+ '		<div class="tab-pane" id="'+this.resetDivId+'">'
-			+ '			<button class="btn selectNodeUrns">Select Nodes</button>'
-			+ '			<div class="selectedNodeUrnsDiv"></div>'
-			+ '			<button class="btn primary resetNodeUrns">Reset Nodes</button>'
+			+ '			<div class="well" style="padding: 14px 19px;">'
+			+ '				<button class="btn selectNodeUrns span4">Select Nodes</button> <button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
+			+ '				<h4>Selected Nodes:</h4> <div class="selectedNodeUrnsDiv" style="overflow:auto;"></div>'
+			+ '			</div>'
 			+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'"></div>'
 			+ '	</div>'

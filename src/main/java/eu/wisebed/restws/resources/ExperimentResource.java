@@ -34,12 +34,12 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static com.google.common.base.Throwables.propagate;
 
 /**
  * TODO: The following WISEBED functions are not implemented yet:
@@ -353,6 +353,7 @@ public class ExperimentResource {
 
 	private NodeUrnStatusMap buildNodeUrnStatusMap(final Map<String, JobNodeStatus> jobNodeStates) {
 		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
+		nodeUrnStatusMap.map = new HashMap<String, JobNodeStatus>();
 		for (Map.Entry<String, JobNodeStatus> entry : jobNodeStates.entrySet()) {
 			nodeUrnStatusMap.map.put(entry.getKey(), entry.getValue());
 		}
@@ -374,11 +375,24 @@ public class ExperimentResource {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
 
-			Job job = wsnProxy.resetNodes(
-					nodeUrns.nodeUrns,
-					config.operationTimeoutMillis,
-					TimeUnit.MILLISECONDS
-			).get();
+			Job job = null;
+			try {
+
+				job = wsnProxy.resetNodes(
+						nodeUrns.nodeUrns,
+						config.operationTimeoutMillis,
+						TimeUnit.MILLISECONDS
+				).get();
+
+			} catch (ExecutionException e) {
+				if (e.getCause() instanceof TimeoutException) {
+					log.warn("Resetting of (some of?) the nodes {} timed out!", nodeUrns.nodeUrns);
+					// nothing to do
+				} else {
+					throw propagate(e);
+				}
+			}
+
 			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
 			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 
