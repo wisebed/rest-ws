@@ -14,6 +14,7 @@ import eu.wisebed.restws.dto.*;
 import eu.wisebed.restws.dto.FlashProgramsRequest.FlashTask;
 import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobNodeStatus;
+import eu.wisebed.restws.jobs.JobState;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
 import eu.wisebed.restws.proxy.WsnProxyManagerService;
 import eu.wisebed.restws.proxy.WsnProxyService;
@@ -360,6 +361,15 @@ public class ExperimentResource {
 		return nodeUrnStatusMap;
 	}
 
+	private NodeUrnStatusMap buildNodeUrnTimeoutMap(final NodeUrnList nodeUrns) {
+		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
+		nodeUrnStatusMap.map = new HashMap<String, JobNodeStatus>();
+		for (String nodeUrn : nodeUrns.nodeUrns) {
+			nodeUrnStatusMap.map.put(nodeUrn, new JobNodeStatus(JobState.FAILED, -1, "Timeout"));
+		}
+		return nodeUrnStatusMap;
+	}
+
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
@@ -387,7 +397,8 @@ public class ExperimentResource {
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof TimeoutException) {
 					log.warn("Resetting of (some of?) the nodes {} timed out!", nodeUrns.nodeUrns);
-					// nothing to do
+					NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnTimeoutMap(nodeUrns);
+					return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
 				} else {
 					throw propagate(e);
 				}

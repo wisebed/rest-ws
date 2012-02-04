@@ -530,8 +530,84 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.view = $('<div id="'+this.experimentationDivId+'"/>');
 
 	this.resetSelectedNodeUrns = null;
+	this.socket = null;
 
 	this.buildView();
+	this.connectToExperiment();
+};
+
+WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
+
+	var message = JSON.parse(event.data);
+
+	if (!message.type) {
+		console.log('Received message with unknown content: ' + event.data);
+		return;
+	}
+
+	if (message.type == 'upstream') {
+
+		this.outputsTextArea.append(
+				message.timestamp           + " | " +
+				message.sourceNodeUrn       + " | " +
+				atob(message.payloadBase64) + '\n'
+		);
+
+	} else if (message.type == 'notification') {
+
+		this.notificationsTextArea.append(
+				message.timestamp + " | " +
+				message.message   + '\n'
+		);
+	}
+};
+
+WiseGuiExperimentationView.prototype.onWebSocketOpen = function(event) {
+	this.outputsTextArea.attr('disabled', false);
+	this.notificationsTextArea.attr('disabled', false);
+};
+
+WiseGuiExperimentationView.prototype.onWebSocketClose = function(event) {
+	this.outputsTextArea.attr('disabled', true);
+	this.notificationsTextArea.attr('disabled', true);
+};
+
+WiseGuiExperimentationView.prototype.connectToExperiment = function() {
+
+	if (!window.WebSocket) {
+		window.WebSocket = window.MozWebSocket;
+	}
+
+	if (window.WebSocket) {
+
+		var self = this;
+
+		this.socket = new WebSocket('ws://localhost:8880/ws/experiments/'+this.experimentId);
+		this.socket.onmessage = function(event) {self.onWebSocketMessageEvent(event)};
+		this.socket.onopen = function(event) {self.onWebSocketOpen(event)};
+		this.socket.onclose = function(event) {self.onWebSocketClose(event)};
+
+	} else {
+		alert("Your browser does not support Web Sockets.");
+	}
+
+	/*function send(message) {
+		if (!window.WebSocket) { return; }
+		if (socket.readyState == WebSocket.OPEN) {
+			socket.send(message);
+		} else {
+			alert("The socket is not open.");
+		}
+	}
+
+	sendMessagesDiv.find('form').first().submit(function(event){
+		var message = {
+			targetNodeUrn : event.target.elements.nodeUrn.value,
+			payloadBase64 : btoa(event.target.elements.message.value)
+		};
+		socket.send(JSON.stringify(message));
+	});*/
+
 };
 
 WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
@@ -621,10 +697,10 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</ul>'
 			+ '	<div class="tab-content">'
 			+ '		<div class="active tab-pane" id="'+this.outputsDivId+'">'
-			+ '			<textarea class="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '			<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.notificationsDivId+'">'
-			+ '			<textarea class="'+this.notificationsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '			<textarea id="'+this.notificationsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>');
@@ -640,6 +716,9 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	);
 
 	this.view.append(controlsTabsDiv, outputsTabsDiv);
+
+	this.outputsTextArea = this.view.find('#'+this.outputsTextAreaId);
+	this.notificationsTextArea = this.view.find('#'+this.notificationsTextAreaId);
 
 	/*var sendMessagesDiv = $('<div id="'+sendMessagesDivId+'">'
 	 + '	<h3>Send Messages</h3>#'
