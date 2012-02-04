@@ -366,7 +366,7 @@ WiseGuiReservationObserver.prototype.reservationEquals = function(res1, res2) {
 WiseGuiReservationObserver.prototype.startObserving = function() {
 	this.isObserving = true;
 	var self = this;
-	this.interval = window.setInterval(function() {self.fetchReservationsAndProcess()}, 10 * 1000);
+	this.interval = window.setInterval(function() {self.fetchReservationsAndProcess()}, 60 * 1000);
 	this.fetchReservationsAndProcess();
 };
 
@@ -435,6 +435,75 @@ WiseGuiExperimentDropDown.prototype.buildCurrentExperimentsDropDown = function()
 
 /**
  * #################################################################
+ * WiseGuiNodeSelectionDialog
+ * #################################################################
+ */
+
+var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, bodyHtml) {
+
+	this.testbedId = testbedId;
+	this.experimentId = experimentId;
+	this.table = null;
+
+	this.dialogDivId = 'WiseGuiNodeSelectionDialog-' + Math.random();
+
+	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide">'
+			+ '	<div class="modal-header">'
+			+ '		<h3>' + headerHtml + '</h3>' 
+			+ '	</div>'
+			+ '	<div class="modal-body">'
+			+ '		<p>' + bodyHtml + '</p>'
+			+ '		<img class="ajax-loader" src="img/ajax-loader-big.gif" width="32" height="32"/>'
+			+ '	</div>' 
+			+ ' <div class="modal-footer">'
+			+ '		<a class="btn secondary">Cancel</a>'
+			+ '		<a class="btn primary">OK</a>'
+			+ '	</div>'
+			+ '</div>');
+};
+
+WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel) {
+
+	$(document.body).append(this.dialogDiv);
+	var self = this;
+
+	function showDialogInternal(wiseML) {
+
+		self.dialogDiv.show();
+
+		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
+		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true);
+
+		self.dialogDiv.find('.modal-footer .secondary').first().bind(
+				'click',
+				{dialog : self},
+				function(event) {
+					event.data.dialog.dialogDiv.hide();
+					event.data.dialog.dialogDiv.remove();
+					callbackCancel();
+				}
+		);
+
+		self.dialogDiv.find('.modal-footer .primary').first().bind(
+				'click',
+				self,
+				function(event) {
+					event.data.dialogDiv.hide();
+					event.data.dialogDiv.remove();
+					callbackOK(event.data.table.getSelectedNodes());
+				}
+		);
+	}
+
+	Wisebed.getWiseMLAsJSON(this.testbedId, this.experimentId, showDialogInternal,
+			function(jqXHR, textStatus, errorThrown) {
+				console.log('TODO handle error in WiseGuiNodeSelectionDialog');
+			}
+	);
+};
+
+/**
+ * #################################################################
  * WiseGuiExperimentationView
  * #################################################################
  */
@@ -458,7 +527,57 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 
 	this.view = $('<div id="'+this.experimentationDivId+'"/>');
 
+	this.resetSelectedNodeUrns = null;
+
 	this.buildView();
+};
+
+WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
+	this.resetSelectedNodeUrns = selectedNodeUrns;
+	var selectNodeUrnsDiv = this.view.find('.selectedNodeUrnsDiv').first();
+	selectNodeUrnsDiv.empty();
+	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
+};
+
+WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
+
+	var self = this;
+	Wisebed.getWiseMLAsJSON(
+			this.testbedId,
+			this.experimentId,
+			function(wiseML) {
+
+				var selectionDialog = new WiseGuiNodeSelectionDialog(
+						self.testbedId,
+						self.experimentId,
+						'Reset Nodes',
+						'Please select the nodes you want to reset.'
+				);
+
+				selectionDialog.show(function(selectedNodeUrns) {
+						self.updateResetSelectNodeUrns(selectedNodeUrns);
+
+				});
+
+			}, function(jqXHR, textStatus, errorThrown) {
+				console.log('TODO handle error in WiseGuiExperimentationView');
+			}
+	);
+};
+
+WiseGuiExperimentationView.prototype.executeResetNodes = function() {
+
+	Wisebed.experiments.resetNodes(
+			this.testbedId,
+			this.experimentId,
+			this.resetSelectedNodeUrns,
+			function(result) {
+				alert(JSON.stringify(result, null, '  '));
+			},
+			function(jqXHR, textStatus, errorThrown) {
+				alert('TODO handle error in WiseGuiExperimentationView');
+			}
+	);
 };
 
 WiseGuiExperimentationView.prototype.buildView = function() {
@@ -471,10 +590,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '		<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
 			+ '	</ul>'
 			+ '	<div class="tab-content">'
-			+ '		<div class="active tab-pane" id="'+this.sendDivId+'">sendMessage</div>'
-			+ '		<div class="tab-pane" id="'+this.flashDivId+'">flash</div>'
-			+ '		<div class="tab-pane" id="'+this.resetDivId+'-reset">reset</div>'
-			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'-scripting">Scripting</div>'
+			+ '		<div class="active tab-pane" id="'+this.sendDivId+'"></div>'
+			+ '		<div class="tab-pane" id="'+this.flashDivId+'"></div>'
+			+ '		<div class="tab-pane" id="'+this.resetDivId+'">'
+			+ '			<button class="btn selectNodeUrns">Select Nodes</button>'
+			+ '			<div class="selectedNodeUrnsDiv"></div>'
+			+ '			<button class="btn primary resetNodeUrns">Reset Nodes</button>'
+			+ '		</div>'
+			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'"></div>'
 			+ '	</div>'
 			+ '</div>');
 
@@ -493,7 +616,15 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</div>'
 			+ '</div>');
 
-	var resetDiv = controlsTabsDiv.find('#'+this.resetDivId);
+	var self = this;
+
+	controlsTabsDiv.find('#'+this.resetDivId + ' button.selectNodeUrns').first().bind(
+			'click', self, function(e) {e.data.showResetNodeSelectionDialog()}
+	);
+
+	controlsTabsDiv.find('#'+this.resetDivId + ' button.resetNodeUrns').first().bind(
+			'click', self, function(e) {e.data.executeResetNodes()}
+	);
 
 	this.view.append(controlsTabsDiv, outputsTabsDiv);
 

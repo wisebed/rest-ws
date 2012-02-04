@@ -1,14 +1,5 @@
 var Wisebed = new function() {
 
-	this.helper = new function() {
-
-		this.serializeSecretReservationKey = function(reservation) {
-			var items = [];
-			$(reservation.data).each(function(index, data) {items[index] = data.urnPrefix + "," + data.secretReservationKey});
-			return items.join(";");
-		}
-	};
-
 	this.reservations = new function() {
 
 		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
@@ -63,6 +54,19 @@ var Wisebed = new function() {
 				error		: 	callbackError
 			});
 		};
+
+		this.resetNodes = function(testbedId, experimentId, nodeUrns, callbackDone, callbackError) {
+
+			$.ajax({
+				url			:	"/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/resetNodes",
+				type		:	"POST",
+				data		:	JSON.stringify({nodeUrns:nodeUrns}, null, '  '),
+				contentType	:	"application/json; charset=utf-8",
+				dataType	:	"json",
+				success		: 	callbackDone,
+				error		: 	callbackError
+			});
+		}
 	};
 
 	this.getNodeUrnArray = function(testbedId, experimentId, callbackDone, callbackError) {

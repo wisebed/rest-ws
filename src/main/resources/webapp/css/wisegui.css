@@ -7,6 +7,11 @@ body {
 	margin: -250px 0 0 -400px;
 }
 
+.modal-body {
+	height: 300px;
+	overflow: auto;
+}
+
 .topbar-wrapper {
 	position: relative;
 	height: 40px;

@@ -9,6 +9,13 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import java.util.Enumeration;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 /**
  * This class must not be modified.
@@ -20,6 +27,14 @@ public class WisebedRestServer {
 
 	static {
 		Logging.setLoggingDefaults();
+
+		// Jersey uses java.util.logging - bridge to slf4
+		java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
+		Handler[] handlers = rootLogger.getHandlers();
+		for (int i = 0; i < handlers.length; i++) {
+			rootLogger.removeHandler(handlers[i]);
+		}
+		SLF4JBridgeHandler.install();
 	}
 
 	private static Logger log = LoggerFactory.getLogger(WisebedRestServer.class);
