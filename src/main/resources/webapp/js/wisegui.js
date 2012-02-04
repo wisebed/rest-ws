@@ -273,7 +273,7 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	} else {
 		$(this.table).tablesorter();
 	}
-}
+};
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 	var selected = [];
@@ -283,4 +283,230 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 		});
 	}
 	return selected;
+};
+
+/**
+ * #################################################################
+ * WiseGuiReservationObserver
+ * #################################################################
+ */
+
+var WiseGuiReservationObserver = function(testbedId) {
+	this.testbedId = testbedId;
+	this.lastKnownReservations = [];
+	this.isObserving = false;
+	this.interval = null;
+};
+
+WiseGuiReservationObserver.prototype.fetchReservationsAndProcess = function() {
+	var self = this;
+	Wisebed.reservations.getPersonal(
+			this.testbedId,
+			null,
+			null,
+			function(reservations) {self.processReservationsFetched(reservations.reservations)},
+			null
+	);
+};
+
+WiseGuiReservationObserver.prototype.processReservationsFetched = function(reservations) {
+
+	var newReservations = [];
+
+	for (var i=0; i<reservations.length; i++) {
+
+		var knownReservation = false;
+
+		for (var j=0; j<this.lastKnownReservations.length; j++) {
+			if (this.reservationEquals(reservations[i], this.lastKnownReservations[j])) {
+				knownReservation = true;
+				break;
+			}
+		}
+
+		if (!knownReservation) {
+			newReservations.push(reservations[i]);
+		}
+	}
+
+	for (var k=0; k<newReservations.length; k++) {
+		$(window).trigger('wisegui-reservation-added', newReservations[k]);
+		this.lastKnownReservations.push(newReservations[k]);
+	}
+};
+
+WiseGuiReservationObserver.prototype.reservationEquals = function(res1, res2) {
+
+	function subsetOf(set1, set2, compare) {
+		for (var i=0; i<set1.length; i++) {
+			for (var j=0; j<set2.length; j++) {
+				if (!compare(set1[i], set2[j])) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	function setEquals(set1, set2, compare) {
+
+		if (set1.length != set2.length) {
+			return false;
+		}
+
+		return subsetOf(set1, set2, compare) && subsetOf(set2, set1, compare);
+	}
+
+	return setEquals(res1.data, res2.data, function(dataElem1, dataElem2) {
+		return  dataElem1.secretReservationKey == dataElem2.secretReservationKey &&
+				dataElem1.urnPrefix            == dataElem2.urnPrefix;
+	});
+};
+
+WiseGuiReservationObserver.prototype.startObserving = function() {
+	this.isObserving = true;
+	var self = this;
+	this.interval = window.setInterval(function() {self.fetchReservationsAndProcess()}, 10 * 1000);
+	this.fetchReservationsAndProcess();
+};
+
+WiseGuiReservationObserver.prototype.stopObserving = function() {
+	this.isObserving = false;
+	window.clearInterval(this.interval);
+};
+
+/**
+ * #################################################################
+ * WiseGuiExperimentDropDown
+ * #################################################################
+ *
+ * Consumes wiseguiEvents of type 'wisegui-experiment-ended', 'wisegui-experiment-started', 'wisegui-reservation-added'.
+ *
+ */
+
+var WiseGuiExperimentDropDown = function(testbedId) {
+
+	this.pastExperimentsDropdown = null;
+	this.currentExperimentsDropDown = null;
+
+	var self = this;
+	$(window).bind('wisegui-experiment-started', function(e, data) {self.onExperimentStartedEvent(data)} );
+	$(window).bind('wisegui-experiment-ended',   function(e, data) {self.onExperimentEndedEvent(data)}   );
+	$(window).bind('wisegui-reservation-added',  function(e, data) {self.onExperimentEndedEvent(data)}   );
+
+	this.buildPastExperimentsDropDown();
+	this.buildCurrentExperimentsDropDown();
+};
+
+WiseGuiExperimentDropDown.prototype.onReservationAddedEvent = function(wiseguiEvent) {
+	console.log('TODO implement handling of wiseguiEvent "reservation-added": ' + JSON.stringify(wiseguiEvent));
 }
+
+WiseGuiExperimentDropDown.prototype.onExperimentEndedEvent = function(wiseguiEvent) {
+	console.log('TODO implement handling of wiseguiEvent "experiment-ended": ' + JSON.stringify(wiseguiEvent));
+};
+
+WiseGuiExperimentDropDown.prototype.onExperimentStartedEvent = function(wiseguiEvent) {
+	console.log('TODO implement handling of wiseguiEvent "experiment-started": ' + JSON.stringify(wiseguiEvent));
+};
+
+WiseGuiExperimentDropDown.prototype.buildPastExperimentsDropDown = function() {
+	this.pastExperimentsDropDown = $('<li class="dropdown">'
+			+ '	<a href="#" class="dropdown-toggle">Past Experiments</a>'
+			+ '	<ul class="dropdown-menu">'
+			+ '		<li><a href="#">Secondary link</a></li>'
+			+ '		<li><a href="#">Something else here</a></li>'
+			+ '		<li><a href="#">Another link</a></li>'
+			+ '	</ul>'
+			+ '</li>');
+};
+
+WiseGuiExperimentDropDown.prototype.buildCurrentExperimentsDropDown = function() {
+	this.pastExperimentsDropDown = $('<li class="dropdown">'
+			+ '	<a href="#" class="dropdown-toggle">Current Experiments</a>'
+			+ '	<ul class="dropdown-menu">'
+			+ '		<li><a href="#">Secondary link</a></li>'
+			+ '		<li><a href="#">Something else here</a></li>'
+			+ '		<li><a href="#">Another link</a></li>'
+			+ '	</ul>'
+			+ '</li>');
+};
+
+
+/**
+ * #################################################################
+ * WiseGuiExperimentationView
+ * #################################################################
+ */
+
+var WiseGuiExperimentationView = function(testbedId, experimentId) {
+
+	this.testbedId = testbedId;
+	this.experimentId = experimentId;
+
+	this.experimentationDivId    = 'WisebedExperimentationDiv-'+testbedId+'-'+experimentId;
+	this.tabsControlsDivId       = this.experimentationDivId+'-tabs-controls';
+	this.tabsOutputsDivId        = this.experimentationDivId+'-tabs-outputs';
+	this.outputsDivId            = this.experimentationDivId+'-outputs';
+	this.notificationsDivId      = this.experimentationDivId+'-notifications';
+	this.outputsTextAreaId       = this.experimentationDivId+'-outputs-textarea';
+	this.notificationsTextAreaId = this.experimentationDivId+'-notifications-textarea';
+	this.sendDivId               = this.experimentationDivId+'-send';
+	this.flashDivId              = this.experimentationDivId+'-flash';
+	this.resetDivId              = this.experimentationDivId+'-reset';
+	this.scriptingDivId          = this.experimentationDivId+'-scripting';
+
+	this.view = $('<div id="'+this.experimentationDivId+'"/>');
+
+	this.buildView();
+};
+
+WiseGuiExperimentationView.prototype.buildView = function() {
+
+	var controlsTabsDiv = $('<div id="'+this.tabsControlsDivId+'">'
+			+ '	<ul class="tabs">'
+			+ '		<li class="active"><a href="#'+this.sendDivId+'">Send Message</a></li>'
+			+ '		<li><a href="#'+this.flashDivId+'">Flash</a></li>'
+			+ '		<li><a href="#'+this.resetDivId+'">Reset</a></li>'
+			+ '		<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
+			+ '	</ul>'
+			+ '	<div class="tab-content">'
+			+ '		<div class="active tab-pane" id="'+this.sendDivId+'">sendMessage</div>'
+			+ '		<div class="tab-pane" id="'+this.flashDivId+'">flash</div>'
+			+ '		<div class="tab-pane" id="'+this.resetDivId+'-reset">reset</div>'
+			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'-scripting">Scripting</div>'
+			+ '	</div>'
+			+ '</div>');
+
+	var outputsTabsDiv = $('<div id="'+this.tabsOutputsDivId+'">'
+			+ '	<ul class="tabs">'
+			+ '		<li class="active"><a href="#'+this.outputsDivId+'">Node Outputs</a></li>'
+			+ '		<li><a href="#'+this.notificationsDivId+'">Backend Notifications</a></li>'
+			+ '	</ul>'
+			+ '	<div class="tab-content">'
+			+ '		<div class="active tab-pane" id="'+this.outputsDivId+'">'
+			+ '			<textarea class="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '		</div>'
+			+ '		<div class="tab-pane" id="'+this.notificationsDivId+'">'
+			+ '			<textarea class="'+this.notificationsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '		</div>'
+			+ '	</div>'
+			+ '</div>');
+
+	var resetDiv = controlsTabsDiv.find('#'+this.resetDivId);
+
+	this.view.append(controlsTabsDiv, outputsTabsDiv);
+
+	/*var sendMessagesDiv = $('<div id="'+sendMessagesDivId+'">'
+	 + '	<h3>Send Messages</h3>#'
+	 + '	Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).<br/>'
+	 + '	Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>'
+	 + '	<form>'
+	 + '		<fieldset>'
+	 + '			<select name="nodeUrn" id="nodeUrn" class="span4"></select>'
+	 + '			<input type="text" id="message"  name="message" value="" class="span8"/>'
+	 + '			<input type="submit" value="Send to Node" class="span4"/>'
+	 + '		</fieldset>'
+	 + '	</form>'
+	 + '</div>');*/
+};

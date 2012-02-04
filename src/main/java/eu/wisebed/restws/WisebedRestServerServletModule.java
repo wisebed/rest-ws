@@ -35,6 +35,9 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 
 		serve("/ws/*").with(WsnWebSocketServlet.class);
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
-		serve("/*").with(DefaultServlet.class, ImmutableMap.of("resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm()));
+		serve("/*").with(DefaultServlet.class, ImmutableMap.of(
+				"resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm(),
+				"maxCacheSize", "0"
+		));
 	}
 }

@@ -141,7 +141,28 @@
 
 		function loadExperimentContainer(navigationData, parentDiv) {
 
-			parentDiv.append($('<h1>Experimentation View</h1>'));
+			var experimentationView = new WiseGuiExperimentationView(navigationData.testbedId, navigationData.experimentId);
+			parentDiv.append(experimentationView.view);
+
+			/*parentDiv.append($('<h1>Experimentation View</h1>'));
+
+			var experimentationDivPrefix = 'WisebedExperimentationDiv-'+navigationData.testbedId+'-'+navigationData.experimentId;
+
+			var controlTabsDivId = experimentationDivPrefix+'-controlsTab';
+			var controlTabsDiv = $('<div id="'+controlTabsDivId+'">'
+					+ '	<ul class="tabs">'
+					+ '		<li class="active"><a href="#'+experimentationDivPrefix+'-sendMessage">Send Message</a></li>'
+					+ '		<li><a href="#'+experimentationDivPrefix+'-flash">Flash</a></li>'
+					+ '		<li><a href="#'+experimentationDivPrefix+'-reset">Reset</a></li>'
+					+ '		<li><a href="#'+experimentationDivPrefix+'-scripting">Scripting</a></li>'
+					+ '	</ul>'
+					+ '	<div id="outputTabs" class="tab-content">'
+					+ '		<div class="active tab-pane" id="'+experimentationDivPrefix+'-sendMessage">sendMessage</div>'
+					+ '		<div class="tab-pane" id="'+experimentationDivPrefix+'-flash">flash</div>'
+					+ '		<div class="tab-pane" id="'+experimentationDivPrefix+'-reset">reset</div>'
+					+ '		<div class="tab-pane" id="'+experimentationDivPrefix+'-scripting">Scripting</div>'
+					+ '	</div>'
+					+ '</div>');
 
 			var sendMessagesDivId = 'WisebedExperimentationSendDiv-'+navigationData.testbedId+'-'+navigationData.experimentId;
 			var sendMessagesDiv = $('<div id="'+sendMessagesDivId+'">'
@@ -158,12 +179,12 @@
 					+ '</div>');
 
 			var outputTabsDivId = 'WisebedExperimentationOutputDiv-'+navigationData.testbedId+'-'+navigationData.experimentId;
-			var outputTabs = $('<div id="'+outputTabsDivId+'">'
+			var outputTabsDiv = $('<div id="'+outputTabsDivId+'">'
 					+ '	<ul class="tabs">'
 					+ '		<li class="active"><a href="#nodeOutputsTab">Node Outputs</a></li>'
 					+ '		<li><a href="#notificationsTab">Backend Notifications</a></li>'
 					+ '	</ul>'
-					+ '	<div id="outputTabs" class="tab-content error">'
+					+ '	<div id="outputTabs" class="tab-content">'
 					+ '		<div class="active tab-pane" id="nodeOutputsTab">'
 					+ '			<textarea class="nodeOutputsTextArea" style="width: 100%; height:300px;" readonly></textarea>'
 					+ '		</div>'
@@ -173,8 +194,9 @@
 					+ '	</div>'
 					+ '</div>');
 
+			parentDiv.append(controlTabsDiv);
 			parentDiv.append(sendMessagesDiv);
-			parentDiv.append(outputTabs);
+			parentDiv.append(outputTabsDiv);
 
 			function onWebSocketMessageEvent(event) {
 
@@ -187,12 +209,12 @@
 
 				if (message.type == 'upstream') {
 
-					var nodeOutputsTextArea = outputTabs.find('.nodeOutputsTextArea').first();
+					var nodeOutputsTextArea = outputTabsDiv.find('.nodeOutputsTextArea').first();
 					nodeOutputsTextArea.append(message.timestamp + " | " + message.sourceNodeUrn + " | " + atob(message.payloadBase64) + '\n');
 
 				} else if (message.type == 'notification') {
 
-					var notificationsTextArea = outputTabs.find('.notificationsTextArea').first();
+					var notificationsTextArea = outputTabsDiv.find('.notificationsTextArea').first();
 					notificationsTextArea.append(message.timestamp + " | " + message.message + '\n');
 
 				}
@@ -233,7 +255,7 @@
 					payloadBase64 : btoa(event.target.elements.message.value)
 				};
 				socket.send(JSON.stringify(message));
-			});
+			});*/
 		}
 
 		function loadTestbedOverviewContainer(navigationData, parentDiv) {
@@ -272,8 +294,8 @@
 			});
 		}
 
-		var appState = {
-		};
+		var appState = {};
+		var reservationObservers = {};
 
 		function getAppStateKey(navigationData) {
 			if (navigationData.nav == 'overview') {
@@ -333,10 +355,21 @@
 				experimentsContainer.empty();
 
 				ul.append('<li><a href="#nav=overview">Testbed Overview</a></li>');
-				experimentsContainer.append('<a>Running Experiments</a>'
+				experimentsContainer.append('Running Experiments'
 						+ '<select style="width:500px" id="WisebedNavigationExperimentSelect-'+navigationData.testbedId+'" disabled="true"></select>');
 
 				if (Wisebed.hasSecretAuthenticationKeyCookie(navigationData.testbedId)) {
+
+					if (!reservationObservers[navigationData.testbedId] || !reservationObservers[navigationData.testbedId].isObserving) {
+
+						var reservationObserver = new WiseGuiReservationObserver(navigationData.testbedId);
+						reservationObservers[navigationData.testbedId] = reservationObserver;
+						reservationObserver.startObserving();
+						console.log('Started observing reservations for testbed "'+navigationData.testbedId+'"');
+					}
+
+					var experimentDropDown = new WiseGuiExperimentDropDown(navigationData.testbedId);
+
 					Wisebed.reservations.getPersonal(
 							navigationData.testbedId,
 							null,
@@ -372,8 +405,6 @@
 					var select = $('#WisebedNavigationExperimentSelect-'+navigationData.testbedId);
 					select[0].disabled = false;
 
-					fillWisebedNavigationExperimentSelect(select, navigationData);
-
 					secondaryUl.append('<li><a href="javascript:;" id="WisebedLogoutButton-'+navigationData.testbedId+'">Logout</a></li>');
 					$('#WisebedLogoutButton-'+navigationData.testbedId+':first').bind(
 							'click',
@@ -395,6 +426,10 @@
 					);
 				}
 			}
+		}
+
+		function buildWisebedNavigationReservationSelectBox(parentDiv, testbedId) {
+
 		}
 
 		function fillWisebedNavigationExperimentSelect(select, navigationData) {
