@@ -553,6 +553,8 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 				atob(message.payloadBase64) + '\n'
 		);
 
+		this.outputsTextArea.scrollTop(this.outputsTextArea[0].scrollHeight);
+
 	} else if (message.type == 'notification') {
 
 		this.notificationsTextArea.append(
@@ -563,11 +565,13 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 };
 
 WiseGuiExperimentationView.prototype.onWebSocketOpen = function(event) {
+
 	this.outputsTextArea.attr('disabled', false);
 	this.notificationsTextArea.attr('disabled', false);
 };
 
 WiseGuiExperimentationView.prototype.onWebSocketClose = function(event) {
+
 	this.outputsTextArea.attr('disabled', true);
 	this.notificationsTextArea.attr('disabled', true);
 };
@@ -715,7 +719,13 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			'click', self, function(e) {e.data.executeResetNodes()}
 	);
 
-	this.view.append(controlsTabsDiv, outputsTabsDiv);
+	var controlsDiv = $('<div class="WiseGuiExperimentationViewControlsDiv"><h2>Controls</h2></div>');
+	controlsDiv.append(controlsTabsDiv);
+
+	var outputsDiv = $('<div class="WiseGuiExperimentationViewOutputsDiv"><h2>Live Data</h2></div>');
+	outputsDiv.append(outputsTabsDiv);
+
+	this.view.append(outputsDiv, controlsDiv);
 
 	this.outputsTextArea = this.view.find('#'+this.outputsTextAreaId);
 	this.notificationsTextArea = this.view.find('#'+this.notificationsTextAreaId);
