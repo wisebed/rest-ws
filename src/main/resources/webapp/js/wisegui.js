@@ -462,9 +462,7 @@ WiseGuiReservationObserver.prototype.stopObserving = function() {
  * #################################################################
  *
  * Consumes wisegui events of type 'wisegui-notification' and displays them in a notification area.
- * Other components can make the viewer bind to additional events, transforming their payload into
- * a viewable notification via a method passed in. A 'wisegui-notification' event has to carry data
- * of the following type:
+ * A 'wisegui-notification' event has to carry data of the following type:
  *
  * {
  *  type     : "alert"|"block-alert"
