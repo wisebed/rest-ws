@@ -153,53 +153,76 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
 	this.parent = parent;
 	this.showCheckboxes = showCheckboxes;
 	this.table = null;
-	this.html = null;
+	this.filter = null;
+	this.filter_input = null;
+	this.html = $("<div></div>");
+	this.parent.append(this.html);
+	this.lastWorkingFilterExpr = null;
+	this.generateHeader();
 	this.generateTable(null);
 };
 
+WiseGuiNodeTable.prototype.generateHeader = function (f) {
+	that = this;
+	var updateTable = function() {
+		that.generateTable(that.filter_input.val());
+	}
+
+	// Filter
+	this.filter = $("<p></p>");
+
+	this.filter_input = $('<input type"text" style="width:100%;padding:0px;">');
+	// Key up event if enter is pressed
+	this.filter_input.keyup(function(event) {
+		//if (event.keyCode == 13) {
+			updateTable();
+		//}
+	});
+
+	this.filter.append(this.filter_input);
+	this.html.append(this.filter);
+}
+
+h = 0;
 WiseGuiNodeTable.prototype.generateTable = function (f) {
+
+//	this.table = $("<p>TABLE " + (h++) + "</p>");
+//	this.html.append(this.table);
+//	return;
+
 	// TODO: use buildTable(...)
 
 	var that = this;
 	var nodes = this.wiseML.setup.node;
-	this.html = $("<div></div>");
-
-	var updateTable = function() {
-		that.parent.empty();
-		that.generateTable(filter_input.val());
-	}
-
-	// Filter
-	var filter = $("<p></p>");
-
-	var filter_input = $('<input type"text" style="width:87%">');
-	var filter_submit = $('<input type="submit" value="GO" style="width:10%;float:right;">');
-	filter_submit.click(updateTable);
-
-	// Key up event if enter is pressed
-	filter_input.keyup(function(event) {
-		if (event.keyCode == 13) {
-			updateTable();
-		}
-	});
-
-
-
-
-	filter.append(filter_input);
-	filter.append(filter_submit);
-	this.html.append(filter);
-
 
 	if(f != null && f.length > 0) {
-		filter_input.attr("value", f);
+		//this.filter_input.attr("value", f);
+		//this.filter_input.blur(); // Reset the focus
 		// Filter
+		var errorOccured = false;
 		nodes = $(nodes).filter(function(index) {
 			e = this;
-			return (eval(f));
+			try {
+				return eval(f);
+			} catch (ex) {
+				errorOccured = true;
+				if(that.lastWorkingFilterExpr != null) {
+					return eval(that.lastWorkingFilterExpr);
+				} else {
+					return true;
+				}
+			}
 		});
+		if(errorOccured) {
+			//alert("Filter expression not valid.");
+		} else {
+			this.lastWorkingFilterExpr = f;
+		}
 	}
 
+	if(this.table != null) {
+		this.table.remove();
+	}
 
 	this.table = $('<table class="bordered-table zebra-striped"></table>');
 
@@ -275,7 +298,7 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	this.html.append(this.table);
 
 	// Add to the parent elemenet and add the sorter
-	this.parent.append(this.html);
+	//this.parent.append(this.html);
 
 	if(this.showCheckboxes) {
 		$(this.table).tablesorter({headers:{0:{sorter:false}}});
