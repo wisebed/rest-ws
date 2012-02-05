@@ -1,3 +1,35 @@
+var WiseGui = new function() {
+
+	this.showAlert = function(message, severity) {
+		$(window).trigger('wisegui-notification',
+				{
+					type     : 'alert',
+					severity : severity,
+					message  : message
+				}
+		);
+	};
+	this.showWarningAlert = function(message) { this.showAlert(message, 'warning'); };
+	this.showErrorAlert = function(message) { this.showAlert(message, 'error'); };
+	this.showSuccessAlert = function(message) { this.showAlert(message, 'success'); };
+	this.showInfoAlert = function(message) { this.showAlert(message, 'info'); };
+
+	this.showBlockAlert = function(message, actions, severity) {
+		$(window).trigger('wisegui-notification',
+				{
+					type     : 'block-alert',
+					severity : severity,
+					message  : message,
+					actions  : actions
+				}
+		);
+	};
+	this.showWarningBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'warning'); };
+	this.showErrorBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'error'); };
+	this.showSuccessBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'success'); };
+	this.showInfoBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'info'); };
+};
+
 /**
  * #################################################################
  * WiseGuiLoginDialog
@@ -361,7 +393,25 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(reser
 	}
 
 	for (var k=0; k<newReservations.length; k++) {
+
 		$(window).trigger('wisegui-reservation-added', newReservations[k]);
+
+		// schedule events for reservation started and ended in order to e.g. display user notifications
+		var nowInMillis = new Date().valueOf();
+		if (nowInMillis < newReservations[k].from) {
+			setTimeout(
+					function() {$(window).trigger('wisegui-reservation-started', newReservations[k]);},
+					(newReservations[k].from - nowInMillis)
+			);
+		}
+
+		if (nowInMillis < newReservations[k].to) {
+			setTimeout(
+					function() {$(window).trigger('wisegui-reservation-ended', newReservations[k]);},
+					(newReservations[k].to - nowInMillis)
+			)
+		}
+
 		this.lastKnownReservations.push(newReservations[k]);
 	}
 };
@@ -408,10 +458,77 @@ WiseGuiReservationObserver.prototype.stopObserving = function() {
 
 /**
  * #################################################################
+ * WiseGuiNotificationsViewer
+ * #################################################################
+ *
+ * Consumes wisegui events of type 'wisegui-notification' and displays them in a notification area.
+ * Other components can make the viewer bind to additional events, transforming their payload into
+ * a viewable notification via a method passed in. A 'wisegui-notification' event has to carry data
+ * of the following type:
+ *
+ * {
+ *  type     : "alert"|"block-alert"
+ *  severity : "warning"|"error"|"success"|"info"
+ *  message  : "Oh snap! Change this and that and try again."
+ *  actions  : an array of buttons (only for block-alerts)
+ * }
+ *
+ */
+
+var WiseGuiNotificationsViewer = function() {
+
+	this.view = null;
+	this.buildView();
+
+	var self = this;
+	$(window).bind('wisegui-notification', function(e, data) {
+		self.showNotification(data);
+	});
+};
+
+WiseGuiNotificationsViewer.prototype.showNotification = function(notification) {
+	if (notification.type == 'alert') {
+		this.showAlert(notification);
+	} else if (notification.type == 'block-alert') {
+		this.showBlockAlert(notification);
+	}
+};
+
+WiseGuiNotificationsViewer.prototype.showAlert = function(alert) {
+	var alertDiv = $('<div class="alert-message '+alert.severity+'">'
+			+ '<a class="close" href="#">&times;</a>'
+			+ '<p>'+alert.message+'</p>'
+			+ '</div>');
+	this.view.append(alertDiv);
+	alertDiv.alert();
+};
+
+WiseGuiNotificationsViewer.prototype.showBlockAlert = function(alert) {
+	var blockAlertDiv = $('<div class="alert-message block-message '+alert.severity+'">'
+			+ '	<a class="close" href="#">&times;</a>'
+			+ '	<p>'+alert.message+'</p>'
+			+ '	<div class="alert-actions">'
+			+ '	</div>'
+			+ '</div>');
+	var actionsDiv = blockAlertDiv.find('.alert-actions');
+	for (var i=0; i<alert.actions.length; i++) {
+		actionsDiv.append(alert.actions[i]);
+		actionsDiv.append(' ');
+	}
+	this.view.append(blockAlertDiv);
+	blockAlertDiv.alert();
+};
+
+WiseGuiNotificationsViewer.prototype.buildView = function() {
+	this.view = $('<div id="WiseGuiNotificationsDiv"></div>');
+};
+
+/**
+ * #################################################################
  * WiseGuiExperimentDropDown
  * #################################################################
  *
- * Consumes wiseguiEvents of type 'wisegui-experiment-ended', 'wisegui-experiment-started', 'wisegui-reservation-added'.
+ * Consumes wisegui events of type 'wisegui-reservation-ended', 'wisegui-reservation-started', 'wisegui-reservation-added'.
  *
  */
 
@@ -421,8 +538,8 @@ var WiseGuiExperimentDropDown = function(testbedId) {
 	this.currentExperimentsDropDown = null;
 
 	var self = this;
-	$(window).bind('wisegui-experiment-started', function(e, data) {self.onExperimentStartedEvent(data)} );
-	$(window).bind('wisegui-experiment-ended',   function(e, data) {self.onExperimentEndedEvent(data)}   );
+	$(window).bind('wisegui-reservation-started', function(e, data) {self.onExperimentStartedEvent(data)} );
+	$(window).bind('wisegui-reservation-ended',   function(e, data) {self.onExperimentEndedEvent(data)}   );
 	$(window).bind('wisegui-reservation-added',  function(e, data) {self.onExperimentEndedEvent(data)}   );
 
 	this.buildPastExperimentsDropDown();

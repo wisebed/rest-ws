@@ -17,6 +17,7 @@
 	<script type="text/javascript" src="js/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-tabs-1.4.0.js"></script>
 	<script type="text/javascript" src="js/bootstrap-modal-1.4.0.js"></script>
+	<script type="text/javascript" src="js/bootstrap-alerts-1.4.0.js"></script>
 
 	<script type="text/javascript" src="js/prettify.js"></script>
 	<script type="text/javascript" src="js/phpjs/explode.js"></script>
@@ -386,11 +387,15 @@
 			}
 		}
 
+		var notificationsViewer;
+
 		$(function () {
 
 			$(window).bind('hashchange', onHashChange);
 
 			loadNavigationBar(function() {
+				notificationsViewer = new WiseGuiNotificationsViewer();
+				$('#WisebedContainer').append(notificationsViewer.view);
 				$('#WisebedContainer').append('<div class="WisebedContentContainer"/>');
 				$(window).trigger('hashchange');
 			});
