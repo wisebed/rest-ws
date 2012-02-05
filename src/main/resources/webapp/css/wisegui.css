@@ -2,12 +2,16 @@ body {
 	padding-top: 10px;
 }
 
+.modal.WiseGuiLoginDialog {
+
+}
+
 .modal {
 	width: 800px;
 	margin: -250px 0 0 -400px;
 }
 
-.modal-body {
+.modal.WiseGuiNodeSelectionDialog .modal-body {
 	height: 300px;
 	overflow: auto;
 }

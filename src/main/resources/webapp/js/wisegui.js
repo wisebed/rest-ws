@@ -84,7 +84,7 @@ var WiseGuiLoginDialog = new function() {
 
 				var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed ' + testbedId + '</h3></div>');
 
-				var dialogBody = $('<div class="modal-body"/>'
+				var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
 						+ '		<form id="WisebedLoginDialogForm-'+testbedId+'">'
 						+ '		<table id="WisebedLoginDialogFormTable-'+testbedId+'">'
 						+ '			<thead>'
@@ -593,7 +593,7 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 
 	this.dialogDivId = 'WiseGuiNodeSelectionDialog-' + Math.random();
 
-	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide">'
+	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide WiseGuiNodeSelectionDialog">'
 			+ '	<div class="modal-header">'
 			+ '		<h3>' + headerHtml + '</h3>'
 			+ '	</div>'
