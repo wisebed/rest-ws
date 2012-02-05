@@ -147,7 +147,7 @@ var WiseGuiLoginDialog = new function() {
  * WiseGuiNodeTable
  * #################################################################
  */
-var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
+var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.checkboxes = [];
 	this.wiseML = wiseML;
 	this.showCheckboxes = showCheckboxes;
@@ -158,7 +158,7 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes) {
 	this.filter = null;
 	this.table = null;
 
-	this.generateHeader();
+	if(showFilter) this.generateHeader();
 	this.generateTable(null);
 };
 
@@ -168,7 +168,7 @@ WiseGuiNodeTable.prototype.generateHeader = function (f) {
 	// Filter
 	this.filter = $("<p></p>");
 
-	filter_input = $('<input type"text" style="width:100%;padding:0px;">');
+	filter_input = $('<input type"text" style="width:100%;padding-left:0px;padding-right:0px;">');
 	// Key up event if enter is pressed
 	filter_input.keyup(function(event) {
 		that.generateTable(filter_input.val());
