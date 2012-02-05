@@ -279,7 +279,12 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 	var selected = [];
 	if(this.table != null) {
 		this.table.find("input:checked").each(function() {
-			selected.push($(this).attr('name'));
+			var name = $(this).attr('name');
+
+			// Ignore the checkbox from the header, which doesn't have any name
+			if(typeof(name) != "undefined") {
+				selected.push(name);
+			}
 		});
 	}
 	return selected;
@@ -449,12 +454,12 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 
 	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide">'
 			+ '	<div class="modal-header">'
-			+ '		<h3>' + headerHtml + '</h3>' 
+			+ '		<h3>' + headerHtml + '</h3>'
 			+ '	</div>'
 			+ '	<div class="modal-body">'
 			+ '		<p>' + bodyHtml + '</p>'
 			+ '		<img class="ajax-loader" src="img/ajax-loader-big.gif" width="32" height="32"/>'
-			+ '	</div>' 
+			+ '	</div>'
 			+ ' <div class="modal-footer">'
 			+ '		<a class="btn secondary">Cancel</a>'
 			+ '		<a class="btn primary">OK</a>'
