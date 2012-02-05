@@ -5,13 +5,61 @@
 	<link rel="stylesheet" media="screen" href="../../css/bootstrap.css">
 	<style type="text/css">
 		body {
+			padding: 10px;
 			padding-top: 50px;
 		}
 	</style>
 	<script type="text/javascript" src="../../js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="../../js/bootstrap-dropdown-1.4.0.js"></script>
+	<script type="text/javascript" src="../../js/Three.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function () {
+
+			var camera, scene, renderer, geometry, material, mesh, canvas;
+
+			init();
+			animate();
+
+			function init() {
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 1000;
+				scene.add( camera );
+
+				geometry = new THREE.CubeGeometry( 200, 200, 200 );
+				material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+				mesh = new THREE.Mesh( geometry, material );
+				scene.add( mesh );
+
+				renderer = new THREE.CanvasRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				canvas = $(renderer.domElement);
+				canvas.addClass('container');
+				canvas.attr('style', 'border:1px solid #dddddd;');
+				$('body').append( canvas );
+
+			}
+
+			function animate() {
+
+				// note: three.js includes requestAnimationFrame shim
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+			function render() {
+
+				mesh.rotation.x += 0.01;
+				mesh.rotation.y += 0.02;
+
+				renderer.render( scene, camera );
+
+			}
 
 		});
 	</script>
@@ -35,10 +83,10 @@
 						<a href="" class="dropdown-toggle">Playgrounds</a>
 						<ul class="dropdown-menu">
 							<li><a href="localstorage.html">Local Storage</a></li>
-							<li class="active"><a href="databases.html">Databases</a></li>
+							<li><a href="databases.html">Databases</a></li>
 							<li><a href="modal-dialogs.html">Modal Dialogs</a></li>
 							<li><a href="tabs.html">Tabs</a></li>
-							<li><a href="three.js.html">Three.js</a></li>
+							<li class="active"><a href="three.js.html">Three.js</a></li>
 						</ul>
 					</li>
 				</ul>
@@ -47,13 +95,7 @@
 	</div>
 </div>
 
-<div class="container">
 
-	<h2>Databases</h2>
-
-
-
-</div>
 
 </body>
 </html>
