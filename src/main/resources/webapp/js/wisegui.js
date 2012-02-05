@@ -164,19 +164,28 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	var nodes = this.wiseML.setup.node;
 	this.html = $("<div></div>");
 
+	var updateTable = function() {
+		that.parent.empty();
+		that.generateTable(filter_input.val());
+	}
+
 	// Filter
 	var filter = $("<p></p>");
-	var filter_submit = $('<input type="submit" value="GO" style="width:10%;float:right;">');
-	filter_submit.click(
-		function () {
-			var f = this;
-			var expr = $(this).prev().val();
-			that.parent.empty();
-			that.generateTable(expr);
-		}
-	);
 
 	var filter_input = $('<input type"text" style="width:87%">');
+	var filter_submit = $('<input type="submit" value="GO" style="width:10%;float:right;">');
+	filter_submit.click(updateTable);
+
+	// Key up event if enter is pressed
+	filter_input.keyup(function(event) {
+		if (event.keyCode == 13) {
+			updateTable();
+		}
+	});
+
+
+
+
 	filter.append(filter_input);
 	filter.append(filter_submit);
 	this.html.append(filter);
