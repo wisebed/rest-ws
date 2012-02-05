@@ -102,7 +102,25 @@
 							tableRows[i][0] = new Date(reservations[i].from).toString();
 							tableRows[i][1] = new Date(reservations[i].to).toString();
 							tableRows[i][2] = reservations[i].userData;
-							tableRows[i][3] = reservations[i].nodeURNs.join("<br/>");
+
+							var nodesContainer = $('<div>'
+									+ reservations[i].nodeURNs.length + ' nodes.<br/>'
+									+ '<a href="#">Show URNs</a>'
+									+ '</div>');
+
+							var nodesLink = nodesContainer.find('a');
+							nodesLink.first().bind(
+									'click',
+									{link:nodesLink, container:nodesContainer, reservation:reservations[i]},
+									function(e) {
+										e.preventDefault();
+										e.data.link.remove();
+										e.data.container.append(
+												e.data.reservation.nodeURNs.join("<br/>")
+										);
+									}
+							);
+							tableRows[i][3] = nodesContainer;
 						}
 
 						var table = buildTable(tableHead, tableRows);
@@ -131,7 +149,9 @@
 				var row = $('<tr/>');
 				tbody.append(row);
 				for (var l=0; l<tableRows[k].length; l++) {
-					row.append('<td>'+tableRows[k][l]+'</td>');
+					var td = $('<td/>');
+					row.append(td);
+					td.append(tableRows[k][l]);
 				}
 			}
 
@@ -316,14 +336,6 @@
 			}
 		}
 
-		function buildWisebedNavigationReservationSelectBox(parentDiv, testbedId) {
-
-		}
-
-		function fillWisebedNavigationExperimentSelect(select, navigationData) {
-			console.log('TODO fillWisebedNavigationExperimentSelect');
-		}
-
 		function navigateToExperiment(testbedId, reservation) {
 
 			Wisebed.experiments.getUrl(
@@ -361,17 +373,11 @@
 
 			$('#WisebedContainer .WisebedContentContainer').children(':visible').hide();
 
-			console.log("appStateKey=" + appStateKey);
-			console.log("appState["+appStateKey+"]=" + appState[appStateKey]);
-
 			if (appState[appStateKey]) {
 
-				console.log("Loading container for: " + JSON.stringify(navigationData));
 				$(appState[appStateKey]).show();
 
 			} else {
-
-				console.log("Creating container for: " + JSON.stringify(navigationData));
 
 				var container = $('<div id="WisebedContentContainer'+(navigationData.testbedId ? '-' + navigationData.testbedId : '')+'"/>');
 				$('#WisebedContainer .WisebedContentContainer').append(container);

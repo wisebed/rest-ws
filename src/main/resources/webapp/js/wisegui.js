@@ -251,7 +251,7 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 
 	if(this.table != null) {
 		this.table.remove();
-	}f
+	}
 
 	this.table = $('<table class="bordered-table zebra-striped"></table>');
 
