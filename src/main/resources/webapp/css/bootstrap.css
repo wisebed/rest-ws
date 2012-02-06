@@ -2362,7 +2362,7 @@ button.btn::-moz-focus-inner, input[type=submit].btn::-moz-focus-inner {
   background: rgba(0, 0, 0, 0.8);
   padding: 3px;
   overflow: hidden;
-  width: 280px;
+  width: 600px;
   -webkit-border-radius: 6px;
   -moz-border-radius: 6px;
   border-radius: 6px;
