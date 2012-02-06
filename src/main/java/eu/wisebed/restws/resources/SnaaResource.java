@@ -76,7 +76,7 @@ public class SnaaResource {
 
 			NewCookie sakCookie = createCookie(testbedId, loginResult);
 
-			log.debug("Received {}, returning {}", toJSON(loginData), jsonResponse);
+			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(sakCookie).build();
 
 		} catch (AuthenticationExceptionException e) {

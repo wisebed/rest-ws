@@ -42,6 +42,152 @@ var WiseGui = new function() {
 	};
 };
 
+var WiseGuiNavigationViewer = function(navigationData) {
+
+	this.navigationData = navigationData;
+
+	this.view = null;
+	this.buildView();
+};
+
+WiseGuiNavigationViewer.prototype.buildView = function() {
+
+	this.view = $(
+			  '<div class="topbar-wrapper" style="z-index: 5;">'
+			+ '	<div class="topbar" data-dropdown="dropdown">'
+			+ '		<div class="topbar-inner">'
+			+ '			<div class="container">'
+			+ '				<ul class="nav"></ul>'
+			+ '				<ul class="nav secondary-nav"></ul>'
+			+ '			</div>'
+			+ '		</div>'
+			+ '	</div>'
+			+ '</div>'
+	);
+
+	var primaryMenu = this.view.find('ul.nav:not(ul.secondary-nav)').first();
+	var secondaryMenu = this.view.find('ul.secondary-nav').first();
+
+	if (this.navigationData.nav == 'overview') {
+
+		primaryMenu.append('<li class="active"><a href="#nav=overview">Testbed Overview</a></li>');
+
+	} else if (this.navigationData.nav == 'testbed') {
+
+		primaryMenu.append('<li><a href="#nav=overview">Back</a></li>');
+		secondaryMenu.append('<li><a href="#" class="reservationsMenuEntry">Reservations</a></li>');
+
+		this.view.find('.reservationsMenuEntry').bind(
+				'click',
+				this.navigationData.testbedId,
+				function(e) { showReservationsDialog(e.data); }
+		);
+
+		var loginDialog = getLoginDialog(this.navigationData.testbedId);
+
+		if (loginDialog.isLoggedIn()) {
+
+			var experimentDropDown = new WiseGuiExperimentDropDown(this.navigationData.testbedId);
+			primaryMenu.append(experimentDropDown.view);
+
+			secondaryMenu.append('<li><a href="javascript:;" id="WisebedLogoutButton-'+this.navigationData.testbedId+'">Logout</a></li>');
+
+			$('#WisebedLogoutButton-'+this.navigationData.testbedId+':first').bind(
+					'click',
+					this.navigationData.testbedId,
+					function(e) {
+						loginDialog.doLogout();
+						delete loginDialogs[e.data];
+						$(window).trigger('hashchange');
+					}
+			)
+
+		} else {
+			secondaryMenu.append('<li><a href="javascript:;" id="WisebedLoginButton-'+this.navigationData.testbedId+'">Login</a></li>');
+			$('#WisebedLoginButton-'+this.navigationData.testbedId+':first').bind(
+					'click',
+					this.navigationData.testbedId,
+					function(e) { loginDialog.show(); }
+			);
+		}
+	}
+
+	$('.tabs').tabs();
+};
+
+/**
+ * #################################################################
+ * WiseGuiLoginObserver
+ * #################################################################
+ *
+ * Listens to WiseGui events 'wisegui-logged-in' and 'wisegui-logged-out'. The former carries an object
+ *
+ * {
+ *   testbedId : "uzl",
+ *   loginData : {
+ * 	   authenticationData :
+ * 	   [
+ *       {
+ *         urnPrefix : 'urn:wisebed:uzl1:',
+ *         username  : 'bla',
+ *         password  : 'blub'
+ *       }
+ * 	   ]
+ *   }
+ * }
+ */
+var WiseGuiLoginObserver = function() {
+	this.isObserving = false;
+	this.loginData   = {};
+	this.schedules   = {};
+	this.interval    = 10 * 1000;
+};
+
+WiseGuiLoginObserver.prototype.renewLogin = function(testbedId) {
+	console.log('TODO should renew login for ' + testbedId);
+};
+
+WiseGuiLoginObserver.prototype.onLoggedInEvent = function(data) {
+
+	console.log('LoginObserver received login event: ' + JSON.stringify(data));
+	var self = this;
+	this.loginData[data.testbedId] = data.loginData;
+	this.schedules[data.testbedId] = window.setInterval(
+			function() { self.renewLogin(data.testbedId); },
+			self.interval
+	);
+};
+
+WiseGuiLoginObserver.prototype.onLoggedOutEvent = function(data) {
+
+	console.log('LoginObserver received logout event: ' + JSON.stringify(data));
+	if (this.schedules[data.testbedId]) {
+		window.clearInterval(this.schedules[data.testbedId]);
+		delete this.schedules[data.testbedId];
+	}
+};
+
+WiseGuiLoginObserver.prototype.startObserving = function() {
+
+	console.log('LoginObserver starts observing');
+	this.isObserving = true;
+
+	var self = this;
+	$(window).bind('wisegui-logged-in', function(e, data) { self.onLoggedInEvent(data); });
+	$(window).bind('wisegui-logged-out', function(e, data) { self.onLoggedOutEvent(data); });
+};
+
+WiseGuiLoginObserver.prototype.stopObserving = function() {
+
+	console.log('LoginObserver stops observing');
+	this.isObserving = false;
+
+	$(this.schedules, function(testbedId, schedule) {
+		window.clearInterval(schedule);
+	});
+	this.schedules = {};
+};
+
 /**
  * #################################################################
  * WiseGuiLoginDialog
@@ -62,15 +208,28 @@ var WiseGuiLoginDialog = function(testbedId) {
 WiseGuiLoginDialog.prototype.doLogin = function() {
 	var self = this;
 	$.ajax({
-		url			:	"/rest/2.3/" + this.testbedId + "/login",
-		type		:	"POST",
-		data		:	JSON.stringify(this.loginData, null, '  '),
-		contentType	:	"application/json; charset=utf-8",
-		dataType	:	"json",
-		success		: 	function() { self.hide(); $(window).trigger('hashchange'); },
-		error		: 	WiseGui.showAjaxError
+		url			: "/rest/2.3/" + this.testbedId + "/login",
+		type		: "POST",
+		data		: JSON.stringify(this.loginData, null, '  '),
+		contentType	: "application/json; charset=utf-8",
+		dataType	: "json",
+		error		: WiseGui.showAjaxError,
+		success		: function() {
+			self.hide();
+			$(window).trigger('wisegui-logged-in', {testbedId : self.testbedId, loginData : self.loginData});
+			$(window).trigger('hashchange');
+		}
 	});
-}
+};
+
+WiseGuiLoginDialog.prototype.isLoggedIn = function() {
+	return Wisebed.hasSecretAuthenticationKeyCookie(this.testbedId);
+};
+
+WiseGuiLoginDialog.prototype.doLogout = function() {
+	Wisebed.deleteSecretAuthenticationKeyCookie(this.testbedId);
+	$(window).trigger('wisegui-logged-out', {testbedId : this.testbedId});
+};
 
 WiseGuiLoginDialog.prototype.hide = function() {
 	this.view.hide();
@@ -356,25 +515,24 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
  * #################################################################
  */
 
-var WiseGuiReservationObserver = function(testbedId) {
-	this.testbedId = testbedId;
-	this.lastKnownReservations = [];
-	this.isObserving = false;
-	this.interval = null;
+var WiseGuiReservationObserver = function() {
+	this.lastKnownReservations = {};
+	this.isObserving           = false;
+	this.schedules             = {};
 };
 
-WiseGuiReservationObserver.prototype.fetchReservationsAndProcess = function() {
+WiseGuiReservationObserver.prototype.fetchReservationsAndProcess = function(testbedId) {
 	var self = this;
 	Wisebed.reservations.getPersonal(
-			this.testbedId,
+			testbedId,
 			null,
 			null,
-			function(reservations) {self.processReservationsFetched(reservations.reservations)},
+			function(reservations) {self.processReservationsFetched(testbedId, reservations.reservations)},
 			null
 	);
 };
 
-WiseGuiReservationObserver.prototype.processReservationsFetched = function(reservations) {
+WiseGuiReservationObserver.prototype.processReservationsFetched = function(testbedId, reservations) {
 
 	var newReservations = [];
 
@@ -382,8 +540,12 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(reser
 
 		var knownReservation = false;
 
-		for (var j=0; j<this.lastKnownReservations.length; j++) {
-			if (this.reservationEquals(reservations[i], this.lastKnownReservations[j])) {
+		if (!this.lastKnownReservations[testbedId]) {
+			this.lastKnownReservations[testbedId] = [];
+		}
+
+		for (var j=0; j<this.lastKnownReservations[testbedId].length; j++) {
+			if (Wisebed.reservations.equals(reservations[i], this.lastKnownReservations[testbedId][j])) {
 				knownReservation = true;
 				break;
 			}
@@ -394,68 +556,75 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(reser
 		}
 	}
 
+	if (newReservations.length > 0) {
+		$(window).trigger('wisegui-reservations-changed-'+testbedId, {reservations:reservations});
+	}
+
 	for (var k=0; k<newReservations.length; k++) {
 
-		$(window).trigger('wisegui-reservation-added', newReservations[k]);
+		$(window).trigger('wisegui-reservation-added-'+testbedId, newReservations[k]);
 
 		// schedule events for reservation started and ended in order to e.g. display user notifications
 		var nowInMillis = new Date().valueOf();
 		if (nowInMillis < newReservations[k].from) {
-			setTimeout(
-					function() {$(window).trigger('wisegui-reservation-started', newReservations[k]);},
-					(newReservations[k].from - nowInMillis)
-			);
+
+			var triggerReservationStarted = (function(reservation) {
+				return function() {$(window).trigger('wisegui-reservation-started-'+testbedId, reservation);}
+			})(newReservations[k]);
+
+			setTimeout(triggerReservationStarted, (newReservations[k].from - nowInMillis));
 		}
 
 		if (nowInMillis < newReservations[k].to) {
-			setTimeout(
-					function() {$(window).trigger('wisegui-reservation-ended', newReservations[k]);},
-					(newReservations[k].to - nowInMillis)
-			)
+
+			var triggerReservationEnded = (function(reservation) {
+				return function() {$(window).trigger('wisegui-reservation-ended-'+testbedId, reservation);}
+			})(newReservations[k]);
+
+			setTimeout(triggerReservationEnded, (newReservations[k].to - nowInMillis));
 		}
 
-		this.lastKnownReservations.push(newReservations[k]);
+		this.lastKnownReservations[testbedId].push(newReservations[k]);
 	}
-};
-
-WiseGuiReservationObserver.prototype.reservationEquals = function(res1, res2) {
-
-	function subsetOf(set1, set2, compare) {
-		for (var i=0; i<set1.length; i++) {
-			for (var j=0; j<set2.length; j++) {
-				if (!compare(set1[i], set2[j])) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	function setEquals(set1, set2, compare) {
-
-		if (set1.length != set2.length) {
-			return false;
-		}
-
-		return subsetOf(set1, set2, compare) && subsetOf(set2, set1, compare);
-	}
-
-	return setEquals(res1.data, res2.data, function(dataElem1, dataElem2) {
-		return  dataElem1.secretReservationKey == dataElem2.secretReservationKey &&
-				dataElem1.urnPrefix            == dataElem2.urnPrefix;
-	});
 };
 
 WiseGuiReservationObserver.prototype.startObserving = function() {
+
 	this.isObserving = true;
+
 	var self = this;
-	this.interval = window.setInterval(function() {self.fetchReservationsAndProcess()}, 60 * 1000);
-	this.fetchReservationsAndProcess();
+
+	$(window).bind('wisegui-logged-in', function(e, data) {
+		self.startObservationOf(data.testbedId);
+		console.log('WiseGuiReservationObserver beginning to observe reservations for testbedId "'+data.testbedId+'"');
+	});
+
+	$(window).bind('wisegui-logged-out', function(e, data) {
+		self.stopObservationOf(data.testbedId);
+		console.log('WiseGuiReservationObserver stopped to observe reservations for testbedId "'+data.testbedId+'"');
+	});
+
+	console.log('WiseGuiReservationObserver started observing');
 };
 
 WiseGuiReservationObserver.prototype.stopObserving = function() {
+
 	this.isObserving = false;
-	window.clearInterval(this.interval);
+
+	var self = this;
+	$.each(this.schedules, function(testbedId, schedule) { self.stopObservationOf(testbedId) });
+
+	console.log('WiseGuiReservationObserver stopped observing');
+};
+WiseGuiReservationObserver.prototype.startObservationOf = function(testbedId) {
+	var self = this;
+	this.schedules[testbedId] = window.setInterval(function() {self.fetchReservationsAndProcess(testbedId)}, 60 * 1000);
+	this.fetchReservationsAndProcess(testbedId);
+};
+
+WiseGuiReservationObserver.prototype.stopObservationOf = function(testbedId) {
+	window.clearInterval(this.schedules[testbedId]);
+	delete this.schedules[testbedId];
 };
 
 /**
@@ -543,52 +712,59 @@ WiseGuiNotificationsViewer.prototype.buildView = function() {
 
 var WiseGuiExperimentDropDown = function(testbedId) {
 
-	this.pastExperimentsDropdown = null;
-	this.currentExperimentsDropDown = null;
+	this.testbedId = testbedId;
+	this.view = null;
 
 	var self = this;
-	$(window).bind('wisegui-reservation-started', function(e, data) {self.onExperimentStartedEvent(data)} );
-	$(window).bind('wisegui-reservation-ended',   function(e, data) {self.onExperimentEndedEvent(data)}   );
-	$(window).bind('wisegui-reservation-added',  function(e, data) {self.onExperimentEndedEvent(data)}   );
+	$(window).bind('wisegui-reservations-changed-'+testbedId, function(e, reservations) {
+		self.onReservationsChangedEvent(reservations.reservations)
+	});
+	$(window).bind('wisegui-navigation-event', function(e, navigationData) {
+		if (navigationData.testbedId = self.testbedId) {
+			self.update();
+		}
+	});
 
-	this.buildPastExperimentsDropDown();
-	this.buildCurrentExperimentsDropDown();
+	this.buildView();
 };
 
-WiseGuiExperimentDropDown.prototype.onReservationAddedEvent = function(wiseguiEvent) {
-	console.log('TODO implement handling of wiseguiEvent "reservation-added": ' + JSON.stringify(wiseguiEvent));
-}
-
-WiseGuiExperimentDropDown.prototype.onExperimentEndedEvent = function(wiseguiEvent) {
-	console.log('TODO implement handling of wiseguiEvent "experiment-ended": ' + JSON.stringify(wiseguiEvent));
+WiseGuiExperimentDropDown.prototype.update = function() {
+	var self = this;
+	Wisebed.reservations.getPersonal(this.testbedId, null, null, function(reservations) {
+		self.onReservationsChangedEvent(reservations);
+	});
 };
 
-WiseGuiExperimentDropDown.prototype.onExperimentStartedEvent = function(wiseguiEvent) {
-	console.log('TODO implement handling of wiseguiEvent "experiment-started": ' + JSON.stringify(wiseguiEvent));
+WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reservations) {
+
+		console.log(reservations);
+
+		this.view.find('.dropdown-menu li').remove();
+
+		for (var i=0; i<reservations.length; i++) {
+
+			var reservation = reservations[i];
+			var fromStr = $.format.date(new Date(reservation.from), "yyyy-MM-dd HH:mm");
+			var toStr = $.format.date(new Date(reservation.to), "yyyy-MM-dd HH:mm");
+
+			var li = $('<li><a href="#">' + fromStr + ' - ' + toStr + ' | ' + reservation.userData + '</a></li>');
+			var self = this;
+			li.find('a').bind('click', reservation, function(e) {
+				e.preventDefault();
+				navigateToExperiment(self.testbedId, e.data);
+			});
+
+			this.view.find('.dropdown-menu').append(li);
+		}
 };
 
-WiseGuiExperimentDropDown.prototype.buildPastExperimentsDropDown = function() {
-	this.pastExperimentsDropDown = $('<li class="dropdown">'
-			+ '	<a href="#" class="dropdown-toggle">Past Experiments</a>'
-			+ '	<ul class="dropdown-menu">'
-			+ '		<li><a href="#">Secondary link</a></li>'
-			+ '		<li><a href="#">Something else here</a></li>'
-			+ '		<li><a href="#">Another link</a></li>'
+WiseGuiExperimentDropDown.prototype.buildView = function() {
+	this.view = $('<li class="dropdown">'
+			+ '	<a href="#" class="dropdown-toggle">Experiments</a>'
+			+ '	<ul class="dropdown-menu">' 
 			+ '	</ul>'
 			+ '</li>');
 };
-
-WiseGuiExperimentDropDown.prototype.buildCurrentExperimentsDropDown = function() {
-	this.pastExperimentsDropDown = $('<li class="dropdown">'
-			+ '	<a href="#" class="dropdown-toggle">Current Experiments</a>'
-			+ '	<ul class="dropdown-menu">'
-			+ '		<li><a href="#">Secondary link</a></li>'
-			+ '		<li><a href="#">Something else here</a></li>'
-			+ '		<li><a href="#">Another link</a></li>'
-			+ '	</ul>'
-			+ '</li>');
-};
-
 
 /**
  * #################################################################
@@ -659,6 +835,36 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 				console.log('TODO handle error in WiseGuiNodeSelectionDialog');
 			}
 	);
+};
+
+
+var WiseGuiTestbedsView = function(testbeds) {
+
+	this.testbeds = testbeds;
+	this.view = $('<table class="WisebedOverviewTable zebra-striped">'
+			+ '	<thead>'
+			+ '		<tr>'
+			+ '			<td>Name</td>'
+			+ '			<td>URN prefixes</td>'
+			+ '			<td>Session Management Endpoint URL</td>'
+			+ '		</tr>'
+			+ '	</thead>'
+			+ '	<tbody>'
+			+ '	</tbody>'
+			+ '</table>');
+	this.buildView();
+};
+
+WiseGuiTestbedsView.prototype.buildView = function() {
+	var self = this;
+	$.each(testbeds.testbedMap, function(key, value) {
+		var tr = $('<tr/>');
+		var tdName = $('<td><a href="#nav=testbed&testbedId='+key+'">'+value.name+'</a></td>');
+		var tdUrnPrefixes = $('<td>'+value.urnPrefixes+'</td>');
+		var tdSessionManagementEndpointUrl = $('<td>'+value.sessionManagementEndpointUrl+'</td>');
+		tr.append(tdName, tdUrnPrefixes, tdSessionManagementEndpointUrl);
+		self.view.find('tbody').append(tr);
+	});
 };
 
 /**
@@ -1016,3 +1222,306 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	 + '	</form>'
 	 + '</div>');*/
 };
+
+function loadTestbedDetailsContainer(navigationData, parentDiv) {
+
+	parentDiv.append($('<h1>Testbed Details '+navigationData.testbedId+'</h1>'));
+
+	var tabs = $('<ul class="tabs">'
+			+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbedId+'">Description</a></li>'
+			+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbedId+'">Nodes</a></li>'
+			+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
+			+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'">WiseML (JSON)</a></li>'
+			+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'">WiseML (XML)</a></li>'
+			+ '</ul>'
+			+ '<div class="tab-content">'
+			+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'"/>'
+			+ '</div>');
+
+	parentDiv.append(tabs);
+
+	Wisebed.getWiseMLAsJSON(
+			navigationData.testbedId,
+			null,
+			function(wiseML) {
+
+				var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId);
+				jsonTab.append($('<pre>'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
+
+				var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbedId);
+				descriptionTab.append(wiseML.setup.description);
+
+				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
+				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
+			},
+			WiseGui.showAjaxError
+	);
+
+	Wisebed.getWiseMLAsXML(
+			navigationData.testbedId,
+			null,
+			function(wiseML) {
+				var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId);
+				xmlTab.append($('<pre lang="xml">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
+			},
+			WiseGui.showAjaxError
+	);
+
+	var now = new Date();
+	var tomorrowSameTime = new Date();
+	tomorrowSameTime.setDate(now.getDate() + 1);
+
+	Wisebed.reservations.getPublic(
+			navigationData.testbedId,
+			now,
+			tomorrowSameTime,
+			function(data) {
+
+				var reservations = data.reservations;
+				var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbedId);
+
+				var tableHead = ["From", "Until", "User Data", "Node URNs"];
+				var tableRows = [];
+				for (var i=0; i<reservations.length; i++) {
+					tableRows[i] = [];
+					tableRows[i][0] = new Date(reservations[i].from).toString();
+					tableRows[i][1] = new Date(reservations[i].to).toString();
+					tableRows[i][2] = reservations[i].userData;
+
+					var nodesContainer = $('<div>'
+							+ reservations[i].nodeURNs.length + ' nodes.<br/>'
+							+ '<a href="#">Show URNs</a>'
+							+ '</div>');
+
+					var nodesLink = nodesContainer.find('a');
+					nodesLink.first().bind(
+							'click',
+							{link:nodesLink, container:nodesContainer, reservation:reservations[i]},
+							function(e) {
+								e.preventDefault();
+								e.data.link.remove();
+								e.data.container.append(
+										e.data.reservation.nodeURNs.join("<br/>")
+								);
+							}
+					);
+					tableRows[i][3] = nodesContainer;
+				}
+
+				var table = buildTable(tableHead, tableRows);
+				reservationsTab.append(table);
+				if (tableRows.length > 0) {
+					table.tablesorter({ sortList: [[0,0]] });
+				}
+			},
+			WiseGui.showAjaxError
+	);
+}
+
+function buildTable(tableHead, tableRows) {
+
+	var table = $('<table class="zebra-striped"/>"');
+	var thead = $('<thead/>');
+	var theadRow = $('<tr/>');
+	thead.append(theadRow);
+
+	for (var i=0; i<tableHead.length; i++) {
+		theadRow.append('<th>'+tableHead[i]+'</th>');
+	}
+
+	var tbody = $('<tbody/>');
+	for (var k=0; k<tableRows.length; k++) {
+		var row = $('<tr/>');
+		tbody.append(row);
+		for (var l=0; l<tableRows[k].length; l++) {
+			var td = $('<td/>');
+			row.append(td);
+			td.append(tableRows[k][l]);
+		}
+	}
+
+	table.append(thead, tbody);
+
+	return table;
+}
+
+function assureReservationObserverRunning() {
+
+	var navigationData = getNavigationData();
+	if (!reservationObservers[navigationData.testbedId] || !reservationObservers[navigationData.testbedId].isObserving) {
+
+		var reservationObserver = new WiseGuiReservationObserver(navigationData.testbedId);
+		reservationObservers[navigationData.testbedId] = reservationObserver;
+		reservationObserver.startObserving();
+		console.log('Started observing reservations for testbed "'+navigationData.testbedId+'"');
+	}
+}
+
+function loadExperimentContainer(navigationData, parentDiv) {
+
+	var experimentationView = new WiseGuiExperimentationView(navigationData.testbedId, navigationData.experimentId);
+	parentDiv.append(experimentationView.view);
+}
+
+function loadTestbedOverviewContainer(navigationData, parentDiv) {
+
+	var testbedsView = new WiseGuiTestbedsView(testbeds);
+	parentDiv.append(testbedsView.view);
+}
+
+function getNavigationKey(navigationData) {
+	if (navigationData.nav == 'overview') {
+		return 'overview';
+	} else if (navigationData.nav == 'testbed' && navigationData.experimentId == '') {
+		return 'testbedId=' + navigationData.testbedId;
+	} else if (navigationData.nav == 'testbed' && navigationData.experimentId != '') {
+		return 'testbedId=' + navigationData.testbedId + '&experimentId=' + navigationData.experimentId;
+	}
+	return undefined;
+}
+
+function getCreateContentFunction(navigationData) {
+	if (navigationData.nav == 'overview') {return loadTestbedOverviewContainer;}
+	if (navigationData.nav == 'testbed' && navigationData.experimentId == '') {return loadTestbedDetailsContainer;}
+	if (navigationData.nav == 'testbed' && navigationData.experimentId != '') {return loadExperimentContainer;}
+	return undefined;
+}
+
+function showReservationsDialog(testbedId) {
+	alert('TODO reservation dialog for ' + testbedId);
+}
+
+function getLoginDialog(testbedId) {
+	var loginDialog = loginDialogs[testbedId];
+	if (!loginDialog) {
+		loginDialog = new WiseGuiLoginDialog(testbedId);
+		loginDialogs[testbedId] = loginDialog;
+	}
+	return loginDialog;
+}
+
+function navigateToExperiment(testbedId, reservation) {
+
+	Wisebed.experiments.getUrl(
+			testbedId,
+			reservation,
+			function(experimentUrl){
+
+				var experimentId = experimentUrl.substr(experimentUrl.lastIndexOf('/') + 1);
+				var navigationData = getNavigationData();
+				navigationData.experimentId = experimentId;
+				$.bbq.pushState(navigationData);
+
+			},
+			WiseGui.showAjaxError
+	);
+}
+
+function getNavigationData() {
+
+	return {
+		nav          : $.bbq.getState('nav')          || 'overview',
+		testbedId    : $.bbq.getState('testbedId')    || '',
+		experimentId : $.bbq.getState('experimentId') || ''
+	};
+}
+
+function switchNavigationContainer(navigationData, navigationKey) {
+
+	$('#WisebedContainer .WiseGuiNavigationContainer').hide();
+
+	if (!navigationContainers[navigationKey]) {
+		navigationContainers[navigationKey] = createNavigationContainer(navigationData);
+	}
+
+	$(navigationContainers[navigationKey]).show();
+}
+
+function createNavigationContainer(navigationData) {
+
+	var containerDivId = 'WiseGuiNavigationContainer-' + (navigationData.testbedId ?
+			('testbed-' + navigationData.testbedId) : 'testbeds');
+	var container = $('<div class="WiseGuiNavigationContainer" id="'+containerDivId+'"/>');
+
+	container.hide();
+
+	$('#WisebedContainer').append(container);
+
+	var navigationViewer = new WiseGuiNavigationViewer(navigationData);
+	container.append(navigationViewer.view);
+
+	return container;
+}
+
+function switchContentContainer(navigationData, navigationKey) {
+
+	$('#WisebedContainer .WisebedContentContainer').hide();
+
+	if (!contentContainers[navigationKey]) {
+		contentContainers[navigationKey] = createContentContainer(navigationData);
+	}
+
+	$(contentContainers[navigationKey]).show();
+}
+
+function createContentContainer(navigationData) {
+
+	var containerDivId = 'WisebedContentContainer-' + (navigationData.testbedId ?
+			('testbed-' + navigationData.testbedId) : 'testbeds');
+	var container = $('<div class="WisebedContentContainer" id="'+containerDivId+'"/>');
+
+	container.hide();
+
+	$('#WisebedContainer').append(container);
+
+	var createContentFunction = getCreateContentFunction(navigationData);
+	createContentFunction(navigationData, container);
+
+	$('.tabs').tabs();
+
+	return container;
+}
+
+function onHashChange(e) {
+
+	$(window).trigger('wisegui-navigation-event', getNavigationData());
+
+	var navigationData = getNavigationData();
+	var navigationKey  = getNavigationKey(navigationData)
+
+	switchNavigationContainer(navigationData, navigationKey);
+	switchContentContainer(navigationData, navigationKey);
+}
+
+var navigationContainers = {};
+var contentContainers    = {};
+var loginDialogs         = {};
+
+var loginObserver        = new WiseGuiLoginObserver();
+var reservationObserver  = new WiseGuiReservationObserver();
+var notificationsViewer  = new WiseGuiNotificationsViewer();
+
+var testbeds             = null;
+
+$(function () {
+
+	$('#WisebedContainer').append(notificationsViewer.view);
+
+	Wisebed.getTestbeds(
+			function(testbedsLoaded) {
+
+				testbeds = testbedsLoaded;
+
+				reservationObserver.startObserving();
+				loginObserver.startObserving();
+
+				$(window).bind('hashchange', onHashChange);
+				$(window).trigger('hashchange');
+			},
+			WiseGui.showAjaxError
+	);
+});

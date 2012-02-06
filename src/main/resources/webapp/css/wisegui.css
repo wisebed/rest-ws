@@ -46,3 +46,8 @@ body {
 .WiseGuiExperimentationViewControlsDiv ul {
 	padding-top: 10px;
 }
+
+.dropdown-menu {
+	min-width: 600px;
+	max-width: none;
+}

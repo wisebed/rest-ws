@@ -27,6 +27,34 @@ var Wisebed = new function() {
 				dataType: "json"
 			});
 		};
+
+		this.equals = function(res1, res2) {
+
+			function subsetOf(set1, set2, compare) {
+				for (var i=0; i<set1.length; i++) {
+					for (var j=0; j<set2.length; j++) {
+						if (!compare(set1[i], set2[j])) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+
+			function setEquals(set1, set2, compare) {
+
+				if (set1.length != set2.length) {
+					return false;
+				}
+
+				return subsetOf(set1, set2, compare) && subsetOf(set2, set1, compare);
+			}
+
+			return setEquals(res1.data, res2.data, function(dataElem1, dataElem2) {
+				return  dataElem1.secretReservationKey == dataElem2.secretReservationKey &&
+						dataElem1.urnPrefix            == dataElem2.urnPrefix;
+			});
+		}
 	};
 
 	this.experiments = new function() {
