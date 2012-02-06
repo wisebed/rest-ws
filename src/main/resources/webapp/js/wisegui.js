@@ -202,8 +202,8 @@ WiseGuiNodeTable.prototype.generateHeader = function (f) {
 
 	filter_input = $('<input type"text" style="width:100%;padding-left:0px;padding-right:0px;">');
 	// Key up event if enter is pressed
-	filter_input.keyup(function(event) {
-		if (event.keyCode == 13) {
+	filter_input.keyup(function(e) {
+		if ((e.keyCode || e.which) == 13) {
 			that.generateTable(filter_input.val());
 		}
 	});
