@@ -66,7 +66,11 @@ var Wisebed = new function() {
 				success		: 	callbackDone,
 				error		: 	callbackError
 			});
-		}
+		};
+
+		this.flashNodes = function(testbedId, experimentId, nodeUrns, callbackDone, callbackError) {
+			WiseGui.showErrorAlert('TODO');
+		};
 	};
 
 	this.getNodeUrnArray = function(testbedId, experimentId, callbackDone, callbackError) {

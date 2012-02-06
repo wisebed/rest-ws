@@ -98,7 +98,7 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 						new String(Base64.encode(payloadBytes))
 				)
 		);
-		System.out.println(json);
+		log.trace("Sending upstream message via WebSocket: ", json);
 		sendMessage(json);
 	}
 

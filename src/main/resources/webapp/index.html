@@ -27,13 +27,6 @@
 
 	<script type="text/javascript">
 
-		function onAjaxError(jqXHR, textStatus, errorThrown) {
-			console.log(jqXHR);
-			console.log(textStatus);
-			console.log(errorThrown);
-			alert("Error while loading data: " + errorThrown);
-		}
-
 		function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 			parentDiv.append($('<h1>Testbed Details '+navigationData.testbedId+'</h1>'));
@@ -69,7 +62,7 @@
 						var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 						new WiseGuiNodeTable(wiseML, nodesTab, false, true);
 					},
-					onAjaxError
+					WiseGui.showAjaxError
 			);
 
 			Wisebed.getWiseMLAsXML(
@@ -79,7 +72,7 @@
 						var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId);
 						xmlTab.append($('<pre lang="xml">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
 					},
-					onAjaxError
+					WiseGui.showAjaxError
 			);
 
 			var now = new Date();
@@ -129,7 +122,7 @@
 							table.tablesorter({ sortList: [[0,0]] });
 						}
 					},
-					onAjaxError
+					WiseGui.showAjaxError
 			);
 		}
 
@@ -302,7 +295,7 @@
 									}
 								});
 							},
-							onAjaxError
+							WiseGui.showAjaxError
 					);
 				}
 
@@ -316,9 +309,10 @@
 					secondaryUl.append('<li><a href="javascript:;" id="WisebedLogoutButton-'+navigationData.testbedId+'">Logout</a></li>');
 					$('#WisebedLogoutButton-'+navigationData.testbedId+':first').bind(
 							'click',
-							{testbedId:navigationData.testbedId},
+							navigationData.testbedId,
 							function(e){
-								Wisebed.deleteSecretAuthenticationKeyCookie(e.data.testbedId);
+								delete loginDialogs[e.data];
+								Wisebed.deleteSecretAuthenticationKeyCookie(e.data);
 								$(window).trigger('hashchange');
 							}
 					)
@@ -327,9 +321,14 @@
 					secondaryUl.append('<li><a href="javascript:;" id="WisebedLoginButton-'+navigationData.testbedId+'">Login</a></li>');
 					$('#WisebedLoginButton-'+navigationData.testbedId+':first').bind(
 							'click',
-							{testbedId:navigationData.testbedId},
+							navigationData.testbedId,
 							function(e){
-								WiseGuiLoginDialog.show(e.data.testbedId);
+								var loginDialog = loginDialogs[e.data];
+								if (!loginDialog) {
+									loginDialog = new WiseGuiLoginDialog(e.data);
+									loginDialogs[e.data] = loginDialog;
+								}
+								loginDialog.show();
 							}
 					);
 				}
@@ -349,7 +348,7 @@
 						$.bbq.pushState(navigationData);
 
 					},
-					onAjaxError
+					WiseGui.showAjaxError
 			);
 		}
 
@@ -385,15 +384,12 @@
 
 				appState[appStateKey] = container;
 
-				if (navigationData.testbedId) {
-					WiseGuiLoginDialog.createLoginDialogIfNotExisting(navigationData.testbedId, onAjaxError);
-				}
-
 				$('.tabs').tabs();
 			}
 		}
 
 		var notificationsViewer;
+		var loginDialogs = {};
 
 		$(function () {
 

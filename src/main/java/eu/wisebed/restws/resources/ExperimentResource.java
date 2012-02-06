@@ -660,7 +660,7 @@ public class ExperimentResource {
 			Wiseml wiseml = (Wiseml) unmarshaller.unmarshal(new StringReader(wisemlString));
 
 			String json = JSONHelper.toJSON(wiseml);
-			log.debug("Returning network for experiment {} as json: {}", experimentUrl, json);
+			log.trace("Returning network for experiment {} as json: {}", experimentUrl, json);
 			return Response.ok(json).build();
 
 		} catch (JAXBException e) {
@@ -686,7 +686,7 @@ public class ExperimentResource {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
 			String wisemlString = wsnProxy.getNetwork().get();
-			log.debug("Returning network for experiment {} as xml: {}", experimentUrl, wisemlString);
+			log.trace("Returning network for experiment {} as xml: {}", experimentUrl, wisemlString);
 			return Response.ok(wisemlString).build();
 
 		} catch (Exception e) {

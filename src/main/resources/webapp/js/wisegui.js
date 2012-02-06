@@ -28,6 +28,18 @@ var WiseGui = new function() {
 	this.showErrorBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'error'); };
 	this.showSuccessBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'success'); };
 	this.showInfoBlockAlert = function(message, actions) { this.showBlockAlert(message, actions, 'info'); };
+
+	var self = this;
+	this.showAjaxError = function(jqXHR, textStatus, errorThrown) {
+		var message = $('<h2>Error while loading data!</h2>'
+				+ '<h3>jqXHR</h3>'
+				+ '<pre>'+JSON.stringify(jqXHR, null, '  ')+'</pre>'
+				+ '<h3>textStatus</h3>'
+				+ '<pre>'+textStatus+'</pre>'
+				+ '<h3>errorThrown</h3>'
+				+ '<pre>'+errorThrown+'</pre>');
+		self.showErrorBlockAlert(message);
+	};
 };
 
 /**
@@ -35,143 +47,131 @@ var WiseGui = new function() {
  * WiseGuiLoginDialog
  * #################################################################
  */
-var WiseGuiLoginDialog = new function() {
+var WiseGuiLoginDialog = function(testbedId) {
 
-	var loginFormRows = {};
+	this.testbedId = testbedId;
+	this.loginFormRows = {};
+	this.loginData = { authenticationData : [] };
 
-	this.createLoginDialogIfNotExisting = function(testbedId, callbackError) {
+	this.view = $('<div id="WisebedLoginDialog-'+this.testbedId+'" class="modal hide"></div>');
 
-		if ($('#WisebedLoginDialog-'+testbedId).length == 0) {
+	var self = this;
+	Wisebed.getTestbeds(function(testbeds){self.buildView(testbeds)}, WiseGui.showAjaxError);
+};
 
-			Wisebed.getTestbeds(function(testbeds){
+WiseGuiLoginDialog.prototype.doLogin = function() {
+	var self = this;
+	$.ajax({
+		url			:	"/rest/2.3/" + this.testbedId + "/login",
+		type		:	"POST",
+		data		:	JSON.stringify(this.loginData, null, '  '),
+		contentType	:	"application/json; charset=utf-8",
+		dataType	:	"json",
+		success		: 	function() { self.hide(); $(window).trigger('hashchange'); },
+		error		: 	WiseGui.showAjaxError
+	});
+}
 
-				function addRowToLoginForm (testbedId, tbody, urnPrefix, username, password) {
+WiseGuiLoginDialog.prototype.hide = function() {
+	this.view.hide();
+	this.view.remove();
+};
 
-					var tr = $('<tr/>');
+WiseGuiLoginDialog.prototype.show = function() {
+	$(document.body).append(this.view);
+	this.view.show();
+};
 
-					if (!loginFormRows[testbedId]) {loginFormRows[testbedId] = [];}
+WiseGuiLoginDialog.prototype.updateLoginDataFromForm = function() {
 
-					var i = loginFormRows[testbedId].length;
+	for (var i=0; i<this.loginFormRows[this.testbedId].length; i++) {
 
-					var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
-					var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
-					var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
-
-					loginFormRows[testbedId][loginFormRows[testbedId].length] = {
-						"tr" : tr,
-						"inputUrnPrefix" : inputUrnPrefix[0],
-						"inputUsername" : inputUsername[0],
-						"inputPassword" : inputPassword[0]
-					};
-
-					var tdUrnPrefix = $('<td/>');
-					var tdUsername = $('<td/>');
-					var tdPassword = $('<td/>');
-
-					tdUrnPrefix.append(inputUrnPrefix);
-					tdUsername.append(inputUsername);
-					tdPassword.append(inputPassword);
-
-					tr.append($('<td>'+(loginFormRows[testbedId].length)+'</td>'));
-					tr.append(tdUrnPrefix);
-					tr.append(tdUsername);
-					tr.append(tdPassword);
-
-					tbody.append(tr);
-				}
-
-				var dialog = $('<div id="WisebedLoginDialog-'+testbedId+'" class="modal hide"></div>');
-
-				var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed ' + testbedId + '</h3></div>');
-
-				var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
-						+ '		<form id="WisebedLoginDialogForm-'+testbedId+'">'
-						+ '		<table id="WisebedLoginDialogFormTable-'+testbedId+'">'
-						+ '			<thead>'
-						+ '				<tr>'
-						+ '					<th>Testbed</th>'
-						+ '					<th>URN Prefix</th>'
-						+ '					<th>Username</th>'
-						+ '					<th>Password</th>'
-						+ '				</tr>'
-						+ '			</thead>'
-						+ '			<tbody>'
-						+ '			</tbody>'
-						+ '		</table>'
-						+ '		</form>'
-						+ '	</div>');
-
-				var cancelButton = $('<a class="btn secondary">Cancel</a>');
-				var okButton = $('<a class="btn primary">OK</a>');
-
-				cancelButton.bind('click', {testbedId:testbedId}, function(event) {
-					WiseGuiLoginDialog.hide(event.data.testbedId);
-				});
-				okButton.bind('click', {testbedId:testbedId}, function(event) {
-					WiseGuiLoginDialog.login(event.data.testbedId);
-				});
-
-				var dialogFooter = $('<div class="modal-footer"/>');
-				dialogFooter.append(cancelButton, okButton);
-				dialog.append(dialogHeader, dialogBody, dialogFooter);
-
-				$('#WisebedContainer').append(dialog);
-
-				var loginFormTableBody = $('#WisebedLoginDialogFormTable-'+testbedId+' tbody');
-				var urnPrefixes = testbeds.testbedMap[testbedId].urnPrefixes;
-
-				for (var i=0; i<urnPrefixes.length; i++) {
-					addRowToLoginForm(testbedId, loginFormTableBody, urnPrefixes[i], "", "");
-				}
-
-			}, callbackError);
-		}
-	};
-
-	this.show = function(testbedId) {
-		$('#WisebedLoginDialog-'+testbedId).show();
-	};
-
-	this.hide = function(testbedId) {
-		$('#WisebedLoginDialog-'+testbedId).hide();
-	};
-
-	function readLoginDataFromForm(testbedId) {
-
-		loginData = {
-			authenticationData : []
+		this.loginData.authenticationData[i] = {
+			urnPrefix : this.loginFormRows[this.testbedId][i].inputUrnPrefix.value,
+			username  : this.loginFormRows[this.testbedId][i].inputUsername.value,
+			password  : this.loginFormRows[this.testbedId][i].inputPassword.value
 		};
-
-		for (var i=0; i<loginFormRows[testbedId].length; i++) {
-
-			loginData.authenticationData[i] = new Object();
-			loginData.authenticationData[i].urnPrefix = loginFormRows[testbedId][i].inputUrnPrefix.value;
-			loginData.authenticationData[i].username = loginFormRows[testbedId][i].inputUsername.value;
-			loginData.authenticationData[i].password = loginFormRows[testbedId][i].inputPassword.value;
-		}
-
-		return loginData;
 	}
+};
 
-	this.login = function(testbedId) {
-		$.ajax({
-			url			:	"/rest/2.3/" + testbedId + "/login",
-			type		:	"POST",
-			data		:	JSON.stringify(readLoginDataFromForm(testbedId), null, '  '),
-			contentType	:	"application/json; charset=utf-8",
-			dataType	:	"json",
-			success		: 	function(data, textStatus, jqXHR) {
-								WiseGuiLoginDialog.hide(testbedId);
-								$(window).trigger('hashchange');
-							},
-			error		: 	function(jqXHR, textStatus, errorThrown){
-								console.log(jqXHR);
-								console.log(textStatus);
-								console.log(errorThrown);
-								alert("Error logging in: " + jqXHR.responseText);
-							}
-		});
+WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, username, password) {
+
+	var tr = $('<tr/>');
+
+	if (!this.loginFormRows[this.testbedId]) {this.loginFormRows[this.testbedId] = [];}
+
+	var i = this.loginFormRows[this.testbedId].length;
+
+	var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
+	var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
+	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
+
+	this.loginFormRows[this.testbedId][this.loginFormRows[this.testbedId].length] = {
+		"tr" : tr,
+		"inputUrnPrefix" : inputUrnPrefix[0],
+		"inputUsername" : inputUsername[0],
+		"inputPassword" : inputPassword[0]
 	};
+
+	var tdUrnPrefix = $('<td/>');
+	var tdUsername = $('<td/>');
+	var tdPassword = $('<td/>');
+
+	tdUrnPrefix.append(inputUrnPrefix);
+	tdUsername.append(inputUsername);
+	tdPassword.append(inputPassword);
+
+	tr.append($('<td>'+(this.loginFormRows[this.testbedId].length)+'</td>'));
+	tr.append(tdUrnPrefix);
+	tr.append(tdUsername);
+	tr.append(tdPassword);
+
+	tbody.append(tr);
+};
+
+WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
+
+	var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed ' + this.testbedId + '</h3></div>');
+
+	var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
+			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'">'
+			+ '		<table id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
+			+ '			<thead>'
+			+ '				<tr>'
+			+ '					<th>Testbed</th>'
+			+ '					<th>URN Prefix</th>'
+			+ '					<th>Username</th>'
+			+ '					<th>Password</th>'
+			+ '				</tr>'
+			+ '			</thead>'
+			+ '			<tbody>'
+			+ '			</tbody>'
+			+ '		</table>'
+			+ '		</form>'
+			+ '	</div>');
+
+	var cancelButton = $('<a class="btn secondary">Cancel</a>');
+	var okButton = $('<a class="btn primary">OK</a>');
+
+	cancelButton.bind('click', this, function(e) {
+		e.data.hide();
+	});
+
+	okButton.bind('click', this, function(e) {
+		e.data.updateLoginDataFromForm();
+		e.data.doLogin();
+	});
+
+	var dialogFooter = $('<div class="modal-footer"/>');
+	dialogFooter.append(cancelButton, okButton);
+	this.view.append(dialogHeader, dialogBody, dialogFooter);
+
+	var loginFormTableBody = this.view.find('#WisebedLoginDialogFormTable-'+this.testbedId+' tbody');
+	var urnPrefixes = testbeds.testbedMap[this.testbedId].urnPrefixes;
+
+	for (var i=0; i<urnPrefixes.length; i++) {
+		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
+	}
 };
 
 /**
@@ -504,14 +504,23 @@ WiseGuiNotificationsViewer.prototype.showAlert = function(alert) {
 WiseGuiNotificationsViewer.prototype.showBlockAlert = function(alert) {
 	var blockAlertDiv = $('<div class="alert-message block-message '+alert.severity+'">'
 			+ '	<a class="close" href="#">&times;</a>'
-			+ '	<p>'+alert.message+'</p>'
+			+ '	<p></p>'
 			+ '	<div class="alert-actions">'
 			+ '	</div>'
 			+ '</div>');
+	if (alert.message instanceof Array) {
+		for (var i=0; i<alert.message.length; i++) {
+			blockAlertDiv.find('p').append(alert.message[i]);
+		}
+	} else {
+		blockAlertDiv.find('p').append(alert.message);
+	}
 	var actionsDiv = blockAlertDiv.find('.alert-actions');
-	for (var i=0; i<alert.actions.length; i++) {
-		actionsDiv.append(alert.actions[i]);
-		actionsDiv.append(' ');
+	if (alert.actions) {
+		for (var i=0; i<alert.actions.length; i++) {
+			actionsDiv.append(alert.actions[i]);
+			actionsDiv.append(' ');
+		}
 	}
 	this.view.append(blockAlertDiv);
 	blockAlertDiv.alert();
@@ -675,6 +684,7 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 
 	this.view = $('<div id="'+this.experimentationDivId+'"/>');
 
+	this.flashSelectedNodeUrns = null;
 	this.resetSelectedNodeUrns = null;
 	this.socket = null;
 
@@ -760,23 +770,92 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 
 };
 
+WiseGuiExperimentationView.prototype.showFlashNodeSelectionDialog = function() {
+
+	this.setFlashSelectNodesButtonDisabled(true);
+	var self = this;
+	Wisebed.getWiseMLAsJSON(
+			this.testbedId,
+			this.experimentId,
+			function(wiseML) {
+
+				self.setFlashSelectNodesButtonDisabled(false);
+
+				var selectionDialog = new WiseGuiNodeSelectionDialog(
+						self.testbedId,
+						self.experimentId,
+						'Flash Nodes',
+						'Please select the nodes you want to flash.'
+				);
+
+				selectionDialog.show(function(selectedNodeUrns) { self.updateFlashSelectNodeUrns(selectedNodeUrns); });
+
+			}, function(jqXHR, textStatus, errorThrown) {
+				self.setFlashSelectNodesButtonDisabled(false);
+				self.showAjaxError(jqXHR, textStatus, errorThrown);
+			}
+	);
+};
+
+WiseGuiExperimentationView.prototype.updateFlashSelectNodeUrns = function(selectedNodeUrns) {
+	this.flashSelectedNodeUrns = selectedNodeUrns;
+	if (selectedNodeUrns.length > 0) {
+		this.setFlashButtonDisabled(false);
+	}
+	var selectNodeUrnsDiv = this.view.find('#'+this.flashDivId+' .selectedNodeUrnsDiv').first();
+	selectNodeUrnsDiv.empty();
+	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
+};
+
+WiseGuiExperimentationView.prototype.setFlashSelectNodesButtonDisabled = function(disabled) {
+	this.view.find('#'+this.flashDivId + ' button.selectNodeUrns').first().attr('disabled', disabled);
+};
+
+WiseGuiExperimentationView.prototype.setFlashButtonDisabled = function(disabled) {
+	this.view.find('#'+this.flashDivId + ' button.flashNodeUrns').first().attr('disabled', disabled);
+};
+
+WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
+
+	this.setFlashButtonDisabled(true);
+	var self = this;
+	Wisebed.experiments.flashNodes(
+			this.testbedId,
+			this.experimentId,
+			this.flashSelectedNodeUrns,
+			function(result) {
+				self.setFlashButtonDisabled(false);
+				WiseGui.showInfoAlert(JSON.stringify(result, null, '  '));
+			},
+			function(jqXHR, textStatus, errorThrown) {
+				self.setResetButtonDisabled(false);
+				alert('TODO handle error in WiseGuiExperimentationView');
+			}
+	);
+};
+
+/**********************************************************************************************************************/
+
 WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
 	this.resetSelectedNodeUrns = selectedNodeUrns;
 	if (selectedNodeUrns.length > 0) {
 		this.setResetButtonDisabled(false);
 	}
-	var selectNodeUrnsDiv = this.view.find('.selectedNodeUrnsDiv').first();
+	var selectNodeUrnsDiv = this.view.find('#'+this.resetDivId+' .selectedNodeUrnsDiv').first();
 	selectNodeUrnsDiv.empty();
 	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
 };
 
 WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 
+	this.setResetSelectNodesButtonDisabled(true);
 	var self = this;
 	Wisebed.getWiseMLAsJSON(
 			this.testbedId,
 			this.experimentId,
 			function(wiseML) {
+
+				self.setResetSelectNodesButtonDisabled(false);
 
 				var selectionDialog = new WiseGuiNodeSelectionDialog(
 						self.testbedId,
@@ -785,15 +864,17 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 						'Please select the nodes you want to reset.'
 				);
 
-				selectionDialog.show(function(selectedNodeUrns) {
-						self.updateResetSelectNodeUrns(selectedNodeUrns);
-
-				});
+				selectionDialog.show(function(selectedNodeUrns) { self.updateResetSelectNodeUrns(selectedNodeUrns); });
 
 			}, function(jqXHR, textStatus, errorThrown) {
-				console.log('TODO handle error in WiseGuiExperimentationView');
+				self.setResetSelectNodesButtonDisabled(false);
+				self.showAjaxError(jqXHR, textStatus, errorThrown);
 			}
 	);
+};
+
+WiseGuiExperimentationView.prototype.setResetSelectNodesButtonDisabled = function(disabled) {
+	this.view.find('#'+this.resetDivId + ' button.selectNodeUrns').first().attr('disabled', disabled);
 };
 
 WiseGuiExperimentationView.prototype.setResetButtonDisabled = function(disabled) {
@@ -829,7 +910,43 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</ul>'
 			+ '	<div class="tab-content">'
 			+ '		<div class="active tab-pane" id="'+this.sendDivId+'"></div>'
-			+ '		<div class="tab-pane" id="'+this.flashDivId+'"></div>'
+			+ '		<div class="tab-pane" id="'+this.flashDivId+'">'
+			+ '			<div class="well" style="padding: 14px 19px;">' 
+			+ '				<form id="flashForm" name="flashForm">' 
+			+ '					<div class="row" style="border: 1px solid #dddddd;">'
+			+ '						<div class="span10">'
+			+ '							<button class="btn span1 addSet"> + </button>'
+			+ '							<button class="btn span1 removeSet"> - </button>'
+			+ '							<button class="btn span3 loadConfiguration">Load</button>'
+			+ '							<button class="btn span3 saveConfiguration">Save</button>'
+			+ '						</div>'
+			+ '						<div class="pull-right span5">'
+			+ '							<button class="btn primary flashNodes span3 offset3">Flash</button>'
+			+ '						</div>'
+			+ '					</div>'
+			+ '					<div class="row">'
+		+ '							<table class="zebra-striped">'
+		+ '								<thead>'
+		+ '									<tr>'
+		+ '										<th class="span1">Set</th>'
+		+ '										<th class="span4">Node URNs</th>'
+		+ '										<th class="span5">Image File</th>'
+		+ '										<th class="span6">Flashing Progress</th>'
+		+ '									</tr>'
+		+ '								</thead>'
+		+ '								<tbody>'
+		+ '									<tr>'
+		+ '										<td>1</td>'
+		+ '										<td><button class="btn span3 selectNodeUrns">Select</button></td>'
+		+ '										<td><input type="file" id="image" name="image"/></td>'
+		+ '										<td id="progressBarTd"></td>'
+		+ '									</tr>'
+		+ '								</tbody>'
+		+ '							</table>'
+			+ '					</div>'
+			+ '				</form>'
+			+ '			</div>'
+			+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.resetDivId+'">'
 			+ '			<div class="well" style="padding: 14px 19px;">'
 			+ '				<button class="btn selectNodeUrns span4">Select Nodes</button> <button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
@@ -856,6 +973,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '</div>');
 
 	var self = this;
+
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.selectNodeUrns').first().bind(
+			'click', self, function(e) {e.data.showFlashNodeSelectionDialog()}
+	);
+
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.flashNodeUrns').first().bind(
+			'click', self, function(e) {e.data.executeFlashNodes()}
+	);
 
 	controlsTabsDiv.find('#'+this.resetDivId + ' button.selectNodeUrns').first().bind(
 			'click', self, function(e) {e.data.showResetNodeSelectionDialog()}
