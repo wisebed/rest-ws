@@ -1,19 +1,3 @@
-/*
- * IMPORTANT function
- *
- * We need this to keep the scope for the OOP callbacks.
- * @see: http://www.digital-web.com/articles/scope_in_javascript/
- */
-/*
-Function.prototype.bind = function(obj) {
-	var method = this;
-	temp = function() {
-		return method.apply(obj, arguments);
-   	};
-  	return temp;
-}
-*/
-
 var WiseGui = new function() {
 
 	this.showAlert = function(message, severity) {
@@ -1060,7 +1044,7 @@ WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reserv
 WiseGuiExperimentDropDown.prototype.buildView = function() {
 	this.view = $('<li class="dropdown">'
 			+ '	<a href="#" class="dropdown-toggle">Experiments</a>'
-			+ '	<ul class="dropdown-menu">' 
+			+ '	<ul class="dropdown-menu">'
 			+ '	</ul>'
 			+ '</li>');
 };
