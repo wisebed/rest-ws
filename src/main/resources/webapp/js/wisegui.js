@@ -654,7 +654,6 @@ Table.prototype.generateTable = function (f) {
 	/*
 	 * Generate the table body
 	 */
-
 	// Generate table body
 	var tbody = $('<tbody></tbody>');
 
@@ -664,7 +663,10 @@ Table.prototype.generateTable = function (f) {
 		var rows = $.each(this.data,
 			function() {
 
-				var row = that.rowProducer(this);
+				var row = null;
+				if(that.rowProducer != null) {
+					row = that.rowProducer.bind(this)(this);
+				}
 
 				// Simple filter
 				if(f != null && typeof(f) == "string" && f.length > 0 && !that.filter_checkbox.is(':checked')) {
@@ -676,7 +678,14 @@ Table.prototype.generateTable = function (f) {
 				var tr = $("<tr></tr>");
 
 				if(that.showCheckBoxes) {
-					var checkbox = $('<input type="checkbox" name="' + (index++) + '"/>'); //
+					var checkbox = $('<input type="checkbox"/>');
+					checkbox.attr("name", index++);
+
+					if(that.preSelectFun != null) {
+						var isCheckboxSelected = that.preSelectFun.bind(this)(this);
+						checkbox.attr('checked', isCheckboxSelected);
+					}
+
 					that.checkboxes.push(checkbox);
 					var td_checkbox = $('<td></td>');
 					td_checkbox.append(checkbox);
@@ -723,14 +732,15 @@ Table.prototype.getSelectedRows = function () {
 }
 
 Table.prototype.setFilterFun = function (fn) {
+	this.preFilterFun = fn;
 	this.generateTable(fn);
 }
 
-/*
 Table.prototype.setSelectFun = function (fn) {
+	this.preSelectFun = fn;
+	this.generateTable();
 }
 
- */
 Table.prototype.getFilterFun = function () {
 	return this.preFilterFun;
 }
@@ -789,6 +799,10 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 
 WiseGuiNodeTable.prototype.applyFilter = function (fn) {
 	this.table.setFilterFun(fn);
+}
+
+WiseGuiNodeTable.prototype.applySelcected = function (fn) {
+	this.table.setSelectFun(fn);
 }
 
 
