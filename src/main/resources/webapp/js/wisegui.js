@@ -1366,14 +1366,15 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '			</div>'
 			+ '			<div class="tab-pane" id="'+this.resetDivId+'">'
 		  	+ '				<div class="row">'
-		  	+ '					<div class="span16">'
-		  	+ '						<button class="btn selectNodeUrns span4">Select Nodes</button> <button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
-		  	+ '					</div>'
-		  	+ '				</div>'
-		  	+ '				<div class="row">'
-		  	+ '					<div class="span16">'
-		  	+ '						<h4>Selected Nodes:</h4> <div class="selectedNodeUrnsDiv" style="overflow:auto;"></div>'
-		  	+ '					</div>'
+		  	+ '					<div class="span4">'
+			+ '						<button class="btn selectNodeUrns span4">Select Nodes</button>'
+			+ '					</div>'
+		  	+ '					<div class="span4">'
+			+ '						<div class="selectedNodeUrnsDiv span4">&nbsp;</div>'
+			+ '					</div>'
+		  	+ '					<div class="span8 pull-left">'
+			+ '						<button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
+			+ '					</div>'
 		  	+ '				</div>'
 			+ '			</div>'
 		 	+ '			<div class="tab-pane" id="'+this.sendDivId+'">'
@@ -1626,8 +1627,7 @@ WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(select
 		this.setResetButtonDisabled(false);
 	}
 	var selectNodeUrnsDiv = this.view.find('#'+this.resetDivId+' .selectedNodeUrnsDiv').first();
-	selectNodeUrnsDiv.empty();
-	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
+	selectNodeUrnsDiv.html((selectedNodeUrns.length == 1 ? '1 node selected' : selectedNodeUrns.length + ' nodes selected'));
 };
 
 WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
