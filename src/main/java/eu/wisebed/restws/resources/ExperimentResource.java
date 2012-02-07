@@ -352,6 +352,7 @@ public class ExperimentResource {
 		}
 
 		Job job = wsnProxyManagerService.getJob(experimentUrl, requestId);
+
 		if (job == null) {
 			return Response.status(Status.NOT_FOUND).entity("No job with requestId " + requestId + " found!").build();
 		}

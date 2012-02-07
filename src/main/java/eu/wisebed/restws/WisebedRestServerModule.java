@@ -23,7 +23,9 @@ public class WisebedRestServerModule extends AbstractModule {
 		bind(WsnProxyManagerService.class).to(WsnProxyManagerServiceImpl.class);
 
 		install(new FactoryModuleBuilder().build(ControllerProxyServiceFactory.class));
-		install(new FactoryModuleBuilder().build(WsnProxyServiceFactory.class));
+		install(new FactoryModuleBuilder()
+				.implement(WsnProxyService.class, WsnProxyServiceImpl.class)
+				.build(WsnProxyServiceFactory.class));
 
 		bindListener(Matchers.any(), new Log4JTypeListener());
 

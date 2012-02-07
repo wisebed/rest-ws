@@ -34,7 +34,7 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 
 		private final ExecutorService executorService;
 
-		private final WsnProxyServiceImpl wsnProxyServiceImpl;
+		private final WsnProxyService wsnProxyService;
 
 		private final JobObserver jobObserver;
 
@@ -42,12 +42,12 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 
 		private ProxyCacheEntry(final ControllerProxyService controllerProxyService,
 								final ExecutorService executorService,
-								final WsnProxyServiceImpl wsnProxyServiceImpl,
+								final WsnProxyService wsnProxyService,
 								final JobObserver jobObserver) {
 
 			this.controllerProxyService = controllerProxyService;
 			this.executorService = executorService;
-			this.wsnProxyServiceImpl = wsnProxyServiceImpl;
+			this.wsnProxyService = wsnProxyService;
 			this.jobObserver = jobObserver;
 		}
 
@@ -59,8 +59,8 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 			return executorService;
 		}
 
-		public WsnProxyServiceImpl getWsnProxyService() {
-			return wsnProxyServiceImpl;
+		public WsnProxyService getWsnProxyService() {
+			return wsnProxyService;
 		}
 
 		public JobObserver getJobObserver() {
@@ -131,7 +131,6 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 		checkArgument(expiration.isAfter(DateTime.now()));
 
 		ExecutorService executor = Executors.newCachedThreadPool();
-		AsyncEventBus asyncEventBus = new AsyncEventBus(experimentWsnInstanceEndpointUrl, executor);
 		JobObserver jobObserver = new JobObserver();
 
 		ControllerProxyService controllerProxyService = controllerProxyServiceFactory.create(
@@ -139,21 +138,25 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 				jobObserver
 		);
 
-		WsnProxyServiceImpl wsnProxyServiceImpl = wsnProxyServiceFactory.create(
+		WsnProxyService wsnProxyService = wsnProxyServiceFactory.create(
 				jobObserver,
 				experimentWsnInstanceEndpointUrl
 		);
 
 		try {
 			controllerProxyService.start().get();
-			wsnProxyServiceImpl.start().get();
+			wsnProxyService.start().get();
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 
-		ProxyCacheEntry proxyCacheEntry = new ProxyCacheEntry(controllerProxyService, executor, wsnProxyServiceImpl,
+		ProxyCacheEntry proxyCacheEntry = new ProxyCacheEntry(
+				controllerProxyService,
+				executor,
+				wsnProxyService,
 				jobObserver
 		);
+
 		Duration d = new Duration(DateTime.now(), expiration);
 
 		proxyCache.put(experimentWsnInstanceEndpointUrl, proxyCacheEntry, d.getMillis(), TimeUnit.MILLISECONDS);
@@ -198,7 +201,7 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 	public synchronized AsyncEventBus getEventBus(@Nonnull final String experimentWsnInstanceEndpointUrl) {
 		AsyncEventBus eventBus = eventBusMap.get(experimentWsnInstanceEndpointUrl);
 		if (eventBus == null) {
-			eventBus = new AsyncEventBus(executor);
+			eventBus = new AsyncEventBus(experimentWsnInstanceEndpointUrl, executor);
 			eventBusMap.put(experimentWsnInstanceEndpointUrl, eventBus);
 		}
 		return eventBus;

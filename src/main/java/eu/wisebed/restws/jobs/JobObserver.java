@@ -109,9 +109,7 @@ public class JobObserver {
 
 				if (job != null) {
 
-					if (job.process(status) != JobState.RUNNING) {
-						jobCache.remove(requestId);
-					}
+					job.process(status);
 
 				} else {
 
