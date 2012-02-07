@@ -26,6 +26,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 
 import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
+import static eu.wisebed.restws.resources.ResourceHelper.getSnaaSecretAuthCookie;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
 @Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/reservations")
@@ -36,8 +37,6 @@ public class RsResource {
 
 	@Inject
 	private WebServiceEndpointManager endpointManager;
-
-	@Inject
 
 	@Context
 	private HttpHeaders httpHeaders;
@@ -52,7 +51,7 @@ public class RsResource {
 		try {
 
 			Object response = userOnly ?
-					getConfidentialReservations(testbedId, getSnaaSecretAuthCookie(testbedId), from, to) :
+					getConfidentialReservations(testbedId, getSnaaSecretAuthCookie(httpHeaders, testbedId), from, to) :
 					getPublicReservations(testbedId, from, to);
 
 			return Response.ok(toJSON(response)).build();
@@ -83,7 +82,7 @@ public class RsResource {
 	public Response makeReservation(@PathParam("testbedId") final String testbedId,
 									PublicReservationData request) {
 
-		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(testbedId);
+		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(httpHeaders, testbedId);
 
 		try {
 
@@ -126,7 +125,7 @@ public class RsResource {
 	public Response deleteReservation(@PathParam("testbedId") final String testbedId,
 									  SecretReservationKeyListRs secretReservationKeys) {
 
-		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(testbedId);
+		SnaaSecretAuthenticationKeyList snaaSecretAuthCookie = getSnaaSecretAuthCookie(httpHeaders, testbedId);
 
 		log.debug("Cookie (secret authentication key): {}", snaaSecretAuthCookie);
 
@@ -276,25 +275,4 @@ public class RsResource {
 
 		return new ConfidentialReservationDataList(rs.getConfidentialReservations(rsSAKs, getReservations));
 	}
-
-	private SnaaSecretAuthenticationKeyList getSnaaSecretAuthCookie(final String testbedId) {
-
-		try {
-
-			Cookie snaaSecretAuthCookie = httpHeaders.getCookies().get(
-					createSecretAuthenticationKeyCookieName(testbedId)
-			);
-
-			return JSONHelper.fromJSON(
-					Base64Helper.decode(snaaSecretAuthCookie.getValue()),
-					SnaaSecretAuthenticationKeyList.class
-			);
-
-		} catch (Exception e) {
-
-			log.warn("Cookie with secret authentication key could not be parsed. Reason: " + e, e);
-			throw new NotLoggedInException(testbedId);
-		}
-	}
-
 }

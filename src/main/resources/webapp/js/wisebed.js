@@ -160,4 +160,20 @@ var Wisebed = new function() {
 	this.hasSecretAuthenticationKeyCookie = function(testbedId) {
 		return $.cookie('wisebed-secret-authentication-key-' + testbedId) != null;
 	};
+
+	this.isLoggedIn = function(testbedId, callbackDone, callbackError) {
+		$.ajax({
+			url      : "/rest/2.3/" + testbedId + "/isLoggedIn",
+			context  : document.body,
+			dataType : "json",
+			success  : function() {callbackDone(true);},
+			error    : function(jqXHR, textStatus, errorThrown) {
+				if (jqXHR.status == 403) {
+					callbackDone(false);
+				} else {
+					callbackError(jqXHR, textStatus, errorThrown);
+				}
+			}
+		});
+	}
 };

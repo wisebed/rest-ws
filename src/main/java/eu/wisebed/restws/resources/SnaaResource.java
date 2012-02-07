@@ -1,10 +1,7 @@
 package eu.wisebed.restws.resources;
 
 import com.google.inject.Inject;
-import eu.wisebed.api.snaa.AuthenticationExceptionException;
-import eu.wisebed.api.snaa.SNAA;
-import eu.wisebed.api.snaa.SNAAExceptionException;
-import eu.wisebed.api.snaa.SecretAuthenticationKey;
+import eu.wisebed.api.snaa.*;
 import eu.wisebed.restws.dto.LoginData;
 import eu.wisebed.restws.dto.SnaaSecretAuthenticationKeyList;
 import eu.wisebed.restws.proxy.WebServiceEndpointManager;
@@ -13,16 +10,15 @@ import eu.wisebed.restws.util.InjectLogger;
 import org.slf4j.Logger;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
 import java.util.List;
 
 import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticationKeyCookieName;
+import static eu.wisebed.restws.resources.ResourceHelper.getSnaaSecretAuthCookie;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
-@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/login")
+@Path("/" + Constants.WISEBED_API_VERSION + "/{testbedId}/")
 public class SnaaResource {
 
 	@InjectLogger
@@ -30,6 +26,26 @@ public class SnaaResource {
 
 	@Inject
 	private WebServiceEndpointManager endpointManager;
+	
+	@Context
+	private HttpHeaders httpHeaders;
+
+	@GET
+	@Path("isLoggedIn")
+	public Response isLoggedIn(@PathParam("testbedId") final String testbedId) {
+
+		SnaaSecretAuthenticationKeyList cookie = getSnaaSecretAuthCookie(httpHeaders, testbedId);
+		SNAA snaa = endpointManager.getSnaaEndpoint(testbedId);
+
+		try {
+			
+			boolean isLoggedIn = snaa.isAuthorized(cookie.secretAuthenticationKeys, new Action("isLoggedIn"));
+			return isLoggedIn ? Response.ok().build() : Response.status(Status.FORBIDDEN).build();
+			
+		} catch (SNAAExceptionException e) {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
+		}
+	}
 
 	/**
 	 * loginData example: <code>
@@ -62,6 +78,7 @@ public class SnaaResource {
 	@POST
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_JSON})
+	@Path("login")
 	public Response login(@PathParam("testbedId") final String testbedId, final LoginData loginData) {
 
 		List<SecretAuthenticationKey> secretAuthenticationKeys;

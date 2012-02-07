@@ -229,10 +229,14 @@ WiseGuiLoginObserver.prototype.startObserving = function() {
 	$(window).bind('wisegui-logged-out', function(e, data) { self.onLoggedOutEvent(data); });
 
 	$(window).bind('wisegui-navigation-event', function(e, data) {
-		if (getLoginDialog(data.testbedId).isLoggedIn()) {
-			$(window).trigger('wisegui-logged-in', {testbedId:data.testbedId});
-		} else {
-			$(window).trigger('wisegui-logged-out', {testbedId:data.testbedId});
+		if (data.testbedId) {
+			getLoginDialog(data.testbedId).isLoggedIn(function(isLoggedIn) {
+				if (isLoggedIn) {
+					$(window).trigger('wisegui-logged-in', {testbedId:data.testbedId});
+				} else {
+					$(window).trigger('wisegui-logged-out', {testbedId:data.testbedId});
+				}
+			});
 		}
 	});
 
@@ -311,8 +315,8 @@ WiseGuiLoginDialog.prototype.onLoginSuccess = function() {
 	});
 };
 
-WiseGuiLoginDialog.prototype.isLoggedIn = function() {
-	return Wisebed.hasSecretAuthenticationKeyCookie(this.testbedId);
+WiseGuiLoginDialog.prototype.isLoggedIn = function(callback) {
+	Wisebed.isLoggedIn(this.testbedId, callback, WiseGui.showAjaxError);
 };
 
 WiseGuiLoginDialog.prototype.doLogout = function() {
@@ -872,21 +876,18 @@ var WiseGuiExperimentDropDown = function(testbedId) {
 	var self = this;
 
 	$(window).bind('wisegui-reservations-changed-'+testbedId, function(e, reservations) {
-
-		var isLoggedIn = getLoginDialog(self.testbedId).isLoggedIn();
-
-		if (isLoggedIn) {
-			self.onReservationsChangedEvent(reservations.reservations)
-		}
+		self.onReservationsChangedEvent(reservations.reservations);
 	});
 
 	$(window).bind('wisegui-navigation-event', function(e, navigationData) {
 
-		var isLoggedIn = getLoginDialog(self.testbedId).isLoggedIn();
 		var sameTestbedId = navigationData.testbedId == self.testbedId;
-
-		if (sameTestbedId && isLoggedIn) {
-			self.update();
+		if (sameTestbedId) {
+			getLoginDialog(self.testbedId).isLoggedIn(function(isLoggedIn) {
+				if (isLoggedIn) {
+					self.update();
+				}
+			});
 		}
 	});
 
