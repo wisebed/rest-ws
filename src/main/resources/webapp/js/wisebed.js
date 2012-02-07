@@ -104,7 +104,7 @@ var Wisebed = new function() {
 				data		:	JSON.stringify({nodeUrns:nodeUrns}, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
 				dataType	:	"json",
-				success		: 	callbackDone,
+				success		: 	function(data) {callbackDone(data.operationStatus);},
 				error		: 	callbackError
 			});
 		};

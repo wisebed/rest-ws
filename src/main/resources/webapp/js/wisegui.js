@@ -1573,7 +1573,7 @@ WiseGuiExperimentationView.prototype.removeFlashConfiguration = function() {
 };
 
 WiseGuiExperimentationView.prototype.setFlashButtonDisabled = function(disabled) {
-	this.view.find('#'+this.flashDivId + ' button.flashNodeUrns').first().attr('disabled', disabled);
+	this.flashFlashButton.attr('disabled', disabled);
 };
 
 WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
@@ -1587,7 +1587,7 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 		});
 	});
 
-	var progressViewer = new WiseGuiOperationProgressView(allNodeUrns);
+	var progressViewer = new WiseGuiOperationProgressView(allNodeUrns, 100);
 
 	this.setFlashButtonDisabled(true);
 	var self = this;
@@ -1597,6 +1597,10 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 			this.experimentId,
 			flashFormData,
 			function(result) {
+				if (!progressViewerShown) {
+					WiseGui.showInfoAlert(progressViewer.view);
+					progressViewerShown = true;
+				}
 				self.setFlashButtonDisabled(false);
 				progressViewer.update(result);
 			},
@@ -1670,11 +1674,14 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 			this.experimentId,
 			this.resetSelectedNodeUrns,
 			function(result) {
+				var progressView = new WiseGuiOperationProgressView(self.resetSelectedNodeUrns, 1);
+				progressView.update(result);
+				WiseGui.showInfoAlert(progressView.view);
 				self.setResetButtonDisabled(false);
 			},
 			function(jqXHR, textStatus, errorThrown) {
 				self.setResetButtonDisabled(false);
-				alert('TODO handle error in WiseGuiExperimentationView');
+				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
 			}
 	);
 };
@@ -1685,7 +1692,7 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
  * #################################################################
  */
 
-var WiseGuiOperationProgressView = function(nodeUrns) {
+var WiseGuiOperationProgressView = function(nodeUrns, operationMaxValue) {
 
 	this.view = $('<div class="WiseGuiOperationProgressView"/>');
 
@@ -1693,17 +1700,20 @@ var WiseGuiOperationProgressView = function(nodeUrns) {
 
 	for (var i=0; i<nodeUrns.length; i++) {
 
-		var row = $('<div class="row">'
-				+ '	<div class="span2 nodUrnDiv">'+nodeUrns[i]+'</div>'
-				+ '	<div class="span4 progressDiv"><progress value="0" min="0" max="100"/></div>'
-				+ '	<div class="span2 statusDiv"></div>'
-				+ '	<div class="span8 messageDiv"></div>'
-				+ '</div>');
+		var row = $('<table>'
+				+ '	<tr>'
+				+ '	<td class="span2 nodUrnTd">'+nodeUrns[i]+'</td>'
+				+ '	<td class="span4 progressTd"><progress value="0" min="0" max="'+operationMaxValue+'"/></td>'
+				+ '	<td class="span2 statusTd"></td>'
+				+ '	<td class="span8 messageTd"></td>'
+				+ '	</tr>'
+				+ '</table>');
 
 		this.contents[nodeUrns[i]] = {
+			row         : row,
 			progressBar : row.find('progress').first(),
-			statusDiv   : row.find('.statusDiv').first(),
-			messageDiv  : row.find('.messageDiv').first()
+			statusTd    : row.find('.statusTd').first(),
+			messageTd   : row.find('.messageTd').first()
 		};
 
 		this.view.append(row);
@@ -1716,11 +1726,25 @@ WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
 	$.each(operationStatus, function(nodeUrn, nodeStatus) {
 		var content = self.contents[nodeUrn];
 		if (content) {
-			content.progressBar[0].value = nodeStatus.statusCode;
-			content.statusDiv.html(nodeStatus.status);
-			content.messageDiv.html(nodeStatus.message);
+			if (nodeStatus.status == 'SUCCESS') {
+				content.row.remove();
+				delete self.contents[nodeUrn];
+			} else {
+				content.progressBar[0].value = nodeStatus.statusCode;
+				content.statusTd.html(nodeStatus.status);
+				content.messageTd.html(nodeStatus.message);
+			}
 		}
 	});
+
+	var contentsEmpty = true;
+	$.each(this.contents, function(nodeUrn, nodeStatus) {
+		contentsEmpty = false;
+	});
+
+	if (contentsEmpty) {
+		setTimeout(function() {self.view.remove()}, 1000);
+	}
 };
 
 /**
