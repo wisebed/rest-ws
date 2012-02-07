@@ -507,7 +507,6 @@ Table.prototype.generateFilter = function () {
 		if ((e.keyCode || e.which) == 13) {
 			var filter_fun = that.generateTable.bind(that);
 			var val = filter_input.val();
-			console.log("val: " + val);
 			filter_fun(val);
 		}
 	});
@@ -745,10 +744,14 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.showFilter = showFilter;
 	this.parent = parent;
 	this.generateTable(null);
+
+	this.predefinied_filter_functions = [];
 };
 
 
 WiseGuiNodeTable.prototype.generateTable = function (f) {
+
+	var that = this;
 
 	var header = ['Node URN','Type','Position','Sensors'];
 
@@ -770,7 +773,49 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	var t = new Table (this.wiseML.setup.node, header, rowProducer, null, null, this.showCheckboxes, this.showFilter);
 	this.table = t;
 
+	var predefinied_filter_types = [];
+	var predefinied_filter_functions = [];
+
+	$(this.wiseML.setup.node).each(
+		function() {
+			var t = this.nodeType;
+			var text = "All nodes of type " + t;
+			if($.inArray(text, predefinied_filter_types) < 0) {
+				predefinied_filter_types.push(text);
+				var fn = function(index) {
+					return this.nodeType == t;
+				}
+				predefinied_filter_functions.push(fn);
+			}
+		}
+	);
 	this.parent.append(t.html);
+
+	// Some predefined filters
+	var preDefinedFilter = $("<p></p>");
+	var select = $('<select style="width:100%"></select>');
+	select.change(
+			function () {
+				var idx = parseInt($(this).val());
+				var fn = predefinied_filter_functions[idx];
+				that.table.setFilterFun(fn);
+			}
+	);
+
+	var option = $('<option value=""></option>');
+	select.append(option);
+
+	var index = 0;
+	$(predefinied_filter_types).each(
+		function() {
+			var option = $('<option value="' + (index++) + '">' + this + '</option>');
+			select.append(option);
+		}
+	);
+	preDefinedFilter.append(select);
+	t.filter.after(preDefinedFilter);
+
+	this.predefinied_filter_functions = predefinied_filter_functions;
 };
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
