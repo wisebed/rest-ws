@@ -639,11 +639,10 @@ Table.prototype.generateTable = function (f) {
 	 */
 	// Generate table body
 	var tbody = $('<tbody></tbody>');
-
 	if(this.rowProducer != null) {
-
+		var tmpData = [];
 		var index = 0;
-		var rows = $.each(this.data,
+		$.each(this.data,
 			function() {
 
 				var row = null;
@@ -681,8 +680,10 @@ Table.prototype.generateTable = function (f) {
 					tr.append(td);
 				}
 				tbody.append(tr);
+				tmpData.push(this);
 			}
 		);
+		this.data = tmpData;
 	}
 
 	this.table.append(thead);
