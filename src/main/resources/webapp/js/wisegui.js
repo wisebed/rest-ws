@@ -44,10 +44,99 @@ var WiseGui = new function() {
 
 var WiseGuiNavigationViewer = function(navigationData) {
 
-	this.navigationData = navigationData;
+	this.navigationData       = navigationData;
 
-	this.view = null;
+	this.view                 = null;
+	this.primaryMenu          = null;
+	this.secondaryMenu        = null;
+
+	this.loginButton          = null;
+	this.loginButtonLi        = null;
+	this.logoutButton         = null;
+	this.logoutButtonLi       = null;
+	this.reservationsButton   = null;
+	this.reservationsButtonLi = null;
+
 	this.buildView();
+};
+
+WiseGuiNavigationViewer.prototype.buildViewForTestbed = function() {
+
+	// create all buttons and attach them
+	this.primaryMenu.append(
+			  '<li><a href="#nav=overview">Back</a></li>'
+	);
+
+	this.experimentDropDown = new WiseGuiExperimentDropDown(this.navigationData.testbedId);
+	this.primaryMenu.append(this.experimentDropDown.view);
+
+	this.secondaryMenu.append(
+			  '<li class="WiseGuiNavReservationsButton"><a href="#">My Reservations</a></li>'
+			+ '<li class="WiseGuiNavLogoutButton"><a href="#">Logout</a></li>'
+			+ '<li class="WiseGuiNavLoginButton"><a href="#">Login</a></li>'
+	);
+
+	this.reservationsButtonLi = this.secondaryMenu.find('li.WiseGuiNavReservationsButton').first();
+	this.reservationsButton   = this.reservationsButtonLi.find('a').first();
+	this.loginButtonLi        = this.secondaryMenu.find('li.WiseGuiNavLoginButton').first();
+	this.loginButton          = this.loginButtonLi.find('a').first();
+	this.logoutButtonLi       = this.secondaryMenu.find('li.WiseGuiNavLogoutButton').first();
+	this.logoutButton         = this.logoutButtonLi.find('a').first();
+
+	// hide all buttons
+	this.experimentDropDown.view.hide();
+	this.loginButtonLi.hide();
+	this.logoutButtonLi.hide();
+	this.reservationsButtonLi.hide();
+
+	// bind actions to buttons
+	var self = this;
+
+	this.reservationsButton.bind('click', function(e) {
+		e.preventDefault();
+		showReservationsDialog(self.navigationData.testbedId);
+	});
+
+	this.logoutButton.bind('click', function(e) {
+		e.preventDefault();
+		getLoginDialog(self.navigationData.testbedId).doLogout();
+	});
+
+	this.loginButton.bind('click', function(e) {
+		e.preventDefault();
+		getLoginDialog(self.navigationData.testbedId).show();
+	});
+
+	// bind to login and logout events
+	$(window).bind('wisegui-logged-in', function(e, data) {
+		if (data.testbedId == self.navigationData.testbedId) {
+			self.onLoggedInEvent();
+		}
+	});
+
+	$(window).bind('wisegui-logged-out', function(e, data) {
+		if (data.testbedId == self.navigationData.testbedId) {
+			self.onLoggedOutEvent();
+		}
+	});
+};
+
+WiseGuiNavigationViewer.prototype.onLoggedInEvent = function() {
+	this.loginButtonLi.hide();
+	this.logoutButtonLi.show();
+	this.reservationsButtonLi.show();
+	this.experimentDropDown.view.show();
+};
+
+WiseGuiNavigationViewer.prototype.onLoggedOutEvent = function() {
+	this.loginButtonLi.show();
+	this.logoutButtonLi.hide();
+	this.reservationsButtonLi.hide();
+	this.experimentDropDown.view.hide();
+};
+
+WiseGuiNavigationViewer.prototype.buildViewForTestbedOverview = function() {
+	this.primaryMenu.append('<li class="active"><a href="#nav=overview">Testbed Overview</a></li>');
 };
 
 WiseGuiNavigationViewer.prototype.buildView = function() {
@@ -57,62 +146,22 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
 			+ '	<div class="topbar" data-dropdown="dropdown">'
 			+ '		<div class="topbar-inner">'
 			+ '			<div class="container">'
-			+ '				<ul class="nav"></ul>'
-			+ '				<ul class="nav secondary-nav"></ul>'
+			+ '				<ul class="nav"/>'
+			+ '				<ul class="nav secondary-nav"/>'
 			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>'
 	);
 
-	var primaryMenu = this.view.find('ul.nav:not(ul.secondary-nav)').first();
-	var secondaryMenu = this.view.find('ul.secondary-nav').first();
+	this.primaryMenu   = this.view.find('ul.nav:not(ul.secondary-nav)').first();
+	this.secondaryMenu = this.view.find('ul.secondary-nav').first();
 
 	if (this.navigationData.nav == 'overview') {
-
-		primaryMenu.append('<li class="active"><a href="#nav=overview">Testbed Overview</a></li>');
-
+		this.buildViewForTestbedOverview();
 	} else if (this.navigationData.nav == 'testbed') {
-
-		primaryMenu.append('<li><a href="#nav=overview">Back</a></li>');
-		secondaryMenu.append('<li><a href="#" class="reservationsMenuEntry">Reservations</a></li>');
-
-		this.view.find('.reservationsMenuEntry').bind(
-				'click',
-				this.navigationData.testbedId,
-				function(e) { showReservationsDialog(e.data); }
-		);
-
-		var loginDialog = getLoginDialog(this.navigationData.testbedId);
-
-		if (loginDialog.isLoggedIn()) {
-
-			var experimentDropDown = new WiseGuiExperimentDropDown(this.navigationData.testbedId);
-			primaryMenu.append(experimentDropDown.view);
-
-			secondaryMenu.append('<li><a href="javascript:;" id="WisebedLogoutButton-'+this.navigationData.testbedId+'">Logout</a></li>');
-
-			$('#WisebedLogoutButton-'+this.navigationData.testbedId+':first').bind(
-					'click',
-					this.navigationData.testbedId,
-					function(e) {
-						loginDialog.doLogout();
-						delete loginDialogs[e.data];
-						$(window).trigger('hashchange');
-					}
-			)
-
-		} else {
-			secondaryMenu.append('<li><a href="javascript:;" id="WisebedLoginButton-'+this.navigationData.testbedId+'">Login</a></li>');
-			$('#WisebedLoginButton-'+this.navigationData.testbedId+':first').bind(
-					'click',
-					this.navigationData.testbedId,
-					function(e) { loginDialog.show(); }
-			);
-		}
+		this.buildViewForTestbed();
 	}
-
-	$('.tabs').tabs();
 };
 
 /**
@@ -150,17 +199,21 @@ WiseGuiLoginObserver.prototype.renewLogin = function(testbedId) {
 WiseGuiLoginObserver.prototype.onLoggedInEvent = function(data) {
 
 	console.log('LoginObserver received login event: ' + JSON.stringify(data));
-	var self = this;
-	this.loginData[data.testbedId] = data.loginData;
-	this.schedules[data.testbedId] = window.setInterval(
-			function() { self.renewLogin(data.testbedId); },
-			self.interval
-	);
+
+	if (data.loginData) {
+		var self = this;
+		this.loginData[data.testbedId] = data.loginData;
+		this.schedules[data.testbedId] = window.setInterval(
+				function() { self.renewLogin(data.testbedId); },
+				self.interval
+		);
+	}
 };
 
 WiseGuiLoginObserver.prototype.onLoggedOutEvent = function(data) {
 
 	console.log('LoginObserver received logout event: ' + JSON.stringify(data));
+
 	if (this.schedules[data.testbedId]) {
 		window.clearInterval(this.schedules[data.testbedId]);
 		delete this.schedules[data.testbedId];
@@ -169,23 +222,33 @@ WiseGuiLoginObserver.prototype.onLoggedOutEvent = function(data) {
 
 WiseGuiLoginObserver.prototype.startObserving = function() {
 
-	console.log('LoginObserver starts observing');
 	this.isObserving = true;
 
 	var self = this;
 	$(window).bind('wisegui-logged-in', function(e, data) { self.onLoggedInEvent(data); });
 	$(window).bind('wisegui-logged-out', function(e, data) { self.onLoggedOutEvent(data); });
+
+	$(window).bind('wisegui-navigation-event', function(e, data) {
+		if (getLoginDialog(data.testbedId).isLoggedIn()) {
+			$(window).trigger('wisegui-logged-in', {testbedId:data.testbedId});
+		} else {
+			$(window).trigger('wisegui-logged-out', {testbedId:data.testbedId});
+		}
+	});
+
+	console.log('LoginObserver started observing');
 };
 
 WiseGuiLoginObserver.prototype.stopObserving = function() {
 
-	console.log('LoginObserver stops observing');
 	this.isObserving = false;
 
 	$(this.schedules, function(testbedId, schedule) {
 		window.clearInterval(schedule);
 	});
 	this.schedules = {};
+
+	console.log('LoginObserver stopped observing');
 };
 
 /**
@@ -196,7 +259,7 @@ WiseGuiLoginObserver.prototype.stopObserving = function() {
 var WiseGuiLoginDialog = function(testbedId) {
 
 	this.testbedId = testbedId;
-	this.loginFormRows = {};
+	this.loginFormRows = [];
 	this.loginData = { authenticationData : [] };
 
 	this.view = $('<div id="WisebedLoginDialog-'+this.testbedId+'" class="modal hide"></div>');
@@ -213,12 +276,38 @@ WiseGuiLoginDialog.prototype.doLogin = function() {
 		data		: JSON.stringify(this.loginData, null, '  '),
 		contentType	: "application/json; charset=utf-8",
 		dataType	: "json",
-		error		: WiseGui.showAjaxError,
+		error		: function(jqXHR, textStatus, errorThrown) {
+			if (jqXHR.status == 403) {
+				self.onLoginError();
+			} else {
+				console.log(jqXHR);
+				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
+			}
+		},
 		success		: function() {
-			self.hide();
+			self.onLoginSuccess();
+			window.setTimeout(function() {self.hide()}, 1000);
 			$(window).trigger('wisegui-logged-in', {testbedId : self.testbedId, loginData : self.loginData});
 			$(window).trigger('hashchange');
 		}
+	});
+};
+
+WiseGuiLoginDialog.prototype.onLoginError = function() {
+	$.each(this.loginFormRows, function(index, elem) {
+		$(elem.inputUsername).removeClass('success');
+		$(elem.inputPassword).removeClass('success');
+		$(elem.inputUsername).addClass('error');
+		$(elem.inputPassword).addClass('error');
+	});
+};
+
+WiseGuiLoginDialog.prototype.onLoginSuccess = function() {
+	$.each(this.loginFormRows, function(index, elem) {
+		$(elem.inputUsername).removeClass('error');
+		$(elem.inputPassword).removeClass('error');
+		$(elem.inputUsername).addClass('success');
+		$(elem.inputPassword).addClass('success');
 	});
 };
 
@@ -228,6 +317,7 @@ WiseGuiLoginDialog.prototype.isLoggedIn = function() {
 
 WiseGuiLoginDialog.prototype.doLogout = function() {
 	Wisebed.deleteSecretAuthenticationKeyCookie(this.testbedId);
+	delete loginDialogs[this.testbedId];
 	$(window).trigger('wisegui-logged-out', {testbedId : this.testbedId});
 };
 
@@ -243,12 +333,12 @@ WiseGuiLoginDialog.prototype.show = function() {
 
 WiseGuiLoginDialog.prototype.updateLoginDataFromForm = function() {
 
-	for (var i=0; i<this.loginFormRows[this.testbedId].length; i++) {
+	for (var i=0; i<this.loginFormRows.length; i++) {
 
 		this.loginData.authenticationData[i] = {
-			urnPrefix : this.loginFormRows[this.testbedId][i].inputUrnPrefix.value,
-			username  : this.loginFormRows[this.testbedId][i].inputUsername.value,
-			password  : this.loginFormRows[this.testbedId][i].inputPassword.value
+			urnPrefix : this.loginFormRows[i].inputUrnPrefix.value,
+			username  : this.loginFormRows[i].inputUsername.value,
+			password  : this.loginFormRows[i].inputPassword.value
 		};
 	}
 };
@@ -257,15 +347,13 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 
 	var tr = $('<tr/>');
 
-	if (!this.loginFormRows[this.testbedId]) {this.loginFormRows[this.testbedId] = [];}
-
-	var i = this.loginFormRows[this.testbedId].length;
+	var i = this.loginFormRows.length;
 
 	var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
 	var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
-	this.loginFormRows[this.testbedId][this.loginFormRows[this.testbedId].length] = {
+	this.loginFormRows[this.loginFormRows.length] = {
 		"tr" : tr,
 		"inputUrnPrefix" : inputUrnPrefix[0],
 		"inputUsername" : inputUsername[0],
@@ -280,7 +368,7 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 	tdUsername.append(inputUsername);
 	tdPassword.append(inputPassword);
 
-	tr.append($('<td>'+(this.loginFormRows[this.testbedId].length)+'</td>'));
+	tr.append($('<td>'+(this.loginFormRows.length)+'</td>'));
 	tr.append(tdUrnPrefix);
 	tr.append(tdUsername);
 	tr.append(tdPassword);
@@ -782,11 +870,22 @@ var WiseGuiExperimentDropDown = function(testbedId) {
 	this.view = null;
 
 	var self = this;
+
 	$(window).bind('wisegui-reservations-changed-'+testbedId, function(e, reservations) {
-		self.onReservationsChangedEvent(reservations.reservations)
+
+		var isLoggedIn = getLoginDialog(self.testbedId).isLoggedIn();
+
+		if (isLoggedIn) {
+			self.onReservationsChangedEvent(reservations.reservations)
+		}
 	});
+
 	$(window).bind('wisegui-navigation-event', function(e, navigationData) {
-		if (navigationData.testbedId = self.testbedId) {
+
+		var isLoggedIn = getLoginDialog(self.testbedId).isLoggedIn();
+		var sameTestbedId = navigationData.testbedId == self.testbedId;
+
+		if (sameTestbedId && isLoggedIn) {
 			self.update();
 		}
 	});
@@ -1487,12 +1586,14 @@ function navigateToExperiment(testbedId, reservation) {
 	);
 }
 
-function getNavigationData() {
+function getNavigationData(fragment) {
+
+	var parsedFragment = $.deparam.fragment(fragment ? fragment : window.location.fragment);
 
 	return {
-		nav          : $.bbq.getState('nav')          || 'overview',
-		testbedId    : $.bbq.getState('testbedId')    || '',
-		experimentId : $.bbq.getState('experimentId') || ''
+		nav          : parsedFragment['nav']          || 'overview',
+		testbedId    : parsedFragment['testbedId']    || '',
+		experimentId : parsedFragment['experimentId'] || ''
 	};
 }
 
@@ -1554,13 +1655,13 @@ function createContentContainer(navigationData) {
 
 function onHashChange(e) {
 
-	$(window).trigger('wisegui-navigation-event', getNavigationData());
-
-	var navigationData = getNavigationData();
-	var navigationKey  = getNavigationKey(navigationData)
+	var navigationData = getNavigationData(e.fragment);
+	var navigationKey  = getNavigationKey(navigationData);
 
 	switchNavigationContainer(navigationData, navigationKey);
 	switchContentContainer(navigationData, navigationKey);
+
+	$(window).trigger('wisegui-navigation-event', navigationData);
 }
 
 var navigationContainers = {};

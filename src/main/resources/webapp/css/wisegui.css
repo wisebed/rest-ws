@@ -51,3 +51,24 @@ body {
 	min-width: 600px;
 	max-width: none;
 }
+
+input.error {
+	border-color: #e9322d;
+	-webkit-box-shadow: 0 0 6px #f8b9b7;
+	-moz-box-shadow: 0 0 6px #f8b9b7;
+	box-shadow: 0 0 6px #f8b9b7;
+}
+
+input.warning {
+	border-color: #be9a3f;
+	-webkit-box-shadow: 0 0 6px #e5d6b1;
+	-moz-box-shadow: 0 0 6px #e5d6b1;
+	box-shadow: 0 0 6px #e5d6b1;
+}
+
+input.success {
+	border-color: #458845;
+	-webkit-box-shadow: 0 0 6px #9acc9a;
+	-moz-box-shadow: 0 0 6px #9acc9a;
+	box-shadow: 0 0 6px #9acc9a;
+}
