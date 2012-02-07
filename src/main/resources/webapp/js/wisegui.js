@@ -474,6 +474,7 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 	this.table = null;
 	this.filter = null;
 	this.data = null;
+	this.filter_input = null;
 	this.checkboxes = [];
 	if(showFiterBox) {
 		this.lastWorkingFilterExpr = null;
@@ -491,13 +492,13 @@ Table.prototype.generateFilter = function () {
 	var that = this;
 
 	// Filter
-	this.filter = $("<p></p>");
+	this.filter = $('<p style="margin-top:3px;"></p>');
 
 	var help_image = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;" src="img/famfamfam/help.png">');
-	var help_div = $('<div style="margin-right:105px;"></div>');
+	var help_div = $('<div style="margin-right:95px;"></div>');
 	this.filter_checkbox = $('<input type="checkbox" style="float:right;margin-top:7px;margin-right:3px;">');
 	this.filter.append(help_image);
-	this.filter.append('<div style="float:right;margin-top:3px;">(Advanced)</div>');
+	this.filter.append('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
 	this.filter.append(this.filter_checkbox);
 	this.filter.append(help_div);
 
@@ -510,6 +511,7 @@ Table.prototype.generateFilter = function () {
 			filter_fun(val);
 		}
 	});
+	this.filter_input = filter_input;
 
 	help_image.click(function() {
 		if(!that.helpTooltipIsVisable) {
@@ -793,8 +795,7 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 	this.parent.append(t.html);
 
 	// Some predefined filters
-	var preDefinedFilter = $("<p></p>");
-	var select = $('<select style="width:100%"></select>');
+	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;"></select>');
 	select.change(
 			function () {
 				var idx = parseInt($(this).val());
@@ -813,8 +814,9 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 			select.append(option);
 		}
 	);
-	preDefinedFilter.append(select);
-	t.filter.after(preDefinedFilter);
+
+	t.filter_input.css("width", "49%");
+	t.filter_input.after(select);
 
 	this.predefinied_filter_functions = predefinied_filter_functions;
 };
