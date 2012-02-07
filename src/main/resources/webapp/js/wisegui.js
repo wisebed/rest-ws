@@ -1074,7 +1074,7 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.resetDivId              = this.experimentationDivId+'-reset';
 	this.scriptingDivId          = this.experimentationDivId+'-scripting';
 
-	this.view = $('<div id="'+this.experimentationDivId+'"/>');
+	this.view = $('<div class="WiseGuiExperimentationView"/>');
 
 	this.flashSelectedNodeUrns = null;
 	this.resetSelectedNodeUrns = null;
@@ -1174,6 +1174,8 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 	});*/
 
 };
+
+/**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.showFlashNodeSelectionDialog = function() {
 
@@ -1304,133 +1306,162 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 	);
 };
 
+/**********************************************************************************************************************/
+
 WiseGuiExperimentationView.prototype.buildView = function() {
 
-	var controlsTabsDiv = $(
-			  '<div id="'+this.tabsControlsDivId+'">'
-			+ '	<ul class="tabs">'
-			+ '		<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
-			+ '		<li><a href="#'+this.resetDivId+'">Reset</a></li>'
-			+ '		<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
-			+ '		<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
-			+ '	</ul>'
-			+ '	<div class="tab-content">'
-			+ '		<div class="active tab-pane" id="'+this.flashDivId+'">'
-			+ '			<div class="row">'
-			+ '				<div class="span10">'
-			+ '					<button class="btn addSet span1"> + </button>'
-			+ '					<button class="btn removeSet span1"> - </button>'
-			+ '					<button class="btn loadConfiguration span2">Load</button>'
-			+ '					<button class="btn saveConfiguration span2">Save</button>'
-			+ '					<button class="btn primary flashNodes span3">Flash</button>'
+	var controlsDiv = $('');
+	controlsDiv.append(this.controlsTabsDiv);
+
+	var outputsDiv = $();
+	this.outputsTextArea = $('');
+	outputsDiv.append(this.outputsTextArea);
+
+	this.view.append(outputsDiv, controlsDiv);
+
+	this.view.append('<div class="WiseGuiExperimentationViewOutputs">'
+			+ '	<h2>Live Data</h2>'
+			+ '	<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '</div>'
+			+ '<div class="WiseGuiExperimentationViewControls">'
+			+ '	<h2>Controls</h2></div>'
+			+ '	<div id="'+this.tabsControlsDivId+'">'
+			+ '		<ul class="tabs">'
+			+ '			<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
+			+ '			<li><a href="#'+this.resetDivId+'">Reset</a></li>'
+			+ '			<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
+			+ '			<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
+			+ '		</ul>'
+			+ '		<div class="tab-content">'
+			+ '			<div class="active tab-pane" id="'+this.flashDivId+'">'
+			+ '				<div class="row">'
+			+ '					<div class="span10">'
+			+ '						<button class="btn addSet span1"> + </button>'
+			+ '						<button class="btn removeSet span1"> - </button>'
+			+ '						<button class="btn loadConfiguration span2">Load</button>'
+			+ '						<button class="btn saveConfiguration span2">Save</button>'
+			+ '						<button class="btn primary flashNodes span3">Flash</button>'
+			+ '					</div>'
+			+ '				</div>'
+			+ '				<div class="row">'
+		  	+ '					<div class="span16">'
+			+ '						<table class="zebra-striped">'
+			+ '							<thead>'
+			+ '								<tr>'
+			+ '									<th class="span1">Set</th>'
+			+ '									<th class="span4">Node URNs</th>'
+			+ '									<th class="span5">Image File</th>'
+			+ '									<th class="span6">Flashing Progress</th>'
+			+ '								</tr>'
+			+ '							</thead>'
+			+ '							<tbody>'
+			+ '								<tr>'
+			+ '									<td>1</td>'
+			+ '									<td><button class="btn span3 selectNodeUrns">Select</button></td>'
+			+ '									<td><input type="file" id="image" name="image"/></td>'
+			+ '									<td id="progressBarTd"></td>'
+			+ '								</tr>'
+			+ '							</tbody>'
+			+ '						</table>'
+		  	+ '					</div>'
 			+ '				</div>'
 			+ '			</div>'
-			+ '			<div class="row">'
-		  	+ '				<div class="span16">'
-			+ '					<table class="zebra-striped">'
-			+ '						<thead>'
-			+ '							<tr>'
-			+ '								<th class="span1">Set</th>'
-			+ '								<th class="span4">Node URNs</th>'
-			+ '								<th class="span5">Image File</th>'
-			+ '								<th class="span6">Flashing Progress</th>'
-			+ '							</tr>'
-			+ '						</thead>'
-			+ '						<tbody>'
-			+ '							<tr>'
-			+ '								<td>1</td>'
-			+ '								<td><button class="btn span3 selectNodeUrns">Select</button></td>'
-			+ '								<td><input type="file" id="image" name="image"/></td>'
-			+ '								<td id="progressBarTd"></td>'
-			+ '							</tr>'
-			+ '						</tbody>'
-			+ '					</table>'
+			+ '			<div class="tab-pane" id="'+this.resetDivId+'">'
+		  	+ '				<div class="row">'
+		  	+ '					<div class="span16">'
+		  	+ '						<button class="btn selectNodeUrns span4">Select Nodes</button> <button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
+		  	+ '					</div>'
+		  	+ '				</div>'
+		  	+ '				<div class="row">'
+		  	+ '					<div class="span16">'
+		  	+ '						<h4>Selected Nodes:</h4> <div class="selectedNodeUrnsDiv" style="overflow:auto;"></div>'
+		  	+ '					</div>'
 		  	+ '				</div>'
 			+ '			</div>'
-			+ '		</div>'
-			+ '		<div class="tab-pane" id="'+this.resetDivId+'">'
-		  	+ '			<div class="row">'
-		  	+ '				<div class="span16">'
-		  	+ '					<button class="btn selectNodeUrns span4">Select Nodes</button> <button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
+		 	+ '			<div class="tab-pane" id="'+this.sendDivId+'">'
+		  	+ '				<div class="row">'
+		  	+ '					<div class="span16">'
+		  	+ '						<p>Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).</p>'
+		  	+ '						<p>Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code></p>'
+		  	+ '					</div>'
+		  	+ '				</div>'
+		  	+ '				<div class="row">'
+		  	+ '					<div class="span16">'
+		  	+ '						<button class="btn selectNodeUrns span4">Select Nodes</button>'
+		  	+ '						<input type="text" class="sendMessageMessageInput span8"/>'
+		  	+ '						<button class="btn primary sendMessage span4">Send message</button><br/>'
+		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '			</div>'
-		  	+ '			<div class="row">'
-		  	+ '				<div class="span16">'
-		  	+ '					<h4>Selected Nodes:</h4> <div class="selectedNodeUrnsDiv" style="overflow:auto;"></div>'
-		  	+ '				</div>'
-		  	+ '			</div>'
-			+ '		</div>'
-		 	+ '		<div class="tab-pane" id="'+this.sendDivId+'">'
-		  	+ '			<div class="row">'
-		  	+ '				<div class="span16">'
-		  	+ '					<p>Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).</p>'
-		  	+ '					<p>Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code></p>'
-		  	+ '				</div>'
-		  	+ '			</div>'
-		  	+ '			<div class="row">'
-		  	+ '				<div class="span16">'
-		  	+ '					<button class="btn selectNodeUrns span4">Select Nodes</button>'
-		  	+ '					<input type="text" class="sendMessageMessageInput span8"/>'
-		  	+ '					<button class="btn primary sendMessage span4">Send message</button><br/>'
-		  	+ '				</div>'
-		  	+ '			</div>'
-		  	+ '		</div>'
-			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'">'
-			+ '			Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
+			+ '			<div class="tab-pane" id="'+this.scriptingDivId+'">'
+			+ '				Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
+			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>');
 
+	this.controlsTabsDiv              = this.view.find('.WiseGuiExperimentationViewControls').first();
+	this.outputsTextArea              = this.view.find('#' + this.outputsTextAreaId).first();
+
+	this.flashAddSetButton            = this.view.find('#'+this.flashDivId + ' button.addSet').first();
+	this.flashRemoveSetButton         = this.view.find('#'+this.flashDivId + ' button.removeSet').first();
+	this.flashLoadConfigurationButton = this.view.find('#'+this.flashDivId + ' button.loadConfiguration').first();
+	this.flashSaveConfigurationButton = this.view.find('#'+this.flashDivId + ' button.saveConfiguration').first();
+	this.flashFlashButton             = this.view.find('#'+this.flashDivId + ' button.flashNodes').first();
+
+	this.resetNodeSelectionButton     = this.view.find('#'+this.resetDivId + ' button.selectNodeUrns').first();
+	this.resetResetButton             = this.view.find('#'+this.resetDivId + ' button.resetNodeUrns').first();
+
+	this.sendNodeSelectionButton      = this.view.find('#'+this.sendDivId + ' button.selectNodeUrns').first();
+	this.sendSendButton               = this.view.find('#'+this.sendDivId + ' button.sendMessage').first();
+
 	var self = this;
 
 	// bind actions for flash tab buttons
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.addSet').first().bind('click', self, function(e) {
+	this.flashAddSetButton.bind('click', self, function(e) {
 		alert('TODO addSet');
 	});
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.removeSet').first().bind('click', self, function(e) {
+	this.flashRemoveSetButton.bind('click', self, function(e) {
 		alert('TODO removeSet');
 	});
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.loadConfiguration').first().bind('click', self, function(e) {
+	this.flashLoadConfigurationButton.bind('click', self, function(e) {
 		alert('TODO loadConfiguration');
 	});
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.saveConfiguration').first().bind('click', self, function(e) {
+	this.flashSaveConfigurationButton.bind('click', self, function(e) {
 		alert('TODO saveConfiguration');
 	});
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.flashNodes').first().bind('click', self, function(e) {
+	this.flashFlashButton.bind('click', self, function(e) {
 		alert('TODO flashNodes');
 	});
 
 	// bind actions for reset tab buttons
-	controlsTabsDiv.find('#'+this.resetDivId + ' button.selectNodeUrns').first().bind('click', self, function(e) {
+	this.resetNodeSelectionButton.bind('click', self, function(e) {
 		e.data.showResetNodeSelectionDialog()
 	});
 
-	controlsTabsDiv.find('#'+this.resetDivId + ' button.resetNodeUrns').first().bind('click', self, function(e) {
+	this.resetResetButton.bind('click', self, function(e) {
 		e.data.executeResetNodes()
 	});
 
 	// bind actions for send message tab buttons
-	controlsTabsDiv.find('#'+this.sendDivId + ' button.selectNodeUrns').first().bind('click', self, function(e) {
+	this.sendNodeSelectionButton.bind('click', self, function(e) {
 		alert('TODO selectNodeUrns');
 	});
 
-	controlsTabsDiv.find('#'+this.sendDivId + ' button.sendMessage').first().bind('click', self, function(e) {
+	this.sendSendButton.bind('click', self, function(e) {
 		alert('TODO sendMessage');
 	});
-
-	var controlsDiv = $('<div class="WiseGuiExperimentationViewControlsDiv"><h2>Controls</h2></div>');
-	controlsDiv.append(controlsTabsDiv);
-
-	var outputsDiv = $('<div class="WiseGuiExperimentationViewOutputsDiv"><h2>Live Data</h2></div>');
-	this.outputsTextArea = $('<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>');
-	outputsDiv.append(this.outputsTextArea);
-
-	this.view.append(outputsDiv, controlsDiv);
 };
+
+/**
+ * #################################################################
+ * Global Functions
+ * #################################################################
+ */
 
 function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
