@@ -474,6 +474,7 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 	this.table = null;
 	this.filter = null;
 	this.data = null;
+	this.filter_input = null;
 	this.checkboxes = [];
 	if(showFiterBox) {
 		this.lastWorkingFilterExpr = null;
@@ -491,13 +492,13 @@ Table.prototype.generateFilter = function () {
 	var that = this;
 
 	// Filter
-	this.filter = $("<p></p>");
+	this.filter = $('<p style="margin-top:3px;"></p>');
 
 	var help_image = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;" src="img/famfamfam/help.png">');
-	var help_div = $('<div style="margin-right:105px;"></div>');
+	var help_div = $('<div style="margin-right:95px;"></div>');
 	this.filter_checkbox = $('<input type="checkbox" style="float:right;margin-top:7px;margin-right:3px;">');
 	this.filter.append(help_image);
-	this.filter.append('<div style="float:right;margin-top:3px;">(Advanced)</div>');
+	this.filter.append('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
 	this.filter.append(this.filter_checkbox);
 	this.filter.append(help_div);
 
@@ -510,6 +511,7 @@ Table.prototype.generateFilter = function () {
 			filter_fun(val);
 		}
 	});
+	this.filter_input = filter_input;
 
 	help_image.click(function() {
 		if(!that.helpTooltipIsVisable) {
@@ -591,10 +593,10 @@ Table.prototype.generateTable = function (f) {
 			tr_thead.append(th_local);
 		}
 	);
+
 	/*
 	 * Prepare the data
 	 */
-
 	this.data = this.model;
 
 	// Will just be used in initial usage
@@ -637,7 +639,6 @@ Table.prototype.generateTable = function (f) {
 	/*
 	 * Generate the table body
 	 */
-	// Generate table body
 	var tbody = $('<tbody></tbody>');
 	if(this.rowProducer != null) {
 		var tmpData = [];
@@ -745,8 +746,6 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.showFilter = showFilter;
 	this.parent = parent;
 	this.generateTable(null);
-
-	this.predefinied_filter_functions = [];
 };
 
 
@@ -754,8 +753,11 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 
 	var that = this;
 
+	// The header
 	var header = ['Node URN','Type','Position','Sensors'];
 
+	// The row producer gived something like
+	// ["id", "type", "(x,y,z)", "a,b,c"]
 	var rowProducer = function (n) {
 		var cap = [];
 		for(j = 0; j < n.capability.length; j++) {
@@ -770,13 +772,15 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 		return data;
 	}
 
-	// (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox)
+	// Use the usual table
 	var t = new Table (this.wiseML.setup.node, header, rowProducer, null, null, this.showCheckboxes, this.showFilter);
 	this.table = t;
 
+	// This vars stores the predefined filters
 	var predefinied_filter_types = [];
 	var predefinied_filter_functions = [];
 
+	// Add type filters
 	$(this.wiseML.setup.node).each(
 		function() {
 			var t = this.nodeType;
@@ -790,17 +794,17 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 			}
 		}
 	);
-	this.parent.append(t.html);
 
-	// Some predefined filters
-	var preDefinedFilter = $("<p></p>");
-	var select = $('<select style="width:100%"></select>');
+	// Other filters can be added here
+
+	// Here the select will be generated
+	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;"></select>');
 	select.change(
-			function () {
-				var idx = parseInt($(this).val());
-				var fn = predefinied_filter_functions[idx];
-				that.table.setFilterFun(fn);
-			}
+		function () {
+			var idx = parseInt($(this).val());
+			var fn = predefinied_filter_functions[idx];
+			that.table.setFilterFun(fn);
+		}
 	);
 
 	var option = $('<option value=""></option>');
@@ -813,10 +817,10 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 			select.append(option);
 		}
 	);
-	preDefinedFilter.append(select);
-	t.filter.after(preDefinedFilter);
 
-	this.predefinied_filter_functions = predefinied_filter_functions;
+	t.filter_input.css("width", "49%");
+	t.filter_input.after(select);
+	this.parent.append(t.html);
 };
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
