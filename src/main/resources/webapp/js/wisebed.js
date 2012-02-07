@@ -96,8 +96,45 @@ var Wisebed = new function() {
 			});
 		};
 
-		this.flashNodes = function(testbedId, experimentId, nodeUrns, callbackDone, callbackError) {
-			WiseGui.showErrorAlert('TODO');
+		this.flashNodes = function(testbedId, experimentId, data, callbackDone, callbackProgress, callbackError) {
+
+			var requestSuccessCallback = function(data, textStatus, jqXHR){
+
+				var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
+
+				var schedule = setInterval(function() {
+
+					var onProgressRequestSuccess = function(data) {
+						callbackProgress(data);
+						callbackDone(data);
+						clearInterval(schedule);
+					};
+
+					var onProgressRequestError = function(jqXHR, textStatus, errorThrown) {
+						clearInterval(schedule);
+						callbackError(jqXHR, textStatus, errorThrown);
+					};
+
+					$.ajax({
+						url         : flashRequestStatusURL,
+						type        : "GET",
+						dataType    : "json",
+						success     : onProgressRequestSuccess,
+						error       : onProgressRequestError
+					});
+
+				}, 2 * 1000);
+			};
+
+			$.ajax({
+				url         : "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/flash",
+				type        : "POST",
+				data        : JSON.stringify(data, null, '  '),
+				contentType : "application/json; charset=utf-8",
+				dataType    : "json",
+				success     : requestSuccessCallback,
+				error       : callbackError
+			});
 		};
 	};
 

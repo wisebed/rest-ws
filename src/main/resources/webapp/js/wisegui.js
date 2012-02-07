@@ -990,7 +990,7 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 		self.dialogDiv.show();
 
 		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
-		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true);
+		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true, true);
 
 		self.dialogDiv.find('.modal-footer .secondary').first().bind(
 				'click',
@@ -1206,10 +1206,11 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<table class="zebra-striped">'
 			+ '							<thead>'
 			+ '								<tr>'
-			+ '									<th class="span1">Set</th>'
-			+ '									<th class="span4">Node URNs</th>'
-			+ '									<th class="span5">Image File</th>'
-			+ '									<th class="span5">File Information</th>'
+			+ '									<th>Set</th>'
+			+ '									<th>Selected Nodes</th>'
+			+ '									<th></th>'
+			+ '									<th>Image File</th>'
+			+ '									<th></th>'
 			+ '								</tr>'
 			+ '							</thead>'
 			+ '							<tbody>'
@@ -1329,23 +1330,27 @@ WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 
 	// build and append the gui elements
-	var nodeSelectionButton = $('<button class="btn nodeSelectionButton">Select Nodes</button>');
-	var imageFileInput      = $('<input type="file" style="opacity: 0; width: 0px; position:absolute; top:-100px;"/>');
-	var imageFileButton     = $('<button class="btn fileSelectionButton">Select Image</button>');
-	var imageFileInfoLabel  = $('<div/>');
-	var tr                  = $('<tr/>');
+	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton">Select Nodes</button>');
+	var nodeSelectionLabel    = $('<div/>');
+	var imageFileInput        = $('<input type="file" style="opacity: 0; width: 0px; position:absolute; top:-100px;"/>');
+	var imageFileButton       = $('<button class="btn fileSelectionButton">Select Image</button>');
+	var imageFileInfoLabel    = $('<div/>');
+	var tr                    = $('<tr/>');
 
 	var setNumberTd           = $('<td>' + (this.flashConfigurations.length + 1) + '</td>');
 	var nodeSelectionButtonTd = $('<td/>');
+	var nodeSelectionLabelTd  = $('<td/>');
 	var imageFileInputTd      = $('<td/>');
 	var imageFileInfoLabelTd  = $('<td/>');
 
-	tr.append(setNumberTd, nodeSelectionButtonTd, imageFileInputTd, imageFileInfoLabelTd);
 	nodeSelectionButtonTd.append(nodeSelectionButton);
+	nodeSelectionLabelTd.append(nodeSelectionLabel);
+
 	imageFileInputTd.append(imageFileInput);
 	imageFileInputTd.append(imageFileButton);
 	imageFileInfoLabelTd.append(imageFileInfoLabel);
 
+	tr.append(setNumberTd, nodeSelectionButtonTd, nodeSelectionLabelTd, imageFileInputTd, imageFileInfoLabelTd);
 	this.flashConfigurationsTableBody.append(tr);
 
 	// build and remember the configuration
@@ -1361,6 +1366,28 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 	this.flashConfigurations.push(configuration);
 
 	// bind actions to buttons
+	var self = this;
+
+	nodeSelectionButton.bind('click', function() {
+		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
+				self.testbedId,
+				self.experimentId,
+				'Select Nodes',
+				'Please select the nodes you want to flash.'
+		);
+		nodeSelectionButton.attr('disabled', true);
+		nodeSelectionDialog.show(
+			function(nodeUrns) {
+				nodeSelectionButton.attr('disabled', false);
+				configuration.config.nodeUrns = nodeUrns;
+				nodeSelectionLabel.empty();
+				nodeSelectionLabel.append((nodeUrns.length == 1 ? '1 node selected' : (nodeUrns.length + ' nodes selected')));
+			}, function() {
+				nodeSelectionButton.attr('disabled', false);
+			}
+		);
+	});
+
 	imageFileButton.bind('click', function() {
 		configuration.imageFileInput.click();
 	});
@@ -1371,12 +1398,11 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 		var imageFileReader = new FileReader();
 
 		imageFileReader.onerror = function(progressEvent) {
-			console.log(progressEvent);
 			configuration.config.image = null;
+			WiseGui.showWarningAlert('The file "' + imageFile.name+ '" could not be read!');
 		};
 
 		imageFileReader.onloadend = function(progressEvent) {
-			console.log(progressEvent);
 			configuration.config.image = imageFileReader.result;
 			imageFileInfoLabel.empty();
 			imageFileInfoLabel.append(
@@ -1401,47 +1427,6 @@ WiseGuiExperimentationView.prototype.removeFlashConfiguration = function() {
 	return null;
 };
 
-WiseGuiExperimentationView.prototype.showFlashNodeSelectionDialog = function() {
-
-	this.setFlashSelectNodesButtonDisabled(true);
-	var self = this;
-	Wisebed.getWiseMLAsJSON(
-			this.testbedId,
-			this.experimentId,
-			function(wiseML) {
-
-				self.setFlashSelectNodesButtonDisabled(false);
-
-				var selectionDialog = new WiseGuiNodeSelectionDialog(
-						self.testbedId,
-						self.experimentId,
-						'Flash Nodes',
-						'Please select the nodes you want to flash.'
-				);
-
-				selectionDialog.show(function(selectedNodeUrns) { self.updateFlashSelectNodeUrns(selectedNodeUrns); });
-
-			}, function(jqXHR, textStatus, errorThrown) {
-				self.setFlashSelectNodesButtonDisabled(false);
-				self.showAjaxError(jqXHR, textStatus, errorThrown);
-			}
-	);
-};
-
-WiseGuiExperimentationView.prototype.updateFlashSelectNodeUrns = function(selectedNodeUrns) {
-	this.flashSelectedNodeUrns = selectedNodeUrns;
-	if (selectedNodeUrns.length > 0) {
-		this.setFlashButtonDisabled(false);
-	}
-	var selectNodeUrnsDiv = this.view.find('#'+this.flashDivId+' .selectedNodeUrnsDiv').first();
-	selectNodeUrnsDiv.empty();
-	selectNodeUrnsDiv.append(selectedNodeUrns.join(","));
-};
-
-WiseGuiExperimentationView.prototype.setFlashSelectNodesButtonDisabled = function(disabled) {
-	this.view.find('#'+this.flashDivId + ' button.selectNodeUrns').first().attr('disabled', disabled);
-};
-
 WiseGuiExperimentationView.prototype.setFlashButtonDisabled = function(disabled) {
 	this.view.find('#'+this.flashDivId + ' button.flashNodeUrns').first().attr('disabled', disabled);
 };
@@ -1453,14 +1438,18 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 	Wisebed.experiments.flashNodes(
 			this.testbedId,
 			this.experimentId,
-			this.flashSelectedNodeUrns,
+			this.getFlashFormData(),
 			function(result) {
 				self.setFlashButtonDisabled(false);
 				WiseGui.showInfoAlert(JSON.stringify(result, null, '  '));
+				// TODO show warning, success or error depending on the number of failed flash operations
+			},
+			function(progress) {
+				WiseGui.showInfoAlert(JSON.stringify(progress, null, '  '));
 			},
 			function(jqXHR, textStatus, errorThrown) {
 				self.setResetButtonDisabled(false);
-				alert('TODO handle error in WiseGuiExperimentationView');
+				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
 			}
 	);
 };

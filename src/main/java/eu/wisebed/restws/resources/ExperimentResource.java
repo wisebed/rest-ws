@@ -247,12 +247,21 @@ public class ExperimentResource {
 		LinkedList<Integer> programIndices = new LinkedList<Integer>();
 
 		for (FlashTask task : flashData.flashTasks) {
+
 			// First, add the program to the list of programs
+
 			Program program = new Program();
 			program.setProgram(extractByteArrayFromDataURL(task.imageBase64));
+
 			ProgramMetaData metaData = new ProgramMetaData();
+			metaData.setName("");
+			metaData.setOther("");
+			metaData.setPlatform("");
+			metaData.setVersion("");
+
 			program.setMetaData(metaData);
 			programs.addLast(program);
+
 			int programIndex = programs.size() - 1;
 
 			// Then add the node URNs and the program index
@@ -328,7 +337,7 @@ public class ExperimentResource {
 	 *
 	 * @return the current state of the flash operation
 	 */
-	@POST
+	@GET
 	@Produces({MediaType.APPLICATION_JSON})
 	@Path("{experimentUrlBase64}/flash/{requestIdBase64}")
 	public Response flashProgramsStatus(@PathParam("experimentUrlBase64") final String experimentUrlBase64,

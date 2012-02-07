@@ -75,13 +75,6 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 
 		this.connection = connection;
 		getEventBus(experimentWsnInstanceEndpointUrl).register(this);
-
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();  // TODO implement
-		}
-		sendNotification(new DateTime(), "You're connected now!");
 	}
 
 	@Override
