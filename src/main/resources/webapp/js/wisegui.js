@@ -1105,26 +1105,25 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 
 	} else if (message.type == 'notification') {
 
-		alert(message);// TODO
-
 		var blockAlertMessage = $(
-				  '<h3>Backend notification from Testbed "' + this.testbedId + '"</h3>'
-				+ '<strong>' + new Date(message.timestamp).toISOString() + '</strong>'
-				+ '<pre>'+message.message+'</pre>'
-		);
+				  '<div>'
+				+ '	<strong>Backend notification from testbed "' + this.testbedId + '" at ' + message.timestamp + ':</strong><br/>'
+				+  	message.message
+				+ '</div>');
 
-		var goToExperimentButton = $('<button class="btn primary">Go to experiment</button>');
-		var blockAlertActions = [goToExperimentButton];
+		if (getNavigationData().experimentId != this.experimentId) {
 
-		goToExperimentButton.bind('click', this, function(e, data) {
+			var goToExperimentButton = $('<button class="btn primary">Go to experiment</button>');
+			var blockAlertActions = [goToExperimentButton];
 
-		});
+			var self = this;
+			goToExperimentButton.bind('click', this, function(e, data) {
+				navigateTo(self.testbedId, self.experimentId);
+			});
 
-		WiseGui.showInfoBlockAlert(blockAlertMessage);
-		this.notificationsTextArea.append(
-				message.timestamp + " | " +
-				message.message   + '\n'
-		);
+		}
+
+		WiseGui.showInfoBlockAlert(blockAlertMessage, blockAlertActions || null);
 	}
 };
 
