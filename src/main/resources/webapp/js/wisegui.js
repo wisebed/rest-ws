@@ -877,7 +877,7 @@ WiseGuiNotificationsViewer.prototype.showBlockAlert = function(alert) {
 };
 
 WiseGuiNotificationsViewer.prototype.buildView = function() {
-	this.view = $('<div id="WiseGuiNotificationsDiv"></div>');
+	this.view = $('<div class="WiseGuiNotificationsContainer"></div>');
 };
 
 /**
@@ -1629,7 +1629,7 @@ function createNavigationContainer(navigationData) {
 
 	container.hide();
 
-	$('#WisebedContainer').append(container);
+	$('#WisebedContainer .WiseGuiNotificationsContainer').before(container);
 
 	var navigationViewer = new WiseGuiNavigationViewer(navigationData);
 	container.append(navigationViewer.view);
@@ -1656,7 +1656,7 @@ function createContentContainer(navigationData) {
 
 	container.hide();
 
-	$('#WisebedContainer').append(container);
+	$('#WisebedContainer .WiseGuiNotificationsContainer').after(container);
 
 	var createContentFunction = getCreateContentFunction(navigationData);
 	createContentFunction(navigationData, container);
