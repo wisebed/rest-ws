@@ -1309,48 +1309,43 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	var controlsTabsDiv = $(
 			  '<div id="'+this.tabsControlsDivId+'">'
 			+ '	<ul class="tabs">'
-			+ '		<li class="active"><a href="#'+this.sendDivId+'">Send Message</a></li>'
-			+ '		<li><a href="#'+this.flashDivId+'">Flash</a></li>'
+			+ '		<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
 			+ '		<li><a href="#'+this.resetDivId+'">Reset</a></li>'
+			+ '		<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
 			+ '		<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
 			+ '	</ul>'
 			+ '	<div class="tab-content">'
-			+ '		<div class="active tab-pane" id="'+this.sendDivId+'"></div>'
-			+ '		<div class="tab-pane" id="'+this.flashDivId+'">'
-			+ '			<div class="well" style="padding: 14px 19px;">' 
-			+ '				<form id="flashForm" name="flashForm">' 
-			+ '					<div class="row" style="border: 1px solid #dddddd;">'
-			+ '						<div class="span10">'
-			+ '							<button class="btn span1 addSet"> + </button>'
-			+ '							<button class="btn span1 removeSet"> - </button>'
-			+ '							<button class="btn span3 loadConfiguration">Load</button>'
-			+ '							<button class="btn span3 saveConfiguration">Save</button>'
-			+ '						</div>'
-			+ '						<div class="pull-right span5">'
-			+ '							<button class="btn primary flashNodes span3 offset3">Flash</button>'
-			+ '						</div>'
-			+ '					</div>'
-			+ '					<div class="row">'
-			+ '						<table class="zebra-striped">'
-			+ '							<thead>'
-			+ '								<tr>'
-			+ '									<th class="span1">Set</th>'
-			+ '									<th class="span4">Node URNs</th>'
-			+ '									<th class="span5">Image File</th>'
-			+ '									<th class="span6">Flashing Progress</th>'
-			+ '								</tr>'
-			+ '							</thead>'
-			+ '							<tbody>'
-			+ '								<tr>'
-			+ '									<td>1</td>'
-			+ '									<td><button class="btn span3 selectNodeUrns">Select</button></td>'
-			+ '									<td><input type="file" id="image" name="image"/></td>'
-			+ '									<td id="progressBarTd"></td>'
-			+ '								</tr>'
-			+ '							</tbody>'
-			+ '						</table>'
-			+ '					</div>'
-			+ '				</form>'
+			+ '		<div class="active tab-pane" id="'+this.flashDivId+'">'
+			+ '			<div class="row">'
+			+ '				<div class="span10">'
+			+ '					<button class="btn addSet span1"> + </button>'
+			+ '					<button class="btn removeSet span1"> - </button>'
+			+ '					<button class="btn loadConfiguration span2">Load</button>'
+			+ '					<button class="btn saveConfiguration span2">Save</button>'
+			+ '					<button class="btn primary flashNodes span3">Flash</button>'
+			+ '				</div>'
+			+ '			</div>'
+			+ '			<div class="row">'
+		  	+ '				<div class="span16">'
+			+ '					<table class="zebra-striped">'
+			+ '						<thead>'
+			+ '							<tr>'
+			+ '								<th class="span1">Set</th>'
+			+ '								<th class="span4">Node URNs</th>'
+			+ '								<th class="span5">Image File</th>'
+			+ '								<th class="span6">Flashing Progress</th>'
+			+ '							</tr>'
+			+ '						</thead>'
+			+ '						<tbody>'
+			+ '							<tr>'
+			+ '								<td>1</td>'
+			+ '								<td><button class="btn span3 selectNodeUrns">Select</button></td>'
+			+ '								<td><input type="file" id="image" name="image"/></td>'
+			+ '								<td id="progressBarTd"></td>'
+			+ '							</tr>'
+			+ '						</tbody>'
+			+ '					</table>'
+		  	+ '				</div>'
 			+ '			</div>'
 			+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.resetDivId+'">'
@@ -1359,6 +1354,9 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '				<h4>Selected Nodes:</h4> <div class="selectedNodeUrnsDiv" style="overflow:auto;"></div>'
 			+ '			</div>'
 			+ '		</div>'
+		 	+ '		<div class="tab-pane" id="'+this.sendDivId+'">'
+		  	+ '			<strong>TODO implement me!</strong>'
+		  	+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'">'
 			+ '			Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
 			+ '		</div>'
@@ -1367,21 +1365,35 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 
 	var self = this;
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.selectNodeUrns').first().bind(
-			'click', self, function(e) {e.data.showFlashNodeSelectionDialog()}
-	);
+	// bind actions for flash tab buttons
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.addSet').first().bind('click', self, function(e) {
+		alert('TODO addSet');
+	});
 
-	controlsTabsDiv.find('#'+this.flashDivId + ' button.flashNodeUrns').first().bind(
-			'click', self, function(e) {e.data.executeFlashNodes()}
-	);
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.removeSet').first().bind('click', self, function(e) {
+		alert('TODO removeSet');
+	});
 
-	controlsTabsDiv.find('#'+this.resetDivId + ' button.selectNodeUrns').first().bind(
-			'click', self, function(e) {e.data.showResetNodeSelectionDialog()}
-	);
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.loadConfiguration').first().bind('click', self, function(e) {
+		alert('TODO loadConfiguration');
+	});
 
-	controlsTabsDiv.find('#'+this.resetDivId + ' button.resetNodeUrns').first().bind(
-			'click', self, function(e) {e.data.executeResetNodes()}
-	);
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.saveConfiguration').first().bind('click', self, function(e) {
+		alert('TODO saveConfiguration');
+	});
+
+	controlsTabsDiv.find('#'+this.flashDivId + ' button.flashNodes').first().bind('click', self, function(e) {
+		alert('TODO flashNodes');
+	});
+
+	// bind actions for reset tab buttons
+	controlsTabsDiv.find('#'+this.resetDivId + ' button.selectNodeUrns').first().bind('click', self, function(e) {
+		e.data.showResetNodeSelectionDialog()
+	});
+
+	controlsTabsDiv.find('#'+this.resetDivId + ' button.resetNodeUrns').first().bind('click', self, function(e) {
+		e.data.executeResetNodes()
+	});
 
 	var controlsDiv = $('<div class="WiseGuiExperimentationViewControlsDiv"><h2>Controls</h2></div>');
 	controlsDiv.append(controlsTabsDiv);
