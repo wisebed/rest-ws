@@ -1,3 +1,16 @@
+
+Array.prototype.compareArrays = function(arr) {
+	if (this.length != arr.length) return false;
+	for (var i = 0; i < arr.length; i++) {
+		if (this[i].compareArrays) { //likely nested array
+			if (!this[i].compareArrays(arr[i])) return false;
+			else continue;
+		}
+		if (this[i] != arr[i]) return false;
+	}
+	return true;
+};
+
 var Wisebed = new function() {
 
 	this.reservations = new function() {
@@ -98,6 +111,23 @@ var Wisebed = new function() {
 
 		this.flashNodes = function(testbedId, experimentId, data, callbackDone, callbackProgress, callbackError) {
 
+			function getAllNodeUrnsFromRequestData(data) {
+
+				var allNodeUrns = [];
+
+				for (var i=0; i<data.configurations.length; i++) {
+					var configuration = data.configurations[i];
+					for (var j=0; j<configuration.nodeUrns.length; j++) {
+						allNodeUrns.push(configuration.nodeUrns[j]);
+					}
+				}
+
+				allNodeUrns.sort();
+				return allNodeUrns;
+			}
+
+			var allNodeUrns = getAllNodeUrnsFromRequestData(data);
+
 			var requestSuccessCallback = function(data, textStatus, jqXHR){
 
 				var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
@@ -105,9 +135,22 @@ var Wisebed = new function() {
 				var schedule = setInterval(function() {
 
 					var onProgressRequestSuccess = function(data) {
-						callbackProgress(data);
-						callbackDone(data);
-						clearInterval(schedule);
+
+						var completeNodeUrns = [];
+
+						$.each(data.operationStatus, function(nodeUrn, nodeStatus) {
+							if (nodeStatus.status != 'RUNNING') {
+								completeNodeUrns.push(nodeUrn);
+							}
+						});
+						completeNodeUrns.sort();
+
+						if (allNodeUrns.compareArrays(completeNodeUrns)) {
+							callbackDone(data.operationStatus);
+							clearInterval(schedule);
+						} else {
+							callbackProgress(data.operationStatus);
+						}
 					};
 
 					var onProgressRequestError = function(jqXHR, textStatus, errorThrown) {

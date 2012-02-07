@@ -356,27 +356,27 @@ public class ExperimentResource {
 			return Response.status(Status.NOT_FOUND).entity("No job with requestId " + requestId + " found!").build();
 		}
 
-		NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+		OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
 
-		return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+		return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 	}
 
-	private NodeUrnStatusMap buildNodeUrnStatusMap(final Map<String, JobNodeStatus> jobNodeStates) {
-		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
-		nodeUrnStatusMap.map = new HashMap<String, JobNodeStatus>();
+	private OperationStatusMap buildNodeUrnStatusMap(final Map<String, JobNodeStatus> jobNodeStates) {
+		OperationStatusMap operationStatusMap = new OperationStatusMap();
+		operationStatusMap.operationStatus = new HashMap<String, JobNodeStatus>();
 		for (Map.Entry<String, JobNodeStatus> entry : jobNodeStates.entrySet()) {
-			nodeUrnStatusMap.map.put(entry.getKey(), entry.getValue());
+			operationStatusMap.operationStatus.put(entry.getKey(), entry.getValue());
 		}
-		return nodeUrnStatusMap;
+		return operationStatusMap;
 	}
 
-	private NodeUrnStatusMap buildNodeUrnTimeoutMap(final NodeUrnList nodeUrns) {
-		NodeUrnStatusMap nodeUrnStatusMap = new NodeUrnStatusMap();
-		nodeUrnStatusMap.map = new HashMap<String, JobNodeStatus>();
+	private OperationStatusMap buildNodeUrnTimeoutMap(final NodeUrnList nodeUrns) {
+		OperationStatusMap operationStatusMap = new OperationStatusMap();
+		operationStatusMap.operationStatus = new HashMap<String, JobNodeStatus>();
 		for (String nodeUrn : nodeUrns.nodeUrns) {
-			nodeUrnStatusMap.map.put(nodeUrn, new JobNodeStatus(JobState.FAILED, -1, "Timeout"));
+			operationStatusMap.operationStatus.put(nodeUrn, new JobNodeStatus(JobState.FAILED, -1, "Timeout"));
 		}
-		return nodeUrnStatusMap;
+		return operationStatusMap;
 	}
 
 	@POST
@@ -406,15 +406,15 @@ public class ExperimentResource {
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof TimeoutException) {
 					log.warn("Resetting of (some of?) the nodes {} timed out!", nodeUrns.nodeUrns);
-					NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnTimeoutMap(nodeUrns);
-					return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+					OperationStatusMap operationStatusMap = buildNodeUrnTimeoutMap(nodeUrns);
+					return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 				} else {
 					throw propagate(e);
 				}
 			}
 
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -444,8 +444,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -475,8 +475,8 @@ public class ExperimentResource {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
 			Job job = wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -508,8 +508,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -539,8 +539,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -571,8 +571,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -604,8 +604,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(
@@ -638,8 +638,8 @@ public class ExperimentResource {
 					config.operationTimeoutMillis,
 					TimeUnit.MILLISECONDS
 			).get();
-			NodeUrnStatusMap nodeUrnStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
-			return Response.ok(JSONHelper.toJSON(nodeUrnStatusMap)).build();
+			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
 			return returnError(

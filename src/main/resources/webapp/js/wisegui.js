@@ -943,8 +943,9 @@ WiseGuiNotificationsViewer.prototype.showNotification = function(notification) {
 WiseGuiNotificationsViewer.prototype.showAlert = function(alert) {
 	var alertDiv = $('<div class="alert-message '+alert.severity+'">'
 			+ '<a class="close" href="#">&times;</a>'
-			+ '<p>'+alert.message+'</p>'
+			+ '<p/>'
 			+ '</div>');
+	alertDiv.find('p').append(alert.message);
 	this.view.append(alertDiv);
 	alertDiv.alert();
 };
@@ -1531,19 +1532,34 @@ WiseGuiExperimentationView.prototype.setFlashButtonDisabled = function(disabled)
 
 WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 
+	var flashFormData = this.getFlashFormData();
+
+	var allNodeUrns = [];
+	$.each(flashFormData.configurations, function(index, configuration) {
+		$.each(configuration.nodeUrns, function(index, nodeUrn) {
+			allNodeUrns.push(nodeUrn);
+		});
+	});
+
+	var progressViewer = new WiseGuiOperationProgressView(allNodeUrns);
+
 	this.setFlashButtonDisabled(true);
 	var self = this;
+	var progressViewerShown = false;
 	Wisebed.experiments.flashNodes(
 			this.testbedId,
 			this.experimentId,
-			this.getFlashFormData(),
+			flashFormData,
 			function(result) {
 				self.setFlashButtonDisabled(false);
-				WiseGui.showInfoAlert(JSON.stringify(result, null, '  '));
-				// TODO show warning, success or error depending on the number of failed flash operations
+				progressViewer.update(result);
 			},
 			function(progress) {
-				WiseGui.showInfoAlert(JSON.stringify(progress, null, '  '));
+				if (!progressViewerShown) {
+					WiseGui.showInfoAlert(progressViewer.view);
+					progressViewerShown = true;
+				}
+				progressViewer.update(progress);
 			},
 			function(jqXHR, textStatus, errorThrown) {
 				self.setResetButtonDisabled(false);
@@ -1615,6 +1631,50 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 				alert('TODO handle error in WiseGuiExperimentationView');
 			}
 	);
+};
+
+/**
+ * #################################################################
+ * WiseGuiOperationProgressView
+ * #################################################################
+ */
+
+var WiseGuiOperationProgressView = function(nodeUrns) {
+
+	this.view = $('<div class="WiseGuiOperationProgressView"/>');
+
+	this.contents = {};
+
+	for (var i=0; i<nodeUrns.length; i++) {
+
+		var row = $('<div class="row">'
+				+ '	<div class="span2 nodUrnDiv">'+nodeUrns[i]+'</div>'
+				+ '	<div class="span4 progressDiv"><progress value="0" min="0" max="100"/></div>'
+				+ '	<div class="span2 statusDiv"></div>'
+				+ '	<div class="span8 messageDiv"></div>'
+				+ '</div>');
+
+		this.contents[nodeUrns[i]] = {
+			progressBar : row.find('progress').first(),
+			statusDiv   : row.find('.statusDiv').first(),
+			messageDiv  : row.find('.messageDiv').first()
+		};
+
+		this.view.append(row);
+	}
+};
+
+WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
+
+	var self = this;
+	$.each(operationStatus, function(nodeUrn, nodeStatus) {
+		var content = self.contents[nodeUrn];
+		if (content) {
+			content.progressBar[0].value = nodeStatus.statusCode;
+			content.statusDiv.html(nodeStatus.status);
+			content.messageDiv.html(nodeStatus.message);
+		}
+	});
 };
 
 /**

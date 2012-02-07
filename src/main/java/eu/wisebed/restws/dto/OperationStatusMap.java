@@ -6,7 +6,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Map;
 
 @XmlRootElement
-public class NodeUrnStatusMap {
+public class OperationStatusMap {
 
-	public Map<String, JobNodeStatus> map;
+	public Map<String, JobNodeStatus> operationStatus;
+
 }
