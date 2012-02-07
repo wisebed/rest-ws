@@ -593,10 +593,10 @@ Table.prototype.generateTable = function (f) {
 			tr_thead.append(th_local);
 		}
 	);
+
 	/*
 	 * Prepare the data
 	 */
-
 	this.data = this.model;
 
 	// Will just be used in initial usage
@@ -639,7 +639,6 @@ Table.prototype.generateTable = function (f) {
 	/*
 	 * Generate the table body
 	 */
-	// Generate table body
 	var tbody = $('<tbody></tbody>');
 	if(this.rowProducer != null) {
 		var tmpData = [];
@@ -747,8 +746,6 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.showFilter = showFilter;
 	this.parent = parent;
 	this.generateTable(null);
-
-	this.predefinied_filter_functions = [];
 };
 
 
@@ -756,8 +753,11 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 
 	var that = this;
 
+	// The header
 	var header = ['Node URN','Type','Position','Sensors'];
 
+	// The row producer gived something like
+	// ["id", "type", "(x,y,z)", "a,b,c"]
 	var rowProducer = function (n) {
 		var cap = [];
 		for(j = 0; j < n.capability.length; j++) {
@@ -772,13 +772,15 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 		return data;
 	}
 
-	// (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox)
+	// Use the usual table
 	var t = new Table (this.wiseML.setup.node, header, rowProducer, null, null, this.showCheckboxes, this.showFilter);
 	this.table = t;
 
+	// This vars stores the predefined filters
 	var predefinied_filter_types = [];
 	var predefinied_filter_functions = [];
 
+	// Add type filters
 	$(this.wiseML.setup.node).each(
 		function() {
 			var t = this.nodeType;
@@ -792,16 +794,17 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 			}
 		}
 	);
-	this.parent.append(t.html);
 
-	// Some predefined filters
+	// Other filters can be added here
+
+	// Here the select will be generated
 	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;"></select>');
 	select.change(
-			function () {
-				var idx = parseInt($(this).val());
-				var fn = predefinied_filter_functions[idx];
-				that.table.setFilterFun(fn);
-			}
+		function () {
+			var idx = parseInt($(this).val());
+			var fn = predefinied_filter_functions[idx];
+			that.table.setFilterFun(fn);
+		}
 	);
 
 	var option = $('<option value=""></option>');
@@ -817,8 +820,7 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 
 	t.filter_input.css("width", "49%");
 	t.filter_input.after(select);
-
-	this.predefinied_filter_functions = predefinied_filter_functions;
+	this.parent.append(t.html);
 };
 
 WiseGuiNodeTable.prototype.getSelectedNodes = function () {
