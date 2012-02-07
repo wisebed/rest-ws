@@ -1355,7 +1355,19 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '			</div>'
 			+ '		</div>'
 		 	+ '		<div class="tab-pane" id="'+this.sendDivId+'">'
-		  	+ '			<strong>TODO implement me!</strong>'
+		  	+ '			<div class="row">'
+		  	+ '				<div class="span16">'
+		  	+ '					<p>Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).</p>'
+		  	+ '					<p>Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code></p>'
+		  	+ '				</div>'
+		  	+ '			</div>'
+		  	+ '			<div class="row">'
+		  	+ '				<div class="span16">'
+		  	+ '					<button class="btn selectNodeUrns span4">Select Nodes</button>'
+		  	+ '					<input type="text" class="sendMessageMessageInput span8"/>'
+		  	+ '					<button class="btn primary sendMessage span4">Send message</button><br/>'
+		  	+ '				</div>'
+		  	+ '			</div>'
 		  	+ '		</div>'
 			+ '		<div class="tab-pane" id="'+this.scriptingDivId+'">'
 			+ '			Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
@@ -1395,6 +1407,15 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		e.data.executeResetNodes()
 	});
 
+	// bind actions for send message tab buttons
+	controlsTabsDiv.find('#'+this.sendDivId + ' button.selectNodeUrns').first().bind('click', self, function(e) {
+		alert('TODO selectNodeUrns');
+	});
+
+	controlsTabsDiv.find('#'+this.sendDivId + ' button.sendMessage').first().bind('click', self, function(e) {
+		alert('TODO sendMessage');
+	});
+
 	var controlsDiv = $('<div class="WiseGuiExperimentationViewControlsDiv"><h2>Controls</h2></div>');
 	controlsDiv.append(controlsTabsDiv);
 
@@ -1403,19 +1424,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	outputsDiv.append(this.outputsTextArea);
 
 	this.view.append(outputsDiv, controlsDiv);
-
-	/*var sendMessagesDiv = $('<div id="'+sendMessagesDivId+'">'
-	 + '	<h3>Send Messages</h3>#'
-	 + '	Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).<br/>'
-	 + '	Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>'
-	 + '	<form>'
-	 + '		<fieldset>'
-	 + '			<select name="nodeUrn" id="nodeUrn" class="span4"></select>'
-	 + '			<input type="text" id="message"  name="message" value="" class="span8"/>'
-	 + '			<input type="submit" value="Send to Node" class="span4"/>'
-	 + '		</fieldset>'
-	 + '	</form>'
-	 + '</div>');*/
 };
 
 function loadTestbedDetailsContainer(navigationData, parentDiv) {
