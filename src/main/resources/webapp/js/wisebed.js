@@ -175,5 +175,18 @@ var Wisebed = new function() {
 				}
 			}
 		});
-	}
+	};
+
+	this.login = function(testbedId, credentials, callbackDone, callbackError) {
+		$.ajax({
+			url			: "/rest/2.3/" + testbedId + "/login",
+			type		: "POST",
+			data		: JSON.stringify(credentials, null, '  '),
+			contentType	: "application/json; charset=utf-8",
+			dataType	: "json",
+			error		: callbackError,
+			success		: callbackDone
+		});
+	};
+
 };
