@@ -33,7 +33,8 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	private Connection connection;
 
 	@Inject
-	public WsnWebSocket(final WsnProxyManagerService wsnProxyManagerService, @Assisted final String experimentWsnInstanceEndpointUrl) {
+	public WsnWebSocket(final WsnProxyManagerService wsnProxyManagerService,
+						@Assisted final String experimentWsnInstanceEndpointUrl) {
 		this.wsnProxyManagerService = wsnProxyManagerService;
 		this.experimentWsnInstanceEndpointUrl = experimentWsnInstanceEndpointUrl;
 	}
@@ -42,11 +43,10 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	public void onMessage(final String data) {
 		try {
 			WebSocketDownstreamMessage message = JSONHelper.fromJSON(data, WebSocketDownstreamMessage.class);
-			DownstreamMessageEvent downstreamMessageEvent = new DownstreamMessageEvent(
-					new DateTime(),
-					message.targetNodeUrn,
-					Base64.decode(message.payloadBase64)
-			);
+			byte[] decodedPayload = Base64.decode(message.payloadBase64);
+			DownstreamMessageEvent downstreamMessageEvent =
+					new DownstreamMessageEvent(new DateTime(), message.targetNodeUrn, decodedPayload);
+			log.debug("Sending message downstream to \"{}\", message: {}", message.targetNodeUrn, decodedPayload);
 			wsnProxyManagerService.getEventBus(experimentWsnInstanceEndpointUrl).post(downstreamMessageEvent);
 		} catch (Exception e) {
 			sendNotification(

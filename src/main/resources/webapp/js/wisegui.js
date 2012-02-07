@@ -1322,6 +1322,17 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 
 };
 
+WiseGuiExperimentationView.prototype.send = function(targetNodeUrns, payloadBase64) {
+
+	for (var i=0; i<targetNodeUrns.length; i++) {
+		var message = {
+			targetNodeUrn : targetNodeUrns[i],
+			payloadBase64 : payloadBase64
+		};
+		this.socket.send(JSON.stringify(message));
+	}
+};
+
 /**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.buildView = function() {
@@ -1391,7 +1402,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '				<div class="row">'
 		  	+ '					<div class="span16">'
 		  	+ '						<button class="btn selectNodeUrns span4">Select Nodes</button>'
-		  	+ '						<input type="text" class="sendMessageMessageInput span8"/>'
+		  	+ '						<input type="text" class="sendMessageInput span8"/>'
 		  	+ '						<button class="btn primary sendMessage span4">Send message</button><br/>'
 		  	+ '					</div>'
 		  	+ '				</div>'
@@ -1416,6 +1427,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.resetResetButton             = this.view.find('#'+this.resetDivId + ' button.resetNodeUrns').first();
 
 	this.sendNodeSelectionButton      = this.view.find('#'+this.sendDivId + ' button.selectNodeUrns').first();
+	this.sendSelectedNodeUrns         = [];
+	this.sendMessageInput             = this.view.find('#'+this.sendDivId + ' input.sendMessageInput').first();
 	this.sendSendButton               = this.view.find('#'+this.sendDivId + ' button.sendMessage').first();
 
 	var self = this;
@@ -1452,11 +1465,45 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 
 	// bind actions for send message tab buttons
 	this.sendNodeSelectionButton.bind('click', self, function(e) {
-		alert('TODO selectNodeUrns');
+		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
+				self.testbedId,
+				self.experimentId,
+				'Select Node URNs',
+				'Please select the nodes to which you want to send a message.'
+		);
+		nodeSelectionDialog.show(function(selectedNodeUrns){
+			self.sendSelectedNodeUrns = selectedNodeUrns;
+		});
 	});
 
 	this.sendSendButton.bind('click', self, function(e) {
-		alert('TODO sendMessage');
+
+		var messageToSend = self.sendMessageInput[0].value;
+		var splitMessage = messageToSend.split(",");
+		var messageBytes = [];
+
+		for (var i=0; i < splitMessage.length; i++) {
+
+			var radix = 10;
+
+			if (splitMessage[i].indexOf("0x") == 0) {
+
+				radix = 16;
+				splitMessage[i] = splitMessage[i].replace("0x","");
+
+			} else if (splitMessage[i].indexOf("0b") == 0) {
+
+				radix = 2;
+				splitMessage[i] = splitMessage[i].replace("0b","");
+
+			}
+
+			messageBytes[i] = parseInt(splitMessage[i], radix);
+		}
+
+		var payloadBase64 = base64_encode(messageBytes);
+
+		self.send(self.sendSelectedNodeUrns, payloadBase64);
 	});
 
 	this.addFlashConfiguration();
