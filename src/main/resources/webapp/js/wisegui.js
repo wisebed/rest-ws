@@ -694,9 +694,9 @@ Table.prototype.setFilterFun = function (fn) {
 		var d = this.data[i];
 		d.isVisible = true; // Reset
 
-		if(f != null && typeof(f) == "function") {
-			d.isVisible = d.isVisible && f.bind(d.data)(d.data);
-		} else if(f != null && typeof(f) == "string" && f.length > 0 && this.filter_checkbox.is(':checked')) {
+		if(fn != null && typeof(fn) == "function") {
+			d.isVisible = d.isVisible && fn.bind(d.data)(d.data);
+		} else if(fn != null && typeof(fn) == "string" && fn.length > 0 && this.filter_checkbox.is(':checked')) {
 			// Filter
 			var errorOccured = false;
 
@@ -726,16 +726,16 @@ Table.prototype.setFilterFun = function (fn) {
 				WiseGui.showErrorAlert("Filter expression invalid.");
 				return;
 			} else {
-				this.lastWorkingFilterExpr = f;
+				this.lastWorkingFilterExpr = fn;
 			}
 		}
 
 		// Simple filter
-		if(f != null && typeof(f) == "string" && f.length > 0 && !this.filter_checkbox.is(':checked')) {
+		if(fn != null && typeof(fn) == "string" && fn.length > 0 && !this.filter_checkbox.is(':checked')) {
 			var row = null;
 			if(this.rowProducer != null) {
 				var row = this.rowProducer(d.data);
-				if(implode(" ", row).toLowerCase().indexOf(f.toLowerCase()) < 0) {
+				if(implode(" ", row).toLowerCase().indexOf(fn.toLowerCase()) < 0) {
 					d.isVisible = false;
 				}
 			}
@@ -752,7 +752,7 @@ Table.prototype.setFilterFun = function (fn) {
 };
 
 Table.prototype.refresh = function (fn) {
-	this.input_checkbox_th.attr('checked', false);
+	//this.input_checkbox_th.attr('checked', false);
 };
 
 Table.prototype.setSelectFun = function (fn) {
