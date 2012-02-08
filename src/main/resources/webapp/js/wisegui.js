@@ -455,7 +455,16 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
  * #################################################################
  * WiseGuiNodeTable
  * #################################################################
- * 
+ */
+
+var TableElem = function (data) {
+	this.name = "TableElem";
+	this.data = data;
+	this.row = null;
+	this.isVisible = true;
+}
+
+/** 
  * Model: 			Object[]
  * headers: 		String[]
  * rowProducer:		fun(obj) -> String[]
@@ -465,6 +474,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
  * showFiterBox:	true | false
  */
 var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox) {
+	this.name = "Table";
 	this.model = model;
 	this.headers = headers;
 	this.rowProducer = rowProducer;
@@ -475,7 +485,10 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 	this.html = $("<div></div>");
 	this.table = null;
 	this.filter = null;
-	this.data = null;
+	this.data = [];
+	
+	this.dataArray = [];
+	
 	this.filter_input = null;
 	this.checkboxes = [];
 	if(showFiterBox) {
@@ -484,12 +497,12 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 		this.filter_checkbox = null;
 		this.generateFilter();
 	}
-	this.generateTable(preFilterFun);
+	this.generateTable();
+	// TODO: preFilterFun
 	return this;
 };
 
 Table.prototype.generateFilter = function () {
-
 	var that = this;
 
 	// Filter
@@ -507,7 +520,7 @@ Table.prototype.generateFilter = function () {
 	// Key up event if enter is pressed
 	filter_input.keyup(function(e) {
 		if ((e.keyCode || e.which) == 13) {
-			var filter_fun = that.generateTable.bind(that);
+			var filter_fun = that.setFilterFun.bind(that);
 			var val = filter_input.val();
 			filter_fun(val);
 		}
@@ -548,15 +561,17 @@ Table.prototype.generateFilter = function () {
 	this.html.append(this.filter);
 };
 
-Table.prototype.generateTable = function (f) {
+Table.prototype.generateTable = function () {
 	var that = this;
+	
+	// Prepare the TableElems
+	$(this.model).each(
+		function() {
+			that.data.push(new TableElem(this));
+		}	
+	);
 
-	// Reset the table
-	if(this.table != null) {
-		this.table.remove();
-	}
-
-	this.table = $('<table class="bordered-table zebra-striped"></table>');
+	this.table = $('<table class="bordered-table"></table>');
 
 	/*
 	 * Generate table header
@@ -596,98 +611,50 @@ Table.prototype.generateTable = function (f) {
 	);
 
 	/*
-	 * Prepare the data
-	 */
-	this.data = this.model;
-
-	// Will just be used in initial usage
-	if(f != null && typeof(f) == "function") {
-		this.data = $(this.data).filter(f);
-	} else if(f != null && typeof(f) == "string" && f.length > 0 && this.filter_checkbox.is(':checked')) {
-		// Filter
-		var errorOccured = false;
-
-		var fil = function(index) {
-			e = this;
-			ret = true;
-			try {
-				ret = eval(f);
-			} catch (ex) {
-				errorOccured = true;
-				ret = null;
-			}
-
-			if(typeof(ret) != "boolean") {
-				if(that.lastWorkingFilterExpr != null) {
-					ret = eval(that.lastWorkingFilterExpr);
-				} else {
-					return true;
-				}
-			}
-
-			return ret;
-		};
-
-		this.data = $(this.data).filter(fil);
-		if(errorOccured) {
-			WiseGui.showErrorAlert("Filter expression invalid.");
-			return;
-		} else {
-			this.lastWorkingFilterExpr = f;
-		}
-	}
-
-	/*
 	 * Generate the table body
 	 */
 	var tbody = $('<tbody></tbody>');
 	if(this.rowProducer != null) {
-		var tmpData = [];
-		var index = 0;
-		$.each(this.data,
-			function() {
+		//var tmpData = [];
 
-				var row = null;
-				if(that.rowProducer != null) {
-					row = that.rowProducer.bind(this)(this);
-				}
+		for ( var i = 0; i < this.data.length; i++) {
 
-				// Simple filter
-				if(f != null && typeof(f) == "string" && f.length > 0 && !that.filter_checkbox.is(':checked')) {
-					if(implode(" ", row).toLowerCase().indexOf(f.toLowerCase()) < 0) {
-						return;
-					}
-				}
-
-				var tr = $("<tr></tr>");
-
-				if(that.showCheckBoxes) {
-					var checkbox = $('<input type="checkbox"/>');
-					checkbox.attr("name", index++);
-
-					if(that.preSelectFun != null) {
-						var isCheckboxSelected = that.preSelectFun.bind(this)(this);
-						checkbox.attr('checked', isCheckboxSelected);
-					}
-
-					that.checkboxes.push(checkbox);
-					var td_checkbox = $('<td></td>');
-					td_checkbox.append(checkbox);
-					tr.append(td_checkbox);
-				}
-
-				for(i = 0; i<row.length; i++) {
-					var td = $('<td></td>');
-					td.append(row[i]);
-					tr.append(td);
-				}
-				tbody.append(tr);
-				tmpData.push(this);
+			var data = this.data[i].data;
+			
+			var row = null;
+			if(this.rowProducer != null) {
+				row = this.rowProducer.bind(data)(data);
 			}
-		);
-		this.data = tmpData;
-	}
 
+			var tr = $("<tr></tr>");
+
+			if(this.showCheckBoxes) {
+				var checkbox = $('<input type="checkbox"/>');
+				checkbox.attr("name", i);
+
+				if(this.preSelectFun != null) {
+					var isCheckboxSelected = this.preSelectFun.bind(data)(data);
+					checkbox.attr('checked', isCheckboxSelected);
+				}
+				
+				// TODO: Still Needed?
+				this.checkboxes.push(checkbox);
+				var td_checkbox = $('<td></td>');
+				td_checkbox.append(checkbox);
+				tr.append(td_checkbox);
+			}
+
+			for(var j = 0; j<row.length; j++) {
+				var td = $('<td></td>');
+				td.append(row[j]);
+				tr.append(td);
+			}
+			this.data[i].row = tr;
+			tbody.append(tr);
+			//tmpData.push(this);
+		}
+	}
+	
 	this.table.append(thead);
 	this.table.append(tbody);
 	this.html.append(this.table);
@@ -717,14 +684,79 @@ Table.prototype.getSelectedRows = function () {
 	return selected;
 };
 
-Table.prototype.setFilterFun = function (fn) {
-	this.preFilterFun = fn;
-	this.generateTable(fn);
+Table.prototype.setFilterFun = function (f) {
+	
+	this.preFilterFun = f;
+	
+	for ( var i = 0; i < this.data.length; i++) {
+		var d = this.data[i];
+		d.isVisible = true; // Reset
+		
+		if(f != null && typeof(f) == "function") {
+			d.isVisible = d.isVisible && f.bind(d.data)(d.data);
+		} else if(f != null && typeof(f) == "string" && f.length > 0 && this.filter_checkbox.is(':checked')) {
+			// Filter
+			var errorOccured = false;
+
+			var fil = function(e) {
+				ret = true;
+				try {
+					ret = eval(f);
+				} catch (ex) {
+					errorOccured = true;
+					ret = null;
+				}
+
+				if(typeof(ret) != "boolean") {
+					if(that.lastWorkingFilterExpr != null) {
+						ret = eval(that.lastWorkingFilterExpr);
+					} else {
+						return true;
+					}
+				} else {
+					return ret;
+				}
+			};
+
+			d.isVisible = d.isVisible && fil(d.data);  
+			
+			if(errorOccured) {
+				WiseGui.showErrorAlert("Filter expression invalid.");
+				return;
+			} else {
+				this.lastWorkingFilterExpr = f;
+			}
+		}
+
+		// Simple filter
+		if(f != null && typeof(f) == "string" && f.length > 0 && !this.filter_checkbox.is(':checked')) {
+			var row = null;
+			if(this.rowProducer != null) {
+				var row = this.rowProducer(d.data);
+				if(implode(" ", row).toLowerCase().indexOf(f.toLowerCase()) < 0) {
+					d.isVisible = false;
+				}
+			}
+		}
+	}
+	
+	this.refresh();
+};
+
+Table.prototype.refresh = function (fn) {
+	for ( var i = 0; i < this.data.length; i++) {
+		var d = this.data[i];
+		if(d.isVisible) {
+			d.row.show();
+		} else {
+			d.row.hide();
+		}
+	}
 };
 
 Table.prototype.setSelectFun = function (fn) {
 	this.preSelectFun = fn;
-	this.generateTable();
+	//this.generateTable();
 };
 
 Table.prototype.getFilterFun = function () {
@@ -733,7 +765,7 @@ Table.prototype.getFilterFun = function () {
 
 Table.prototype.getSelectFun = function () {
 	return this.preSelectFun;
-}v
+};
 
 /**
  * #################################################################
@@ -746,10 +778,10 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.showCheckboxes = showCheckboxes;
 	this.showFilter = showFilter;
 	this.parent = parent;
-	this.generateTable(null);
+	this.generateTable();
 };
 
-WiseGuiNodeTable.prototype.generateTable = function (f) {
+WiseGuiNodeTable.prototype.generateTable = function () {
 
 	var that = this;
 
@@ -787,13 +819,13 @@ WiseGuiNodeTable.prototype.generateTable = function (f) {
 			var text = "All nodes of type " + t;
 			if($.inArray(text, predefinied_filter_types) < 0) {
 				predefinied_filter_types.push(text);
-				var fn = function(index) {
-					return this.nodeType == t;
+				var fn = function(e) {
+					return e.nodeType == t;
 				}
 				predefinied_filter_functions.push(fn);
 			}
 		}
-	);
+	);this
 
 	// Other filters can be added here
 
