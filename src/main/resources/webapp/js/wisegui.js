@@ -624,7 +624,7 @@ Table.prototype.generateTable = function () {
 	 * Generate the table body
 	 */
 	var tbody = $('<tbody></tbody>');
-	
+
 	if(this.rowProducer != null) {
 		for ( var i = 0; i < this.data.length; i++) {
 
@@ -748,15 +748,13 @@ Table.prototype.setFilterFun = function (fn) {
 		}
 	}
 
-	this.refresh();
-};
-
-Table.prototype.refresh = function (fn) {
-	//this.input_checkbox_th.attr('checked', false);
+	if(this.showCheckBoxes) {
+		this.input_checkbox_th.attr('checked', false);
+	}
 };
 
 Table.prototype.setSelectFun = function (fn) {
-	
+
 	this.preSelectFun = fn;
 
 	for ( var i = 0; i < this.data.length; i++) {
