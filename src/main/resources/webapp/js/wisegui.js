@@ -311,7 +311,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 	var that = this;
 
-	var dialogHeader = $('<div class="modal-header"><h3>Make a reservations for Testbed ' + this.testbedId + '</h3></div>');
+	var dialogHeader = $('<div class="modal-header"><h3>Make a reservation for Testbed ' + this.testbedId + '</h3></div>');
 
 	// Create the inputs
 	var input_date_start = $('<input type="text"   id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
@@ -352,11 +352,56 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 	var okButton = $('<a class="btn primary">Reserve</a>');
 	okButton.bind('click', this, function(e) {
-		alert(	'From (' + input_date_start.val() + ',' + input_time_start.val() + ')\n'
-				+ 'To (' + input_date_end.val() + ',' + input_time_end.val() + ')\n'
-				+ 'Description: ' + input_desciption.val() + '\n'
-				+ 'Nodes: ' + that.table.getSelectedNodes());
-		e.data.hide();
+
+		var dateStart = explode(".", input_date_start.val());
+		var dateEnd = explode(".", input_date_end.val());
+
+		var timeStart = explode(":", input_time_start.val());
+		var timeEnd = explode(":", input_time_end.val());
+
+		var nodes = that.table.getSelectedNodes();
+
+		// TODO: Highlight the incorrect INPUTS
+		if(dateStart.length != 3) {
+			alert("Start date incoreect.");
+			return;
+		} else if (dateEnd.length != 3) {
+			alert("End date incoreect.");
+			return;
+		} else if (timeStart.length != 2) {
+			alert("Start time incoreect.");
+			return;
+		} else if (timeEnd.length != 2){
+			alert("End time incoreect.");
+			return;
+		} else if(to <= from) {
+			alert("End date must after the start date.");
+			return;
+		} else if(nodes.length <= 0) {
+			alert("You must select at least one node");
+			return;
+		}
+
+		var from = new Date(dateStart[2], dateStart[1], dateStart[0], timeStart[0], timeStart[1], 0);
+		var to = new Date(dateEnd[2], dateEnd[1], dateEnd[0], timeEnd[0], timeEnd[1], 0);
+
+		var callbackError = function(jqXHR, textStatus, errorThrown) {
+			alert("Reservation failed.");
+		};
+
+		var callbackDone = function() {
+			alert("Reservation successful.");
+			that.hide();
+		};
+
+		Wisebed.reservations.make(
+			that.testbedId,
+			from,
+			to,
+			input_desciption.val(),
+			nodes,
+			callbackDone,
+			callbackError);
 	});
 
 	var cancelButton = $('<a class="btn secondary">Cancel</a>');
