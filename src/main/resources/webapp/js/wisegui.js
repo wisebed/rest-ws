@@ -462,9 +462,10 @@ var TableElem = function (data) {
 	this.data = data;
 	this.row = null;
 	this.isVisible = true;
+	this.checkbox = null;
 }
 
-/** 
+/**
  * Model: 			Object[]
  * headers: 		String[]
  * rowProducer:		fun(obj) -> String[]
@@ -486,11 +487,12 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 	this.table = null;
 	this.filter = null;
 	this.data = [];
-	
+
 	this.dataArray = [];
-	
+
 	this.filter_input = null;
-	this.checkboxes = [];
+	this.input_checkbox_th = null;
+
 	if(showFiterBox) {
 		this.lastWorkingFilterExpr = null;
 		this.helpTooltipIsVisable = false;
@@ -498,7 +500,15 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 		this.generateFilter();
 	}
 	this.generateTable();
-	// TODO: preFilterFun
+
+	if(this.preFilterFun) {
+		this.setFilterFun(this.preFilterFun);
+	}
+
+	if(this.preSelectFun) {
+		this.setSelectFun(this.preSelectFun);
+	}
+
 	return this;
 };
 
@@ -563,12 +573,12 @@ Table.prototype.generateFilter = function () {
 
 Table.prototype.generateTable = function () {
 	var that = this;
-	
+
 	// Prepare the TableElems
 	$(this.model).each(
 		function() {
 			that.data.push(new TableElem(this));
-		}	
+		}
 	);
 
 	this.table = $('<table class="bordered-table"></table>');
@@ -592,13 +602,15 @@ Table.prototype.generateTable = function () {
 		input_checkbox_th.click(function() {
 			var checked = $(this).is(':checked');
 			if(that.table != null) {
-				var inputs = that.table.find("input"); // TODO: just checkbox!
+				// .find("input")
+				var inputs = that.table.find('tr:visible').find('input:checkbox');
 				inputs.each(function() {
 					$(this).attr('checked', checked);
 				});
 			}
 		});
 		th_checkbox.append(input_checkbox_th);
+		this.input_checkbox_th = input_checkbox_th;
 		tr_thead.append(th_checkbox);
 	}
 
@@ -620,7 +632,7 @@ Table.prototype.generateTable = function () {
 		for ( var i = 0; i < this.data.length; i++) {
 
 			var data = this.data[i].data;
-			
+
 			var row = null;
 			if(this.rowProducer != null) {
 				row = this.rowProducer.bind(data)(data);
@@ -632,13 +644,7 @@ Table.prototype.generateTable = function () {
 				var checkbox = $('<input type="checkbox"/>');
 				checkbox.attr("name", i);
 
-				if(this.preSelectFun != null) {
-					var isCheckboxSelected = this.preSelectFun.bind(data)(data);
-					checkbox.attr('checked', isCheckboxSelected);
-				}
-				
-				// TODO: Still Needed?
-				this.checkboxes.push(checkbox);
+				data.checkbox = checkbox;
 				var td_checkbox = $('<td></td>');
 				td_checkbox.append(checkbox);
 				tr.append(td_checkbox);
@@ -654,7 +660,7 @@ Table.prototype.generateTable = function () {
 			//tmpData.push(this);
 		}
 	}
-	
+
 	this.table.append(thead);
 	this.table.append(tbody);
 	this.html.append(this.table);
@@ -677,7 +683,7 @@ Table.prototype.getSelectedRows = function () {
 			// Ignore the checkbox from the header, which doesn't have any name
 			if(typeof(name) != "undefined") {
 				var index = parseInt(name);
-				selected.push(that.data[index]);
+				selected.push(that.data[index].data);
 			}
 		});
 	}
@@ -685,13 +691,13 @@ Table.prototype.getSelectedRows = function () {
 };
 
 Table.prototype.setFilterFun = function (f) {
-	
+
 	this.preFilterFun = f;
-	
+
 	for ( var i = 0; i < this.data.length; i++) {
 		var d = this.data[i];
 		d.isVisible = true; // Reset
-		
+
 		if(f != null && typeof(f) == "function") {
 			d.isVisible = d.isVisible && f.bind(d.data)(d.data);
 		} else if(f != null && typeof(f) == "string" && f.length > 0 && this.filter_checkbox.is(':checked')) {
@@ -718,8 +724,8 @@ Table.prototype.setFilterFun = function (f) {
 				}
 			};
 
-			d.isVisible = d.isVisible && fil(d.data);  
-			
+			d.isVisible = d.isVisible && fil(d.data);
+
 			if(errorOccured) {
 				WiseGui.showErrorAlert("Filter expression invalid.");
 				return;
@@ -738,25 +744,33 @@ Table.prototype.setFilterFun = function (f) {
 				}
 			}
 		}
-	}
-	
-	this.refresh();
-};
 
-Table.prototype.refresh = function (fn) {
-	for ( var i = 0; i < this.data.length; i++) {
-		var d = this.data[i];
 		if(d.isVisible) {
 			d.row.show();
 		} else {
 			d.row.hide();
 		}
 	}
+
+	this.refresh();
+};
+
+Table.prototype.refresh = function (fn) {
+	this.input_checkbox_th.attr('checked', false);
 };
 
 Table.prototype.setSelectFun = function (fn) {
+	for ( var i = 0; i < this.data.length; i++) {
+		var data = this.data[i].data;
+		var bool = false;
+		if(fn != null) {
+			bool = fn.bind(data)(data);
+		}
+		var checkbox = this.data[i].row.find('input:checkbox');
+		checkbox.attr('checked', bool);
+	}
+
 	this.preSelectFun = fn;
-	//this.generateTable();
 };
 
 Table.prototype.getFilterFun = function () {
