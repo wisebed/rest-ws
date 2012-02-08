@@ -97,7 +97,7 @@ public class RsResource {
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
-	@Produces({MediaType.TEXT_PLAIN})
+	@Produces({MediaType.APPLICATION_JSON})
 	public Response makeReservation(@PathParam("testbedId") final String testbedId,
 									PublicReservationData request) {
 
