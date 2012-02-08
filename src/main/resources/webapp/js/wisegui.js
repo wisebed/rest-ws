@@ -451,7 +451,11 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 };
 
 
-/*
+/**
+ * #################################################################
+ * WiseGuiNodeTable
+ * #################################################################
+ * 
  * Model: 			Object[]
  * headers: 		String[]
  * rowProducer:		fun(obj) -> String[]
@@ -460,9 +464,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
  * showCheckBoxes:	true | false
  * showFiterBox:	true | false
  */
-var tid = 0;
 var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox) {
-	this.name = "Table " + (tid++);
 	this.model = model;
 	this.headers = headers;
 	this.rowProducer = rowProducer;
@@ -483,9 +485,8 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 		this.generateFilter();
 	}
 	this.generateTable(preFilterFun);
-
 	return this;
-}
+};
 
 Table.prototype.generateFilter = function () {
 
@@ -545,7 +546,7 @@ Table.prototype.generateFilter = function () {
 	var pop = help_image.popover({placement:'left', animate:true, html: true, trigger: 'manual', content: helpText, title: function() {return "Help";}});
 	help_div.append(filter_input);
 	this.html.append(this.filter);
-}
+};
 
 Table.prototype.generateTable = function (f) {
 	var that = this;
@@ -696,7 +697,7 @@ Table.prototype.generateTable = function (f) {
 	} else {
 		this.table.tablesorter();
 	}
-}
+};
 
 Table.prototype.getSelectedRows = function () {
 
@@ -714,25 +715,25 @@ Table.prototype.getSelectedRows = function () {
 		});
 	}
 	return selected;
-}
+};
 
 Table.prototype.setFilterFun = function (fn) {
 	this.preFilterFun = fn;
 	this.generateTable(fn);
-}
+};
 
 Table.prototype.setSelectFun = function (fn) {
 	this.preSelectFun = fn;
 	this.generateTable();
-}
+};
 
 Table.prototype.getFilterFun = function () {
 	return this.preFilterFun;
-}
+};
 
 Table.prototype.getSelectFun = function () {
 	return this.preSelectFun;
-}
+}v
 
 /**
  * #################################################################
@@ -747,7 +748,6 @@ var WiseGuiNodeTable = function (wiseML, parent, showCheckboxes, showFilter) {
 	this.parent = parent;
 	this.generateTable(null);
 };
-
 
 WiseGuiNodeTable.prototype.generateTable = function (f) {
 
@@ -833,11 +833,11 @@ WiseGuiNodeTable.prototype.getSelectedNodes = function () {
 
 WiseGuiNodeTable.prototype.applyFilter = function (fn) {
 	this.table.setFilterFun(fn);
-}
+};
 
 WiseGuiNodeTable.prototype.applySelcected = function (fn) {
 	this.table.setSelectFun(fn);
-}
+};
 
 
 /**
