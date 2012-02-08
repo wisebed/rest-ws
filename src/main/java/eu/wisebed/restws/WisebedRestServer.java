@@ -1,9 +1,8 @@
 package eu.wisebed.restws;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import de.uniluebeck.itm.tr.util.Logging;
-import eu.wisebed.restws.proxy.WsnProxyManagerService;
+import java.util.logging.Handler;
+import java.util.logging.LogManager;
+
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -11,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import java.util.Enumeration;
-import java.util.logging.Filter;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import de.uniluebeck.itm.tr.util.Logging;
+import eu.wisebed.restws.proxy.WsnProxyManagerService;
 
 /**
  * This class must not be modified.
