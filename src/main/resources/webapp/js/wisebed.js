@@ -41,6 +41,27 @@ var Wisebed = new function() {
 			});
 		};
 
+		this.make = function(testbedId, from, to, userData, nodeURNs, callbackDone, callbackError) {
+
+			// Generate JSON
+			var content = {
+				"from" : from.toISOString(),
+				"nodeURNs" : nodeURNs,
+				"to" : to.toISOString(),
+				"userData" : userData
+			};
+
+			var queryUrl = "/rest/2.3/" + testbedId + "/reservations";
+			$.ajax({
+				type: "POST",
+				url: queryUrl,
+				success: callbackDone,
+				error: callbackError,
+				data: content,
+				dataType: "json"
+			});
+		};
+
 		this.equals = function(res1, res2) {
 
 			function subsetOf(set1, set2, compare) {
