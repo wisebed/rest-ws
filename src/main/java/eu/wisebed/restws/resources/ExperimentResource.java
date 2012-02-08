@@ -66,6 +66,7 @@ import eu.wisebed.restws.proxy.WsnProxyService;
 import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import eu.wisebed.restws.util.JSONHelper;
+import eu.wisebed.wiseml.Capability;
 import eu.wisebed.wiseml.Setup.Node;
 import eu.wisebed.wiseml.Wiseml;
 
@@ -117,7 +118,8 @@ public class ExperimentResource {
 	@GET
 	@Path("nodes")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response getNodes(@PathParam("testbedId") final String testbedId, @QueryParam("filter") final String filter) {
+	public Response getNodes(@PathParam("testbedId") final String testbedId, @QueryParam("filter") final String filter,
+			@QueryParam("capability") final String capability) {
 
 		try {
 			Wiseml wiseml = getWiseml(testbedId);
@@ -125,12 +127,25 @@ public class ExperimentResource {
 			NodeUrnList nodeList = new NodeUrnList();
 			nodeList.nodeUrns = new LinkedList<String>();
 
-			for (Node node : wiseml.getSetup().getNode()) {
-				String text = "" + node.getDescription() + " " + node.getId() + " " + node.getNodeType() + " " + node.getProgramDetails() + " "
-						+ node.getCapability();
+			// First add all
+			for (Node node : wiseml.getSetup().getNode())
+				nodeList.nodeUrns.add(node.getId());
 
-				if ((filter == null) || text.contains(filter))
-					nodeList.nodeUrns.add(node.getId());
+			// Then remove non-matching ones
+			for (Node node : wiseml.getSetup().getNode()) {
+				boolean remove = false;
+				String text = "" + node.getDescription() + " " + node.getId() + " " + node.getNodeType() + " " + node.getProgramDetails() + " "
+						+ toString(node.getCapability());
+
+				if (filter != null && !text.contains(filter))
+					remove = true;
+
+				if (capability != null)
+					if (!toString(node.getCapability()).contains(capability))
+						remove = true;
+
+				if (remove)
+					nodeList.nodeUrns.remove(node.getId());
 			}
 
 			String jsonString = JSONHelper.toJSON(nodeList);
@@ -140,6 +155,31 @@ public class ExperimentResource {
 		} catch (JAXBException e) {
 			return returnError("Unable to retrieve WiseML", e, Status.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	private String toString(List<Capability> capabilities) {
+		StringBuilder sb = new StringBuilder();
+		for (Capability c : capabilities)
+			sb.append(toString(c));
+		return sb.toString();
+
+	}
+
+	private String toString(Capability c) {
+		StringBuilder sb = new StringBuilder();
+		if (c.getName() != null)
+			sb.append(c.getName() + " ");
+
+		if (c.getDatatype() != null && c.getDatatype().value() != null)
+			sb.append(c.getDatatype().value() + " ");
+
+		if (c.getDefault() != null)
+			sb.append(c.getDefault() + " ");
+
+		if (c.getUnit() != null && c.getUnit().value() != null)
+			sb.append(c.getUnit().value() + " ");
+
+		return sb.toString();
 	}
 
 	private Wiseml getWiseml(String testbedId) throws JAXBException {
