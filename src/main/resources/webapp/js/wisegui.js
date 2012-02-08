@@ -1855,6 +1855,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'">WiseML (JSON)</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'">WiseML (XML)</a></li>'
+			+ '	<li><a href="#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+'">Map</a></li>'
 			+ '</ul>'
 			+ '<div class="tab-content">'
 			+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbedId+'"/>'
@@ -1862,6 +1863,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+'"/>'
 			+ '</div>');
 
 	parentDiv.append(tabs);
@@ -1871,6 +1873,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			null,
 			function(wiseML) {
 
+				// Show WiseML as JSON
 				var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId);
 				jsonTab.append($('<pre>'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
 
@@ -1879,6 +1882,10 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
+				
+				//Show google map
+				var mapTab = $('#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId);
+				var wiseMlParser = new WiseMLParser(wiseML, mapTab);
 			},
 			WiseGui.showAjaxError
 	);
@@ -1942,6 +1949,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			},
 			WiseGui.showAjaxError
 	);
+	
 }
 
 function buildTable(tableHead, tableRows) {
