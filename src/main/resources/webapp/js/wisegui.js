@@ -363,16 +363,16 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 		// TODO: Highlight the incorrect INPUTS
 		if(dateStart.length != 3) {
-			alert("Start date incoreect.");
+			alert("Start date incorect.");
 			return;
 		} else if (dateEnd.length != 3) {
-			alert("End date incoreect.");
+			alert("End date incorect.");
 			return;
 		} else if (timeStart.length != 2) {
-			alert("Start time incoreect.");
+			alert("Start time incorect.");
 			return;
 		} else if (timeEnd.length != 2){
-			alert("End time incoreect.");
+			alert("End time incorect.");
 			return;
 		} else if(to <= from) {
 			alert("End date must after the start date.");
