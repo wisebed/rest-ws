@@ -802,15 +802,25 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	// ["id", "type", "(x,y,z)", "a,b,c"]
 	var rowProducer = function (n) {
 		var cap = [];
-		for(j = 0; j < n.capability.length; j++) {
-			parts = explode(":", n.capability[j].name);
-			cap[j] = parts[parts.length-1];
+		if(n.capability != null) {
+			for(j = 0; j < n.capability.length; j++) {
+				parts = explode(":", n.capability[j].name);
+				cap[j] = parts[parts.length-1];
+			}
 		}
 		data = [];
 		data.push(n.id);
 		data.push(n.nodeType);
-		data.push('(' + n.position.x + ',' + n.position.y + ',' + n.position.z + ')');
-		data.push(implode(",", cap));
+		if(n.position != null) {
+			data.push('(' + n.position.x + ',' + n.position.y + ',' + n.position.z + ')');
+		} else {
+			data.push('null');
+		}
+		if(cap.length > 0) {
+			data.push(implode(",", cap));
+		} else {
+			data.push("null");
+		}
 		return data;
 	}
 
