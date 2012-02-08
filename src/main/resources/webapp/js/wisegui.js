@@ -283,6 +283,103 @@ WiseGuiLoginObserver.prototype.stopObserving = function() {
 	console.log('LoginObserver stopped observing');
 };
 
+
+/**
+ * #################################################################
+ * WiseGuiReservationDialog
+ * #################################################################
+ */
+
+var WiseGuiReservationDialog = function(testbedId) {
+	this.testbedId = testbedId;
+	this.table = null;
+	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide"></div>');
+	this.buildView();
+}
+
+WiseGuiReservationDialog.prototype.hide = function() {
+	this.view.hide();
+	this.view.remove();
+};
+
+WiseGuiReservationDialog.prototype.show = function() {
+	$(document.body).append(this.view);
+	this.view.show();
+};
+
+WiseGuiReservationDialog.prototype.buildView = function() {
+
+	var that = this;
+
+	var dialogHeader = $('<div class="modal-header"><h3>Reservations for Testbed ' + this.testbedId + '</h3></div>');
+
+	// Create the inputs
+	var input_date_start = $('<input type="text"   id="input_date_start_'+this.testbedId+'" style="width:67px"/>');
+	var input_time_start = $('<input type="text"   id="input_time_start_'+this.testbedId+'" style="width:35px"/>');
+	var input_date_end =   $('<input type="text"   id="input_date_end__'+this.testbedId+'" style="width:67px"/>');
+	var input_time_end =   $('<input type="text"   id="input_time_end_'+this.testbedId+'" style="width:35px"/>');
+	var input_desciption = $('<input type="text"   id="description_'+this.testbedId+'" style="width:280px"/>');
+	var input_reservate =  $('<input type="submit" id="reservate_'+this.testbedId+'" style="margin-left:10px;" value="Reservate"/>');
+
+	var p_nodes = $("<p></p>");
+
+	var showTable = function (wiseML) {
+		that.table = new WiseGuiNodeTable(wiseML, p_nodes, true, true);
+	}
+	//Wisebed.getWiseML("uzl", null, getWiseMLsuccess, getWiseMLerror);
+	//var wiseML = $.parseJSON(jqXHR.responseText);
+
+	Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable,
+			function(jqXHR, textStatus, errorThrown) {
+				console.log('TODO handle error in WiseGuiReservationDialog');
+			}
+	);
+
+	// Add the picker
+    input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
+    input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
+    input_time_start.timePicker({step: 5});
+    input_time_end.timePicker({step: 5});
+
+    input_reservate.bind('click', this, function(e) {
+		alert(	'From (' + input_date_start.val() + ',' + input_time_start.val() + ')\n'
+				+ 'To (' + input_date_end.val() + ',' + input_time_end.val() + ')\n'
+				+ 'Description: (' + input_desciption.val() + '\n'
+				+ 'Nodes: ' + that.table.getSelectedNodes());
+	});
+
+    var h4_old = $("<h4>Existing reservations</h4>");
+    var h4_new = $("<h4>Create a new reservation</h4>");
+    var h5_nodes = $("<h5>Select the nodes to reservate</h5>");
+
+    var span_start = $('<span>Start: </span>');
+    var span_end = $('<span style="margin-left:10px;">End: </span>');
+    var span_description = $('<span style="margin-left:10px;">Description: </span>');
+
+	var dialogBody = $('<div class="modal-body" style="	height:300px;overflow: auto;padding:5px"/></div>');
+	dialogBody.append(h4_old, h4_new);
+	dialogBody.append(span_start, input_date_start, input_time_start);
+	dialogBody.append(span_end, input_date_end, input_time_end);
+	dialogBody.append(span_description, input_desciption, input_reservate);
+	dialogBody.append(h5_nodes, p_nodes);
+
+	var okButton = $('<a class="btn primary">OK</a>');
+	okButton.bind('click', this, function(e) {
+		e.data.hide();
+	});
+
+	var dialogFooter = $('<div class="modal-footer"/>');
+	dialogFooter.append(okButton); // cancelButton
+	this.view.append(dialogHeader, dialogBody, dialogFooter);
+
+	//var cancelButton = $('<a class="btn secondary">Cancel</a>');
+	//cancelButton.bind('click', this, function(e) {
+	//	e.data.hide();
+	//});
+
+
+};
+
 /**
  * #################################################################
  * WiseGuiLoginDialog
@@ -802,15 +899,25 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	// ["id", "type", "(x,y,z)", "a,b,c"]
 	var rowProducer = function (n) {
 		var cap = [];
-		for(j = 0; j < n.capability.length; j++) {
-			parts = explode(":", n.capability[j].name);
-			cap[j] = parts[parts.length-1];
+		if(n.capability != null) {
+			for(j = 0; j < n.capability.length; j++) {
+				parts = explode(":", n.capability[j].name);
+				cap[j] = parts[parts.length-1];
+			}
 		}
 		data = [];
 		data.push(n.id);
 		data.push(n.nodeType);
-		data.push('(' + n.position.x + ',' + n.position.y + ',' + n.position.z + ')');
-		data.push(implode(",", cap));
+		if(n.position != null) {
+			data.push('(' + n.position.x + ',' + n.position.y + ',' + n.position.z + ')');
+		} else {
+			data.push('null');
+		}
+		if(cap.length > 0) {
+			data.push(implode(",", cap));
+		} else {
+			data.push("null");
+		}
 		return data;
 	}
 
@@ -840,7 +947,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	// Other filters can be added here
 
 	// Here the select will be generated
-	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;"></select>');
+	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;vertical-align:bottom;height:28px;"></select>');
 	select.change(
 		function () {
 			var idx = parseInt($(this).val());
@@ -1858,9 +1965,9 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			function(wiseML) {
 
 				var overviewTab = $('#WisebedTestbedDetailsOverview-'+navigationData.testbedId);
-				overviewTab.append('<div class="row">' 
-						+ '	<div class="span16">' + wiseML.setup.description + '</div>' 
-						+ '</div>' 
+				overviewTab.append('<div class="row">'
+						+ '	<div class="span16">' + wiseML.setup.description + '</div>'
+						+ '</div>'
 						+ '<div class="row">'
 						+ '	<div class="span16 WisebedTestbedDetailsOverviewMap"></div>'
 						+ '</div>');
@@ -1871,7 +1978,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
-				
+
 				//Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
 
@@ -1941,7 +2048,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			},
 			WiseGui.showAjaxError
 	);
-	
+
 }
 
 function buildTable(tableHead, tableRows) {
@@ -2002,7 +2109,9 @@ function getCreateContentFunction(navigationData) {
 }
 
 function showReservationsDialog(testbedId) {
-	alert('TODO reservation dialog for ' + testbedId);
+	// TODO: Make better
+	var d = new WiseGuiReservationDialog(testbedId);
+	d.show();
 }
 
 function getLoginDialog(testbedId) {

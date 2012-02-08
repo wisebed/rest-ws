@@ -12,4 +12,8 @@ public class Base64Helper {
 		return new String(Base64.encode(input));
 	}
 
+	public static String encode(byte[] input) {
+		return new String(Base64.encode(input));
+	}
+
 }

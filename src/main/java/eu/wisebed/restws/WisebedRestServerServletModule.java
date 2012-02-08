@@ -1,18 +1,21 @@
 package eu.wisebed.restws;
 
+import org.eclipse.jetty.servlet.DefaultServlet;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+
 import eu.wisebed.restws.resources.ExperimentResource;
+import eu.wisebed.restws.resources.RemoteExperimentConfigurationResource;
 import eu.wisebed.restws.resources.RootResource;
 import eu.wisebed.restws.resources.RsResource;
 import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.ws.WsnWebSocketFactory;
 import eu.wisebed.restws.ws.WsnWebSocketServlet;
-import org.eclipse.jetty.servlet.DefaultServlet;
 
 /**
  * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For
@@ -28,6 +31,7 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 		bind(SnaaResource.class);
 		bind(RsResource.class);
 		bind(ExperimentResource.class);
+		bind(RemoteExperimentConfigurationResource.class);
 
 		install(new FactoryModuleBuilder().build(WsnWebSocketFactory.class));
 
