@@ -1890,6 +1890,10 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				//Show google map
 				var mapTab = $('#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId);
 				var wiseMlParser = new WiseMLParser(wiseML, mapTab);
+
+				tabs.find('li a[href=#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+']').bind('change', function(e) {
+					google.maps.event.trigger(wiseMlParser.map, "resize");
+				});
 			},
 			WiseGui.showAjaxError
 	);
