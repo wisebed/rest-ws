@@ -458,7 +458,6 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
  */
 
 var TableElem = function (data) {
-	this.name = "TableElem";
 	this.data = data;
 	this.row = null;
 	this.isVisible = true;
@@ -475,7 +474,6 @@ var TableElem = function (data) {
  * showFiterBox:	true | false
  */
 var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox) {
-	this.name = "Table";
 	this.model = model;
 	this.headers = headers;
 	this.rowProducer = rowProducer;
@@ -626,9 +624,8 @@ Table.prototype.generateTable = function () {
 	 * Generate the table body
 	 */
 	var tbody = $('<tbody></tbody>');
+	
 	if(this.rowProducer != null) {
-		//var tmpData = [];
-
 		for ( var i = 0; i < this.data.length; i++) {
 
 			var data = this.data[i].data;
@@ -657,7 +654,6 @@ Table.prototype.generateTable = function () {
 			}
 			this.data[i].row = tr;
 			tbody.append(tr);
-			//tmpData.push(this);
 		}
 	}
 
@@ -690,9 +686,9 @@ Table.prototype.getSelectedRows = function () {
 	return selected;
 };
 
-Table.prototype.setFilterFun = function (f) {
+Table.prototype.setFilterFun = function (fn) {
 
-	this.preFilterFun = f;
+	this.preFilterFun = fn;
 
 	for ( var i = 0; i < this.data.length; i++) {
 		var d = this.data[i];
@@ -707,7 +703,7 @@ Table.prototype.setFilterFun = function (f) {
 			var fil = function(e) {
 				ret = true;
 				try {
-					ret = eval(f);
+					ret = eval(fn);
 				} catch (ex) {
 					errorOccured = true;
 					ret = null;
@@ -760,6 +756,9 @@ Table.prototype.refresh = function (fn) {
 };
 
 Table.prototype.setSelectFun = function (fn) {
+	
+	this.preSelectFun = fn;
+
 	for ( var i = 0; i < this.data.length; i++) {
 		var data = this.data[i].data;
 		var bool = false;
@@ -769,8 +768,6 @@ Table.prototype.setSelectFun = function (fn) {
 		var checkbox = this.data[i].row.find('input:checkbox');
 		checkbox.attr('checked', bool);
 	}
-
-	this.preSelectFun = fn;
 };
 
 Table.prototype.getFilterFun = function () {
