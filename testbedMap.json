@@ -5,11 +5,19 @@
 			"urnPrefixes":["urn:wisebed:uzl1:"],
 			"sessionManagementEndpointUrl":"http://wisebed.itm.uni-luebeck.de:8888/sessions"
 		},
+		
 		"tubs":{
 			"name":"University of Braunschweig, Germany (TUBS)",
 			"urnPrefixes":["urn:wisebed:tubs:"],
 			"sessionManagementEndpointUrl":"http://wbportal.ibr.cs.tu-bs.de:8080/sessions"
 		},
+		
+			"fhl":{
+			"name":"Lübeck University of Applied Sciences, Germany (FHL)",
+			"urnPrefixes":["urn:wisebed-cosa-testbed-fhl1:"],
+			"sessionManagementEndpointUrl":"http://cosa-testbed-fhl1.fh-luebeck.de:49021/sessions"
+		},
+
 		"local-mock":{
 			"name":"Localhost with mock devices",
 			"urnPrefixes":["urn:local:"],
