@@ -464,13 +464,25 @@ WiseGuiLoginDialog.prototype.updateLoginDataFromForm = function() {
 
 WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, username, password) {
 
+	var that = this;
 	var tr = $('<tr/>');
-
 	var i = this.loginFormRows.length;
 
 	var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
 	var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
+
+	inputUsername.keyup(function(e) {
+		if ((e.keyCode || e.which) == 13) {
+			that.startLogin();
+		}
+	});
+
+	inputPassword.keyup(function(e) {
+		if ((e.keyCode || e.which) == 13) {
+			that.startLogin();
+		}
+	});
 
 	this.loginFormRows[this.loginFormRows.length] = {
 		"tr" : tr,
@@ -496,6 +508,8 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 };
 
 WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
+
+	var that = this;
 
 	var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed ' + this.testbedId + '</h3></div>');
 
@@ -524,8 +538,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	});
 
 	okButton.bind('click', this, function(e) {
-		e.data.updateLoginDataFromForm();
-		e.data.doLogin();
+		that.startLogin();
 	});
 
 	var dialogFooter = $('<div class="modal-footer"/>');
@@ -539,6 +552,11 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
 	}
 };
+
+WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
+	this.updateLoginDataFromForm();
+	this.doLogin();
+}
 
 
 /**
