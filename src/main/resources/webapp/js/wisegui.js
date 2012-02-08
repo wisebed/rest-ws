@@ -200,13 +200,14 @@ var WiseGuiLoginObserver = function() {
 	this.isObserving = false;
 	this.loginData   = {};
 	this.schedules   = {};
-	this.interval    = 10 * 1000;
+	this.interval    = 10 * 60 * 1000;
 };
 
 WiseGuiLoginObserver.prototype.renewLogin = function(testbedId) {
 
 	console.log('WiseGuiLoginObserver trying to renew login for ' + testbedId);
 
+	var self = this;
 	Wisebed.login(
 			testbedId,
 			this.loginData[testbedId],
@@ -215,7 +216,7 @@ WiseGuiLoginObserver.prototype.renewLogin = function(testbedId) {
 			},
 			function(jqXHR, textStatus, errorThrown) {
 				console.log('WiseGuiLoginObserver failed renewing login for ' + testbedId);
-				this.stopObservationOf(testbedId);
+				self.stopObservationOf(testbedId);
 				WiseGui.showAjaxError();
 			}
 	);
@@ -1335,7 +1336,10 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 
 		var self = this;
 
-		this.socket = new WebSocket('ws://localhost:8880/ws/experiments/'+this.experimentId);
+		var hostname = document.location.hostname;
+		var port     = document.location.port;
+
+		this.socket = new WebSocket('ws://'+hostname+':'+port+'/ws/experiments/'+this.experimentId);
 		this.socket.onmessage = function(event) {self.onWebSocketMessageEvent(event)};
 		this.socket.onopen = function(event) {self.onWebSocketOpen(event)};
 		this.socket.onclose = function(event) {self.onWebSocketClose(event)};
@@ -1744,7 +1748,7 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 
 			}, function(jqXHR, textStatus, errorThrown) {
 				self.setResetSelectNodesButtonDisabled(false);
-				self.showAjaxError(jqXHR, textStatus, errorThrown);
+				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
 			}
 	);
 };
