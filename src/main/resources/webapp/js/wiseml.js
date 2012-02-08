@@ -56,7 +56,7 @@ WiseMLParser.prototype.convertIdToIp = function(id) {
 }
 
 WiseMLParser.prototype.buildView = function(parentDiv) {
-	this.view = $("<div style=\"width: 900px; height:1000px;\"/>");
+	this.view = $('<div class="span16" style="height:500px;"/>');
 	parentDiv.append(this.view);
 
 	this.initMap();

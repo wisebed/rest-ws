@@ -1347,24 +1347,6 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 	} else {
 		alert("Your browser does not support Web Sockets.");
 	}
-
-	/*function send(message) {
-		if (!window.WebSocket) { return; }
-		if (socket.readyState == WebSocket.OPEN) {
-			socket.send(message);
-		} else {
-			alert("The socket is not open.");
-		}
-	}
-
-	sendMessagesDiv.find('form').first().submit(function(event){
-		var message = {
-			targetNodeUrn : event.target.elements.nodeUrn.value,
-			payloadBase64 : btoa(event.target.elements.message.value)
-		};
-		socket.send(JSON.stringify(message));
-	});*/
-
 };
 
 WiseGuiExperimentationView.prototype.send = function(targetNodeUrns, payloadBase64) {
@@ -1854,20 +1836,18 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 	parentDiv.append($('<h1>Testbed Details '+navigationData.testbedId+'</h1>'));
 
 	var tabs = $('<ul class="tabs">'
-			+ '	<li class="active"><a href="#WisebedTestbedDetailsDescription-'+navigationData.testbedId+'">Description</a></li>'
+			+ '	<li class="active"><a href="#WisebedTestbedDetailsOverview-'+navigationData.testbedId+'">Description</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbedId+'">Nodes</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'">WiseML (JSON)</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'">WiseML (XML)</a></li>'
-			+ '	<li><a href="#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+'">Map</a></li>'
 			+ '</ul>'
 			+ '<div class="tab-content">'
-			+ '	<div class="tab-pane active" id="WisebedTestbedDetailsDescription-'+navigationData.testbedId+'"/>'
+			+ '	<div class="tab-pane active" id="WisebedTestbedDetailsOverview-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsNodes-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsReservations-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId+'"/>'
 			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId+'"/>'
-			+ '	<div class="tab-pane" id="WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+'"/>'
 			+ '</div>');
 
 	parentDiv.append(tabs);
@@ -1877,22 +1857,26 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			null,
 			function(wiseML) {
 
-				// Show WiseML as JSON
+				var overviewTab = $('#WisebedTestbedDetailsOverview-'+navigationData.testbedId);
+				overviewTab.append('<div class="row">' 
+						+ '	<div class="span16">' + wiseML.setup.description + '</div>' 
+						+ '</div>' 
+						+ '<div class="row">'
+						+ '	<div class="span16 WisebedTestbedDetailsOverviewMap"></div>'
+						+ '</div>');
+				var overviewTabMapRow = overviewTab.find('.WisebedTestbedDetailsOverviewMap');
+
 				var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId);
 				jsonTab.append($('<pre>'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
-
-				var descriptionTab = $('#WisebedTestbedDetailsDescription-'+navigationData.testbedId);
-				descriptionTab.append(wiseML.setup.description);
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
 				
 				//Show google map
-				var mapTab = $('#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId);
-				var wiseMlParser = new WiseMLParser(wiseML, mapTab);
+				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
 
-				tabs.find('li a[href=#WisebedTestbedDetailsWiseMLGoogleMap-'+navigationData.testbedId+']').bind('change', function(e) {
-					google.maps.event.trigger(wiseMlParser.map, "resize");
+				tabs.find('li a[href=#WisebedTestbedDetailsOverview-'+navigationData.testbedId+']').bind('change', function(e) {
+					google.maps.event.trigger(wiseMlParser.map, 'resize');
 				});
 			},
 			WiseGui.showAjaxError
