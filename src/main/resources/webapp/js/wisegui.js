@@ -314,11 +314,11 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	var dialogHeader = $('<div class="modal-header"><h3>Reservations for Testbed ' + this.testbedId + '</h3></div>');
 
 	// Create the inputs
-	var input_date_start = $('<input type="text"   id="input_date_start_'+this.testbedId+'" style="width:67px"/>');
-	var input_time_start = $('<input type="text"   id="input_time_start_'+this.testbedId+'" style="width:35px"/>');
-	var input_date_end =   $('<input type="text"   id="input_date_end__'+this.testbedId+'" style="width:67px"/>');
-	var input_time_end =   $('<input type="text"   id="input_time_end_'+this.testbedId+'" style="width:35px"/>');
-	var input_desciption = $('<input type="text"   id="description_'+this.testbedId+'" style="width:280px"/>');
+	var input_date_start = $('<input type="text"   id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
+	var input_time_start = $('<input type="text"   id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
+	var input_date_end =   $('<input type="text"   id="input_date_end__'+this.testbedId+'" style="width:75px"/>');
+	var input_time_end =   $('<input type="text"   id="input_time_end_'+this.testbedId+'" style="width:40px"/>');
+	var input_desciption = $('<input type="text"   id="description_'+this.testbedId+'" style="width:250px"/>');
 	var input_reservate =  $('<input type="submit" id="reservate_'+this.testbedId+'" style="margin-left:10px;" value="Reservate"/>');
 
 	var p_nodes = $("<p></p>");
