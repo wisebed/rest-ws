@@ -77,13 +77,13 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 					try {
 						entry.getWsnProxyService().stop().get();
 					} catch (Exception e) {
-						log.error("{}", e);
+						log.error(e.getMessage(), e);
 					}
 
 					try {
 						entry.getControllerProxyService().stop().get();
 					} catch (Exception e) {
-						log.error("{}", e);
+						log.error(e.getMessage(), e);
 					}
 
 					ExecutorUtils.shutdown(entry.getExecutorService(), 10, TimeUnit.SECONDS);
