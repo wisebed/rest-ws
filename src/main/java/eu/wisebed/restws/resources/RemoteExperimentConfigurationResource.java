@@ -58,7 +58,7 @@ public class RemoteExperimentConfigurationResource {
 				FlashTask flashTask = new FlashTask();
 
 				flashTask.nodeUrns = getNodeUrnList(new URL(url.toURL(), entry.nodeUrnsJsonFileUrl).toURI());
-				flashTask.imageBase64 = getBinaryProgramImage(new URL(url.toURL(), entry.binaryProgramUrl).toURI());
+				flashTask.imageBase64 = "data:application/octet-stream;base64," + getBinaryProgramImage(new URL(url.toURL(), entry.binaryProgramUrl).toURI());
 
 				flashProgramsRequest.flashTasks.add(flashTask);
 			}
