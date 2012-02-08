@@ -840,7 +840,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	// Other filters can be added here
 
 	// Here the select will be generated
-	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;"></select>');
+	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;vertical-align:bottom;height:28px;"></select>');
 	select.change(
 		function () {
 			var idx = parseInt($(this).val());
@@ -1858,9 +1858,9 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			function(wiseML) {
 
 				var overviewTab = $('#WisebedTestbedDetailsOverview-'+navigationData.testbedId);
-				overviewTab.append('<div class="row">' 
-						+ '	<div class="span16">' + wiseML.setup.description + '</div>' 
-						+ '</div>' 
+				overviewTab.append('<div class="row">'
+						+ '	<div class="span16">' + wiseML.setup.description + '</div>'
+						+ '</div>'
 						+ '<div class="row">'
 						+ '	<div class="span16 WisebedTestbedDetailsOverviewMap"></div>'
 						+ '</div>');
@@ -1871,7 +1871,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
-				
+
 				//Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
 
@@ -1941,7 +1941,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			},
 			WiseGui.showAjaxError
 	);
-	
+
 }
 
 function buildTable(tableHead, tableRows) {
