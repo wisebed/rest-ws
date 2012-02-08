@@ -46,7 +46,7 @@ public class JSONHelper {
 
 	public static <T> T fromJSON(String json, Class<T> type) throws Exception {
 		try {
-			return mapper.readValue(json, type);
+			return mapper.<T>readValue(json, type);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -54,10 +54,9 @@ public class JSONHelper {
 
 	public static <T> T fromJSON(String json, TypeReference<T> type) throws Exception {
 		try {
-			return mapper.readValue(json, type);
+			return mapper.<T>readValue(json, type);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
 	}
-
 }
