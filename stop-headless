@@ -1,0 +1,3 @@
+#!/bin/bash
+kill `cat rest-ws.pid`
+rm rest-ws.pid

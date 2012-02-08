@@ -6,4 +6,7 @@ then
 	mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt
 fi
 
-nohup java -Djava.endorsed.dirs=target/endorsed -Djava.net.preferIPv4Stack=true -Xmx1024m -cp target/classes:`cat classpath.txt` eu.wisebed.restws.WisebedRestServer --hostname `hostname -f` --logLevel DEBUG --port 8080 --testbedMap testbedMap.json 1> rest-ws.out 2> rest-ws.err &
+RWS_CP=target/classes:`cat classpath.txt`
+RWS_HOSTNAME=`hostname -f`
+nohup java -Djava.endorsed.dirs=target/endorsed -Djava.net.preferIPv4Stack=true -Xmx1024m -cp $RWS_CP eu.wisebed.restws.WisebedRestServer --hostname $RWS_HOSTNAME --logLevel DEBUG --port 8080 --testbedMap testbedMap.json 1> rest-ws.out 2> rest-ws.err &
+echo $! >> rest-ws.pid
