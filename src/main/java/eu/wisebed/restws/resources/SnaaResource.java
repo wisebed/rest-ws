@@ -112,23 +112,23 @@ public class SnaaResource {
 
 			List<NewCookie> cookies = new LinkedList<NewCookie>();
 
-			cookies.add(createCookie(testbedId, loginResult, ""));
+//			cookies.add(createCookie(testbedId, loginResult, ""));
 
 			 List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
 			 if (!requestHeaderHost.isEmpty())
 			 cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
 
-			for (String headername : new String[] { "Origin" /*, "Referer" */}) {
-				List<String> requestHeader = httpHeaders.getRequestHeader(headername);
-				if (!requestHeader.isEmpty()) {
-					try {
-						URI uri = new URI(requestHeader.get(0));
-						String tmp = uri.getHost() + ((uri.getPort() > 0) ? (":" + uri.getPort()) : "");
-						cookies.add(createCookie(testbedId, loginResult, tmp));
-					} catch (URISyntaxException e) {
-					}
-				}
-			}
+//			for (String headername : new String[] { "Origin" /*, "Referer" */}) {
+//				List<String> requestHeader = httpHeaders.getRequestHeader(headername);
+//				if (!requestHeader.isEmpty()) {
+//					try {
+//						URI uri = new URI(requestHeader.get(0));
+//						String tmp = uri.getHost() + ((uri.getPort() > 0) ? (":" + uri.getPort()) : "");
+//						cookies.add(createCookie(testbedId, loginResult, tmp));
+//					} catch (URISyntaxException e) {
+//					}
+//				}
+//			}
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(cookies.toArray(new NewCookie[cookies.size()])).build();
