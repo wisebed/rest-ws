@@ -28,7 +28,8 @@ var Wisebed = new function() {
 				success: callbackDone,
 				error: callbackError,
 				context: document.body,
-				dataType: "json"
+				dataType: "json",
+				xhrFields: { withCredentials: true }
 			});
 		};
 
@@ -41,7 +42,8 @@ var Wisebed = new function() {
 				success: callbackDone,
 				error: callbackError,
 				context: document.body,
-				dataType: "json"
+				dataType: "json",
+				xhrFields: { withCredentials: true }
 			});
 		};
 
@@ -62,7 +64,8 @@ var Wisebed = new function() {
 				contentType	:	"application/json; charset=utf-8",
 				dataType	:	"json",
 				success		: 	callbackDone,
-				error		: 	callbackError
+				error		: 	callbackError,
+				xhrFields: { withCredentials: true }
 			});
 			
 		};
@@ -118,7 +121,8 @@ var Wisebed = new function() {
 				contentType	:	"application/json; charset=utf-8",
 				dataType	:	"json",
 				success		: 	function(data, textStatus, jqXHR) {callbackDone(jqXHR.getResponseHeader("Location"))},
-				error		: 	callbackError
+				error		: 	callbackError,
+				xhrFields: { withCredentials: true }
 			});
 		};
 
@@ -131,7 +135,8 @@ var Wisebed = new function() {
 				contentType	:	"application/json; charset=utf-8",
 				dataType	:	"json",
 				success		: 	function(data) {callbackDone(data.operationStatus);},
-				error		: 	callbackError
+				error		: 	callbackError,
+				xhrFields: { withCredentials: true }
 			});
 		};
 
@@ -189,7 +194,8 @@ var Wisebed = new function() {
 						type        : "GET",
 						dataType    : "json",
 						success     : onProgressRequestSuccess,
-						error       : onProgressRequestError
+						error       : onProgressRequestError,
+						xhrFields: { withCredentials: true }
 					});
 
 				}, 2 * 1000);
@@ -202,7 +208,8 @@ var Wisebed = new function() {
 				contentType : "application/json; charset=utf-8",
 				dataType    : "json",
 				success     : requestSuccessCallback,
-				error       : callbackError
+				error       : callbackError,
+				xhrFields: { withCredentials: true }
 			});
 		};
 	};
@@ -228,7 +235,8 @@ var Wisebed = new function() {
 			context  : document.body,
 			success  : callbackDone,
 			error    : callbackError,
-			dataType : (!jsonOrXml ? "json" : jsonOrXml)
+			dataType : (!jsonOrXml ? "json" : jsonOrXml),
+			xhrFields: { withCredentials: true }
 		});
 	};
 
@@ -255,7 +263,8 @@ var Wisebed = new function() {
 			success: callbackDone,
 			error: callbackError,
 			context: document.body,
-			dataType: "json"
+			dataType: "json",
+			xhrFields: { withCredentials: true }
 		});
 	};
 
