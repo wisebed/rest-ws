@@ -4,9 +4,12 @@ import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticat
 import static eu.wisebed.restws.resources.ResourceHelper.getSnaaSecretAuthCookie;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,6 +46,9 @@ public class SnaaResource {
 
 	@Inject
 	private WebServiceEndpointManager endpointManager;
+	
+	@Context
+	private HttpServletRequest httpServletRequest;
 	
 	@Context
 	private HttpHeaders httpHeaders;	
@@ -115,6 +121,13 @@ public class SnaaResource {
 			List<String> requestHeader = httpHeaders.getRequestHeader("Host");
 			if( !requestHeader.isEmpty())
 				cookies.add(createCookie(testbedId, loginResult, requestHeader.get(0)));
+			
+			try {
+				String hostname = InetAddress.getByName(httpServletRequest.getRemoteHost()).getCanonicalHostName();
+				String remoteHostAndPort = hostname + ":" + httpServletRequest.getRemotePort();
+				cookies.add(createCookie(testbedId, loginResult,remoteHostAndPort));
+			} catch (UnknownHostException e) {
+			}
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(cookies.toArray(new NewCookie[cookies.size()])).build();
