@@ -81,6 +81,7 @@ public class RemoteExperimentConfigurationResource {
 	}
 
 	private List<String> getNodeUrnList(URI url) throws UniformInterfaceException, Exception {
+		log.debug("Trying to node urns from {}", url.toString());
 		WebResource.Builder requestBuilder = Client.create().resource(url).accept(MediaType.WILDCARD);
 		NodeUrnList response = JSONHelper.fromJSON(requestBuilder.get(String.class), NodeUrnList.class);
 		log.debug("Got node urns from {}: {}", url.toString(), JSONHelper.toJSON(response));
