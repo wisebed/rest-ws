@@ -112,7 +112,7 @@ public class SnaaResource {
 
 			List<NewCookie> cookies = new LinkedList<NewCookie>();
 
-			cookies.add(createCookie(testbedId, loginResult, "www.rwglab.de"));
+			cookies.add(createCookie(testbedId, loginResult, ""));
 
 //			 List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
 //			 if (!requestHeaderHost.isEmpty())
