@@ -7,7 +7,6 @@ import static eu.wisebed.restws.util.JSONHelper.toJSON;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -47,9 +46,6 @@ public class SnaaResource {
 	
 	@Context
 	private HttpHeaders httpHeaders;	
-	
-	@Context
-	private HttpServletRequest httpServletRequest;
 	
 	@GET
 	@Path("isLoggedIn")
