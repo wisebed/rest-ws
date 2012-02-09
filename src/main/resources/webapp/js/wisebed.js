@@ -1,6 +1,6 @@
 
-if( ! wisebedBaseUrl )
-	wisebedBaseUrl = "";
+if( typeof wisebedBaseUrl === 'undefined' )
+	var wisebedBaseUrl = "";
 
 
 Array.prototype.compareArrays = function(arr) {
