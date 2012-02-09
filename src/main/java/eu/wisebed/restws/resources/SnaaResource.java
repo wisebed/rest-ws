@@ -4,12 +4,9 @@ import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticat
 import static eu.wisebed.restws.resources.ResourceHelper.getSnaaSecretAuthCookie;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -46,13 +43,10 @@ public class SnaaResource {
 
 	@Inject
 	private WebServiceEndpointManager endpointManager;
-	
+
 	@Context
-	private HttpServletRequest httpServletRequest;
-	
-	@Context
-	private HttpHeaders httpHeaders;	
-	
+	private HttpHeaders httpHeaders;
+
 	@GET
 	@Path("isLoggedIn")
 	public Response isLoggedIn(@PathParam("testbedId") final String testbedId) {
@@ -61,10 +55,10 @@ public class SnaaResource {
 		SNAA snaa = endpointManager.getSnaaEndpoint(testbedId);
 
 		try {
-			
+
 			boolean isLoggedIn = snaa.isAuthorized(cookie.secretAuthenticationKeys, new Action("isLoggedIn"));
 			return isLoggedIn ? Response.ok().build() : Response.status(Status.FORBIDDEN).build();
-			
+
 		} catch (SNAAExceptionException e) {
 			return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
 		}
@@ -90,17 +84,17 @@ public class SnaaResource {
 	 * ]
 	 * }
 	 * </code>
-	 *
+	 * 
 	 * @param testbedId
-	 * 		the ID of the testbed
+	 *            the ID of the testbed
 	 * @param loginData
-	 * 		login data
-	 *
+	 *            login data
+	 * 
 	 * @return a response
 	 */
 	@POST
-	@Produces({MediaType.APPLICATION_JSON})
-	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_JSON })
 	@Path("login")
 	public Response login(@PathParam("testbedId") final String testbedId, final LoginData loginData) {
 
@@ -115,18 +109,23 @@ public class SnaaResource {
 			String jsonResponse = toJSON(loginResult);
 
 			List<NewCookie> cookies = new LinkedList<NewCookie>();
-			
+
 			cookies.add(createCookie(testbedId, loginResult, ""));
-			
-			List<String> requestHeader = httpHeaders.getRequestHeader("Host");
-			if( !requestHeader.isEmpty())
-				cookies.add(createCookie(testbedId, loginResult, requestHeader.get(0)));
-			
-			try {
-				String hostname = InetAddress.getByName(httpServletRequest.getRemoteHost()).getCanonicalHostName();
-				String remoteHostAndPort = hostname + ":" + httpServletRequest.getRemotePort();
-				cookies.add(createCookie(testbedId, loginResult,remoteHostAndPort));
-			} catch (UnknownHostException e) {
+
+			{
+				List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
+				if (!requestHeaderHost.isEmpty())
+					cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
+			}
+			{
+				List<String> requestHeaderOrigin = httpHeaders.getRequestHeader("Origin");
+				if (!requestHeaderOrigin.isEmpty())
+					cookies.add(createCookie(testbedId, loginResult, requestHeaderOrigin.get(0)));
+			}
+			{
+				List<String> requestHeaderReferer = httpHeaders.getRequestHeader("Referer");
+				if (!requestHeaderReferer.isEmpty())
+					cookies.add(createCookie(testbedId, loginResult, requestHeaderReferer.get(0)));
 			}
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
