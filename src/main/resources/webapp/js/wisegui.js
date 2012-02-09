@@ -313,12 +313,40 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 	var dialogHeader = $('<div class="modal-header"><h3>Make a reservation for Testbed ' + this.testbedId + '</h3></div>');
 
+	var now = new Date();
+	now.setSeconds(0);
+
+	var format = function(val) {
+		// Prepend a zero
+		if(val >=0 && val <= 9) {
+			return "0" + val;
+		} else {
+			return val;
+		}
+	}
+
+	var yyyy = now.getFullYear();
+	var mm = (now.getMonth());
+	var dd = now.getDate();
+	var ii = now.getMinutes();
+	var hh = now.getHours();
+	var ss = now.getSeconds();
+
+	// Hint: it works even over years
+	var in_one_hour = new Date(yyyy,mm,dd,hh+1,ii,0);
+
+	var date_start = format(dd) + "." + format(mm+1) + "." + yyyy;
+	var time_start = format(hh) + ":" + format(ii);
+
+	var date_end = format(in_one_hour.getDate()) + "." + format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear();
+	var time_end = format(in_one_hour.getHours()) + ":" + format(in_one_hour.getMinutes());
+
 	// Create the inputs
-	var input_date_start = $('<input type="text"   id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
-	var input_time_start = $('<input type="text"   id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
-	var input_date_end =   $('<input type="text"   id="input_date_end__'+this.testbedId+'" style="width:75px"/>');
-	var input_time_end =   $('<input type="text"   id="input_time_end_'+this.testbedId+'" style="width:40px"/>');
-	var input_desciption = $('<input type="text"   id="description_'+this.testbedId+'" style="width:330px"/>');
+	var input_date_start = $('<input type="text" value="' + date_start + '" id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
+	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
+	var input_date_end =   $('<input type="text" value="' + date_end + '" id="input_date_end__'+this.testbedId+'" style="width:75px"/>');
+	var input_time_end =   $('<input type="text" value="' + time_end + '" id="input_time_end_'+this.testbedId+'" style="width:40px"/>');
+	var input_desciption = $('<input type="text" id="description_'+this.testbedId+'" style="width:330px"/>');
 
 	var p_nodes = $("<p></p>");
 
@@ -340,18 +368,38 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
     var h4_nodes = $("<h4>Select the nodes to reserve</h4>");
 
+    var error = $('<div class="alert-message error"></div>');
+    var error_close = $('<span class="close" style="cursor:pointer;">×</span>');
+    error_close.click(function() {
+		error.hide();
+	});
+    var error_msg = $('<p></p>');
+    error.append(error_close, $('<p><strong>Error:</strong></p>'), error_msg);
+    error.hide();
+
+    var showError = function (msg) {
+    	error_msg.empty();
+    	error_msg.append(msg);
+    	error.show();
+    }
+
     var span_start = $('<span>Start: </span>');
     var span_end = $('<span style="margin-left:10px;">End: </span>');
     var span_description = $('<span style="margin-left:10px;">Description: </span>');
 
 	var dialogBody = $('<div class="modal-body" style="	height:300px;overflow: auto;padding:5px"/></div>');
-	dialogBody.append(span_start, input_date_start, input_time_start);
+	dialogBody.append(error, span_start, input_date_start, input_time_start);
 	dialogBody.append(span_end, input_date_end, input_time_end);
 	dialogBody.append(span_description, input_desciption);
 	dialogBody.append(h4_nodes, p_nodes);
 
 	var okButton = $('<a class="btn primary">Reserve</a>');
 	okButton.bind('click', this, function(e) {
+
+		input_date_start.removeClass("error");
+		input_date_end.removeClass("error");
+		input_time_start.removeClass("error");
+		input_time_end.removeClass("error");
 
 		var dateStart = explode(".", input_date_start.val());
 		var dateEnd = explode(".", input_date_end.val());
@@ -363,22 +411,30 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 		// TODO: Highlight the incorrect INPUTS
 		if(dateStart.length != 3) {
-			alert("Start date incorrect.");
+			input_date_start.addClass("error");
+			showError("Start date incorrect.");
 			return;
 		} else if (dateEnd.length != 3) {
-			alert("End date incorrect.");
+			input_date_end.addClass("error");
+			showError("End date incorrect.");
 			return;
 		} else if (timeStart.length != 2) {
-			alert("Start time incorrect.");
+			input_time_start.addClass("error");
+			showError("Start time incorrect.");
 			return;
 		} else if (timeEnd.length != 2){
-			alert("End time incorrect.");
+			input_time_end.addClass("error");
+			showError("End time incorrect.");
 			return;
 		} else if(to <= from) {
-			alert("End date must after the start date.");
+			input_date_start.addClass("error");
+			input_date_end.addClass("error");
+			input_time_start.addClass("error");
+			input_time_end.addClass("error");
+			showError("End date must after the start date.");
 			return;
 		} else if(nodes.length <= 0) {
-			alert("You must select at least one node");
+			showError("You must select at least one node");
 			return;
 		}
 
@@ -386,11 +442,10 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 		var to = new Date(dateEnd[2], dateEnd[1]-1, dateEnd[0], timeEnd[0], timeEnd[1], 0);
 
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
-			alert("Reservation failed.");
+			showError(jqXHR.responseText);
 		};
 
 		var callbackDone = function() {
-			alert("Reservation successful.");
 			that.hide();
 		};
 
@@ -2164,7 +2219,6 @@ function getCreateContentFunction(navigationData) {
 }
 
 function showReservationsDialog(testbedId) {
-	// TODO: Make better
 	var d = new WiseGuiReservationDialog(testbedId);
 	d.show();
 }
