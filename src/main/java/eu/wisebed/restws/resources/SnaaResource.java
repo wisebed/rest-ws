@@ -4,6 +4,8 @@ import static eu.wisebed.restws.resources.ResourceHelper.createSecretAuthenticat
 import static eu.wisebed.restws.resources.ResourceHelper.getSnaaSecretAuthCookie;
 import static eu.wisebed.restws.util.JSONHelper.toJSON;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -112,20 +114,20 @@ public class SnaaResource {
 
 			cookies.add(createCookie(testbedId, loginResult, ""));
 
-			{
-				List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
-				if (!requestHeaderHost.isEmpty())
-					cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
-			}
-			{
-				List<String> requestHeaderOrigin = httpHeaders.getRequestHeader("Origin");
-				if (!requestHeaderOrigin.isEmpty())
-					cookies.add(createCookie(testbedId, loginResult, requestHeaderOrigin.get(0)));
-			}
-			{
-				List<String> requestHeaderReferer = httpHeaders.getRequestHeader("Referer");
-				if (!requestHeaderReferer.isEmpty())
-					cookies.add(createCookie(testbedId, loginResult, requestHeaderReferer.get(0)));
+			List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
+			if (!requestHeaderHost.isEmpty())
+				cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
+
+			for (String headername : new String[] { "Origin", "Referer" }) {
+				List<String> requestHeader = httpHeaders.getRequestHeader(headername);
+				if (!requestHeader.isEmpty()) {
+					try {
+						URI uri = new URI(requestHeader.get(0));
+						String tmp = uri.getHost() + ((uri.getPort() > 0) ? (":" + uri.getPort()) : "");
+						cookies.add(createCookie(testbedId, loginResult, tmp));
+					} catch (URISyntaxException e) {
+					}
+				}
 			}
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
