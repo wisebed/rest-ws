@@ -1,4 +1,8 @@
 
+if( typeof wisebedBaseUrl === 'undefined' )
+	var wisebedBaseUrl = "";
+
+
 Array.prototype.compareArrays = function(arr) {
 	if (this.length != arr.length) return false;
 	for (var i = 0; i < arr.length; i++) {
@@ -16,7 +20,7 @@ var Wisebed = new function() {
 	this.reservations = new function() {
 
 		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
-			var queryUrl = "/rest/2.3/" + testbedId + "/reservations?userOnly=true" +
+			var queryUrl = wisebedBaseUrl + "/rest/2.3/" + testbedId + "/reservations?userOnly=true" +
 					(from ? ("&from=" + from.toISOString()) : "") +
 					(to ? ("&to="+to.toISOString()) : "");
 			$.ajax({
@@ -29,7 +33,7 @@ var Wisebed = new function() {
 		};
 
 		this.getPublic = function(testbedId, from, to, callbackDone, callbackError) {
-			var queryUrl = "/rest/2.3/" + testbedId + "/reservations?" +
+			var queryUrl = wisebedBaseUrl + "/rest/2.3/" + testbedId + "/reservations?" +
 					(from ? ("from=" + from.toISOString() + "&") : "") +
 					(to ? ("to="+to.toISOString() + "&") : "");
 			$.ajax({
@@ -52,7 +56,7 @@ var Wisebed = new function() {
 			};
 			
 			$.ajax({
-				url			:	"/rest/2.3/" + testbedId + "/reservations/create",
+				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/reservations/create",
 				type		:	"POST",
 				data		:	JSON.stringify(content, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
@@ -108,7 +112,7 @@ var Wisebed = new function() {
 			});
 
 			$.ajax({
-				url			:	"/rest/2.3/" + testbedId + "/experiments",
+				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments",
 				type		:	"POST",
 				data		:	JSON.stringify(secretReservationKeys, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
@@ -121,7 +125,7 @@ var Wisebed = new function() {
 		this.resetNodes = function(testbedId, experimentId, nodeUrns, callbackDone, callbackError) {
 
 			$.ajax({
-				url			:	"/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/resetNodes",
+				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/resetNodes",
 				type		:	"POST",
 				data		:	JSON.stringify({nodeUrns:nodeUrns}, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
@@ -192,7 +196,7 @@ var Wisebed = new function() {
 			};
 
 			$.ajax({
-				url         : "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/flash",
+				url         : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/flash",
 				type        : "POST",
 				data        : JSON.stringify(data, null, '  '),
 				contentType : "application/json; charset=utf-8",
@@ -219,8 +223,8 @@ var Wisebed = new function() {
 
 		$.ajax({
 			url      : (experimentId ?
-					    "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/network" :
-					    "/rest/2.3/" + testbedId + "/experiments/network"),
+						wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/network" :
+						wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/network"),
 			context  : document.body,
 			success  : callbackDone,
 			error    : callbackError,
@@ -247,7 +251,7 @@ var Wisebed = new function() {
 
 	this.getTestbeds = function(callbackDone, callbackError) {
 		$.ajax({
-			url: "/rest/2.3/testbeds",
+			url: wisebedBaseUrl + "/rest/2.3/testbeds",
 			success: callbackDone,
 			error: callbackError,
 			context: document.body,
@@ -265,7 +269,7 @@ var Wisebed = new function() {
 
 	this.isLoggedIn = function(testbedId, callbackDone, callbackError) {
 		$.ajax({
-			url      : "/rest/2.3/" + testbedId + "/isLoggedIn",
+			url      : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/isLoggedIn",
 			context  : document.body,
 			dataType : "json",
 			success  : function() {callbackDone(true);},
@@ -281,7 +285,7 @@ var Wisebed = new function() {
 
 	this.login = function(testbedId, credentials, callbackDone, callbackError) {
 		$.ajax({
-			url			: "/rest/2.3/" + testbedId + "/login",
+			url			: wisebedBaseUrl + "/rest/2.3/" + testbedId + "/login",
 			type		: "POST",
 			data		: JSON.stringify(credentials, null, '  '),
 			contentType	: "application/json; charset=utf-8",

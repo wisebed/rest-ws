@@ -669,13 +669,13 @@ Table.prototype.generateFilter = function () {
 	// Filter
 	this.filter = $('<p style="margin-top:3px;"></p>');
 
-	var help_image = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;" src="img/famfamfam/help.png">');
-	var help_div = $('<div style="margin-right:95px;"></div>');
+	var img_help = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;" src="img/famfamfam/help.png">');
+	var div_text = $('<span style="float:left;margin-top:3px;">Filter displayed nodes:</span>');
+	var div_help = $('<div style="margin-right:95px;margin-left:135px;"></div>');
+	var div_adv = $('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
+
 	this.filter_checkbox = $('<input type="checkbox" style="float:right;margin-top:7px;margin-right:3px;">');
-	this.filter.append(help_image);
-	this.filter.append('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
-	this.filter.append(this.filter_checkbox);
-	this.filter.append(help_div);
+	this.filter.append(img_help, div_adv, this.filter_checkbox, div_text, div_help);
 
 	var filter_input = $('<input type="text" style="width:100%;padding-left:0px;padding-right:0px;">');
 	// Key up event if enter is pressed
@@ -688,11 +688,11 @@ Table.prototype.generateFilter = function () {
 	});
 	this.filter_input = filter_input;
 
-	help_image.click(function() {
+	img_help.click(function() {
 		if(!that.helpTooltipIsVisable) {
-			help_image.popover("show");
+			img_help.popover("show");
 		} else {
-			help_image.popover("hide");
+			img_help.popover("hide");
 		}
 		// Invert
 		that.helpTooltipIsVisable = !that.helpTooltipIsVisable;
@@ -701,7 +701,7 @@ Table.prototype.generateFilter = function () {
 	var helpText = '<h3>Normal mode</h3>';
 	helpText += 'In normal mode, the filter is a full text search.';
 	helpText += '<h3>Advanced mode</h3>';
-	helpText += 'In advacned mode, the filter is using <a href="http://api.jquery.com/filter/" target="_blank">jQuery.filter()</a> on the given data structure.';
+	helpText += 'In advanced mode, the filter is using <a href="http://api.jquery.com/filter/" target="_blank">jQuery.filter()</a> on the given data structure.';
 
 	if(this.model.length > 0) {
 		helpText += '<br>The data structure looks as follows:';
@@ -717,8 +717,8 @@ Table.prototype.generateFilter = function () {
 	helpText += '<li>($(e.capability).filter(function (i) {return this.name.indexOf("temperature") > 0;}).length > 0)';
 	helpText += '</ul>';
 
-	var pop = help_image.popover({placement:'left', animate:true, html: true, trigger: 'manual', content: helpText, title: function() {return "Help";}});
-	help_div.append(filter_input);
+	var pop = img_help.popover({placement:'left', animate:true, html: true, trigger: 'manual', content: helpText, title: function() {return "Help";}});
+	div_help.append(filter_input);
 	this.html.append(this.filter);
 };
 
@@ -1002,7 +1002,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	// Other filters can be added here
 
 	// Here the select will be generated
-	var select = $('<select style="width:49%;background-color:#FFF;margin-left:1px;vertical-align:bottom;height:28px;"></select>');
+	var select = $('<select style="width:39%;background-color:#FFF;margin-left:1px;vertical-align:bottom;height:28px;"></select>');
 	select.change(
 		function () {
 			var idx = parseInt($(this).val());
@@ -1022,7 +1022,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		}
 	);
 
-	t.filter_input.css("width", "49%");
+	t.filter_input.css("width", "59%");
 	t.filter_input.after(select);
 	this.parent.append(t.html);
 };

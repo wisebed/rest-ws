@@ -1,3 +1,5 @@
 #!/bin/bash
-kill `cat rest-ws.pid`
-rm rest-ws.pid
+if [ -f rest-ws.pid ]; then
+	kill `cat rest-ws.pid`
+	rm rest-ws.pid
+fi
