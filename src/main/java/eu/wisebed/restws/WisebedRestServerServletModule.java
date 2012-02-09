@@ -16,6 +16,7 @@ import eu.wisebed.restws.resources.RsResource;
 import eu.wisebed.restws.resources.SnaaResource;
 import eu.wisebed.restws.ws.WsnWebSocketFactory;
 import eu.wisebed.restws.ws.WsnWebSocketServlet;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 
 /**
  * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For
@@ -39,6 +40,10 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 
 		serve("/ws/*").with(WsnWebSocketServlet.class);
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
+		filter("/*").through(CrossOriginFilter.class, ImmutableMap.of(
+				"allowedOrigins", "*",
+				"allowedMethods", "GET,POST,PUT,DELETE"
+		));
 		serve("/*").with(DefaultServlet.class, ImmutableMap.of(
 				"resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm(),
 				"maxCacheSize", "0"
