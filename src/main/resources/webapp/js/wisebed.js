@@ -280,10 +280,7 @@ var Wisebed = new function() {
 					callbackError(jqXHR, textStatus, errorThrown);
 				}
 			},
-			beforeSend: function(xhr){
-			       xhr.withCredentials = true;
-			});
-
+			xhrFields: { withCredentials: true }
 		});
 	};
 
@@ -295,7 +292,8 @@ var Wisebed = new function() {
 			contentType	: "application/json; charset=utf-8",
 			dataType	: "json",
 			error		: callbackError,
-			success		: callbackDone
+			success		: callbackDone,
+			xhrFields: { withCredentials: true }
 		});
 	};
 
