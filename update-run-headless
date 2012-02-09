@@ -2,6 +2,6 @@
 
 ./stop-headless && \
 git pull origin master && \
-mvn clean package -DskipTests && \
+mvn clean compile -DskipTests && \
 mvn dependency:build-classpath -Dmdep.outputFile=classpath.txt && \
 ./run-headless
