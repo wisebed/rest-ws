@@ -43,23 +43,24 @@ var Wisebed = new function() {
 
 		this.make = function(testbedId, from, to, userData, nodeURNs, callbackDone, callbackError) {
 
-			// Generate JSON
+			// Generate JavaScript object
 			var content = {
 				"from" : from.toISOString(),
 				"nodeURNs" : nodeURNs,
 				"to" : to.toISOString(),
 				"userData" : userData
 			};
-
-			var queryUrl = "/rest/2.3/" + testbedId + "/reservations";
+			
 			$.ajax({
-				type: "POST",
-				url: queryUrl,
-				success: callbackDone,
-				error: callbackError,
-				data: content,
-				dataType: "json"
+				url			:	"/rest/2.3/" + testbedId + "/reservations/create",
+				type		:	"POST",
+				data		:	JSON.stringify(content, null, '  '),
+				contentType	:	"application/json; charset=utf-8",
+				dataType	:	"json",
+				success		: 	callbackDone,
+				error		: 	callbackError
 			});
+			
 		};
 
 		this.equals = function(res1, res2) {

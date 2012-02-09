@@ -92,12 +92,16 @@ public class RsResource {
 		XMLGregorianCalendar toDate = duration.getSecond();
 
 		List<PublicReservationData> reservations = rs.getReservations(fromDate, toDate);
+		
+		log.debug("Got {} public reservations from {} until {}", new Object[] { reservations.size(), fromDate, toDate });
+		
 		return new PublicReservationDataList(reservations);
 	}
 
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_JSON})
+	@Path("create")
 	public Response makeReservation(@PathParam("testbedId") final String testbedId,
 									PublicReservationData request) {
 
@@ -110,6 +114,8 @@ public class RsResource {
 			ConfidentialReservationData confidentialReservation =
 					createFrom(snaaSecretAuthCookie.secretAuthenticationKeys, request);
 
+			log.debug("Reservation request: " + toJSON(confidentialReservation));
+			
 			List<SecretReservationKey> reservation =
 					rs.makeReservation(copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys),
 							confidentialReservation
@@ -217,7 +223,7 @@ public class RsResource {
 			Data data = new Data();
 			data.setUrnPrefix(key.getUrnPrefix());
 			data.setUsername(key.getUsername());
-			data.setSecretReservationKey(key.getSecretAuthenticationKey());
+			//data.setSecretReservationKey(key.getSecretAuthenticationKey());
 			confidentialReservation.getData().add(data);
 		}
 
@@ -233,15 +239,15 @@ public class RsResource {
 			throws IllegalArgumentException {
 
 		try {
+			DateTime now = new DateTime();
+			DateTime startOfToday = new DateTime(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth(), 0, 0);
 
 			if (from == null || "".equals(from)) {
-				from = DatatypeFactory.newInstance().newXMLGregorianCalendar(new DateTime().toGregorianCalendar())
-						.toString();
+				from = DatatypeFactory.newInstance().newXMLGregorianCalendar(startOfToday.toGregorianCalendar()).toString();
 			}
 
 			if (to == null || "".equals(to)) {
-				to = DatatypeFactory.newInstance()
-						.newXMLGregorianCalendar(new DateTime().plusDays(1).toGregorianCalendar()).toString();
+				to = DatatypeFactory.newInstance().newXMLGregorianCalendar(startOfToday.plusDays(7).toGregorianCalendar()).toString();
 			}
 
 			XMLGregorianCalendar fromDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(from);
