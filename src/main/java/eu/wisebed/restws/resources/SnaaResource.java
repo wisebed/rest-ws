@@ -9,6 +9,7 @@ import eu.wisebed.restws.util.Base64Helper;
 import eu.wisebed.restws.util.InjectLogger;
 import org.slf4j.Logger;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.Status;
@@ -28,8 +29,11 @@ public class SnaaResource {
 	private WebServiceEndpointManager endpointManager;
 	
 	@Context
-	private HttpHeaders httpHeaders;
-
+	private HttpHeaders httpHeaders;	
+	
+	@Context
+	private HttpServletRequest httpServletRequest;
+	
 	@GET
 	@Path("isLoggedIn")
 	public Response isLoggedIn(@PathParam("testbedId") final String testbedId) {
@@ -91,10 +95,11 @@ public class SnaaResource {
 			SnaaSecretAuthenticationKeyList loginResult = new SnaaSecretAuthenticationKeyList(secretAuthenticationKeys);
 			String jsonResponse = toJSON(loginResult);
 
-			NewCookie sakCookie = createCookie(testbedId, loginResult);
+			NewCookie sakCookie = createCookie(testbedId, loginResult, "");
+			NewCookie sakCookie2 = createCookie(testbedId, loginResult, httpServletRequest.getRemoteHost());
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
-			return Response.ok(jsonResponse).cookie(sakCookie).build();
+			return Response.ok(jsonResponse).cookie(sakCookie, sakCookie2).build();
 
 		} catch (AuthenticationExceptionException e) {
 			return createLoginErrorResponse(e);
@@ -104,12 +109,10 @@ public class SnaaResource {
 
 	}
 
-	private NewCookie createCookie(final String testbedId, SnaaSecretAuthenticationKeyList loginData) {
-
+	private NewCookie createCookie(final String testbedId, SnaaSecretAuthenticationKeyList loginData, String domain) {
 		int maxAge = 60 * 60 * 24;
 		boolean secure = false;
 		String comment = "";
-		String domain = "";
 		String value = Base64Helper.encode(toJSON(loginData));
 		String name = createSecretAuthenticationKeyCookieName(testbedId);
 		String path = "/";
