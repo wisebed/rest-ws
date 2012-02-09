@@ -37,6 +37,7 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 		install(new FactoryModuleBuilder().build(WsnWebSocketFactory.class));
 
 		bind(DefaultServlet.class).in(Singleton.class);
+		bind(CrossOriginFilter.class).in(Singleton.class);
 
 		serve("/ws/*").with(WsnWebSocketServlet.class);
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
