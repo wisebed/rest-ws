@@ -88,6 +88,7 @@ public class RemoteExperimentConfigurationResource {
 	}
 
 	private String getBinaryProgramImage(URI binaryProgramUrl) {
+		log.debug("Trying to read binary file from {}", binaryProgramUrl.toString());
 		WebResource.Builder requestBuilder = Client.create().resource(binaryProgramUrl).accept(MediaType.APPLICATION_OCTET_STREAM);
 		byte[] bytes = requestBuilder.get(byte[].class);
 
