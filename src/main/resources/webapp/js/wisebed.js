@@ -279,7 +279,11 @@ var Wisebed = new function() {
 				} else {
 					callbackError(jqXHR, textStatus, errorThrown);
 				}
-			}
+			},
+			beforeSend: function(xhr){
+			       xhr.withCredentials = true;
+			});
+
 		});
 	};
 
