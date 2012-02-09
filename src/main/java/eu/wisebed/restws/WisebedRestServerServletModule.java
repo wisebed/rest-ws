@@ -43,7 +43,8 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 		filter("/*").through(CrossOriginFilter.class, ImmutableMap.of(
 				"allowedOrigins", "*",
-				"allowedMethods", "GET,POST,PUT,DELETE"
+				"allowedMethods", "GET,POST,PUT,DELETE",
+				"allowCredentials", "true"
 		));
 		serve("/*").with(DefaultServlet.class, ImmutableMap.of(
 				"resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm(),
