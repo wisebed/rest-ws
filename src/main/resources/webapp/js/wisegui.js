@@ -382,8 +382,8 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 			return;
 		}
 
-		var from = new Date(dateStart[2], dateStart[1], dateStart[0], timeStart[0], timeStart[1], 0);
-		var to = new Date(dateEnd[2], dateEnd[1], dateEnd[0], timeEnd[0], timeEnd[1], 0);
+		var from = new Date(dateStart[2], dateStart[1]-1, dateStart[0], timeStart[0], timeStart[1], 0);
+		var to = new Date(dateEnd[2], dateEnd[1]-1, dateEnd[0], timeEnd[0], timeEnd[1], 0);
 
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
 			alert("Reservation failed.");

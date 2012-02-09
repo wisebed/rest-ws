@@ -117,7 +117,8 @@ public class RsResource {
 			log.debug("Reservation request: " + toJSON(confidentialReservation));
 			
 			List<SecretReservationKey> reservation =
-					rs.makeReservation(copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys),
+					rs.makeReservation(
+							copySnaaToRs(snaaSecretAuthCookie.secretAuthenticationKeys),
 							confidentialReservation
 					);
 
