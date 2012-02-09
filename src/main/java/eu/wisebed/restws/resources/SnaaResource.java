@@ -114,9 +114,9 @@ public class SnaaResource {
 
 			cookies.add(createCookie(testbedId, loginResult, ""));
 
-//			List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
-//			if (!requestHeaderHost.isEmpty())
-//				cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
+			List<String> requestHeaderHost = httpHeaders.getRequestHeader("Host");
+			if (!requestHeaderHost.isEmpty())
+				cookies.add(createCookie(testbedId, loginResult, requestHeaderHost.get(0)));
 //
 //			for (String headername : new String[] { "Origin", "Referer" }) {
 //				List<String> requestHeader = httpHeaders.getRequestHeader(headername);
