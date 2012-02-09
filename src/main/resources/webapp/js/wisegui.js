@@ -701,7 +701,7 @@ Table.prototype.generateFilter = function () {
 	var helpText = '<h3>Normal mode</h3>';
 	helpText += 'In normal mode, the filter is a full text search.';
 	helpText += '<h3>Advanced mode</h3>';
-	helpText += 'In advacned mode, the filter is using <a href="http://api.jquery.com/filter/" target="_blank">jQuery.filter()</a> on the given data structure.';
+	helpText += 'In advanced mode, the filter is using <a href="http://api.jquery.com/filter/" target="_blank">jQuery.filter()</a> on the given data structure.';
 
 	if(this.model.length > 0) {
 		helpText += '<br>The data structure looks as follows:';
