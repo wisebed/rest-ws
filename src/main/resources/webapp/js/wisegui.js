@@ -409,7 +409,6 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 		var nodes = that.table.getSelectedNodes();
 
-		// TODO: Highlight the incorrect INPUTS
 		if(dateStart.length != 3) {
 			input_date_start.addClass("error");
 			showError("Start date incorrect.");
@@ -447,6 +446,10 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 		var callbackDone = function() {
 			that.hide();
+			// Refresh the experiments tab in the menu
+			$(window).trigger('wisegui-navigation-event', getNavigationData());
+			// Refresh the reservation table
+			$(window).trigger('wisegui-reservation-table-' + that.testbedId);
 		};
 
 		Wisebed.reservations.make(
@@ -2116,6 +2119,22 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			WiseGui.showAjaxError
 	);
 
+	var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbedId);
+
+	// we need this to be able to refresh the table
+	$(window).bind('wisegui-reservation-table-' + navigationData.testbedId,
+		function() {
+			buildReservationTable(reservationsTab, navigationData);
+		}
+	);
+
+	// Build the table
+	buildReservationTable(reservationsTab, navigationData);
+}
+
+
+function buildReservationTable(reservationsTab, navigationData) {
+
 	var now = new Date();
 	var tomorrowSameTime = new Date();
 	tomorrowSameTime.setDate(now.getDate() + 1);
@@ -2127,8 +2146,6 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			function(data) {
 
 				var reservations = data.reservations;
-				var reservationsTab = $('#WisebedTestbedDetailsReservations-'+navigationData.testbedId);
-
 				var tableHead = ["From", "Until", "User Data", "Node URNs"];
 				var tableRows = [];
 				for (var i=0; i<reservations.length; i++) {
@@ -2158,6 +2175,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				}
 
 				var table = buildTable(tableHead, tableRows);
+				reservationsTab.empty()
 				reservationsTab.append(table);
 				if (tableRows.length > 0) {
 					table.tablesorter({ sortList: [[0,0]] });
@@ -2165,8 +2183,8 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			},
 			WiseGui.showAjaxError
 	);
-
 }
+
 
 function buildTable(tableHead, tableRows) {
 
@@ -2329,6 +2347,7 @@ function createContentContainer(navigationData) {
 
 	return container;
 }
+
 
 function onHashChange(e) {
 
