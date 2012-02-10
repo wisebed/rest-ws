@@ -16,12 +16,6 @@
 			"name":"Lübeck University of Applied Sciences, Germany (FHL)",
 			"urnPrefixes":["urn:wisebed-cosa-testbed-fhl1:"],
 			"sessionManagementEndpointUrl":"http://cosa-testbed-fhl1.fh-luebeck.de:49021/sessions"
-		},
-
-		"local-mock":{
-			"name":"Localhost with mock devices",
-			"urnPrefixes":["urn:local:"],
-			"sessionManagementEndpointUrl":"http://localhost:8080/sessions"
 		}
 	}
 }
