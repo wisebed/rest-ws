@@ -42,7 +42,7 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 		serve("/ws/*").with(WsnWebSocketServlet.class);
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
 		filter("/*").through(CrossOriginFilter.class, ImmutableMap.of(
-				"allowedOrigins", "*",
+				"allowedOrigins", "http://*",
 				"allowedMethods", "GET,POST,PUT,DELETE",
 				"allowCredentials", "true"
 		));
