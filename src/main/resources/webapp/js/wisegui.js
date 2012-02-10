@@ -378,6 +378,9 @@ WiseGuiReservationDialog.prototype.buildView = function() {
     error.hide();
 
     var showError = function (msg) {
+		okButton.removeAttr("disabled");
+		cancelButton.removeAttr("disabled");
+
     	error_msg.empty();
     	error_msg.append(msg);
     	error.show();
@@ -393,8 +396,13 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	dialogBody.append(span_description, input_desciption);
 	dialogBody.append(h4_nodes, p_nodes);
 
-	var okButton = $('<a class="btn primary">Reserve</a>');
+	var okButton = $('<input class="btn primary" value="Reserve" style="width:50px;text-align:center;">');
+	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:50px;text-align:center;">');
+
 	okButton.bind('click', this, function(e) {
+
+		okButton.attr("disabled", "true");
+		cancelButton.attr("disabled", "true");
 
 		input_date_start.removeClass("error");
 		input_date_end.removeClass("error");
@@ -445,6 +453,10 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 		};
 
 		var callbackDone = function() {
+
+			okButton.removeAttr("disabled");
+			cancelButton.removeAttr("disabled");
+
 			that.hide();
 			// Refresh the experiments tab in the menu
 			$(window).trigger('wisegui-navigation-event', getNavigationData());
@@ -462,7 +474,6 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 			callbackError);
 	});
 
-	var cancelButton = $('<a class="btn secondary">Cancel</a>');
 	cancelButton.bind('click', this, function(e) {
 		e.data.hide();
 	});
