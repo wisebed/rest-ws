@@ -1848,7 +1848,17 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 			imageFileInfoLabel.empty();
 			imageFileInfoLabel.append(
 					'<strong>' + imageFile.name + '</strong> (' + (imageFile.type || 'n/a') + ')<br/>'
-					+ imageFile.size + ' bytes, last modified: ' + imageFile.lastModifiedDate.toLocaleDateString()
+					+ imageFile.size + ' bytes'
+
+					// last modified: ' + imageFile.lastModifiedDate.toLocaleDateString()
+					//
+					// Crahes FF. Even if the File interface specifies[1] a lastModifiedDate,
+					// it is not working/existing in FF[2].
+					//
+					// @see https://github.com/wisebed/rest-ws/issues/32
+					//
+					// [1] http://www.w3.org/TR/FileAPI/#dfn-file
+					// [2] https://developer.mozilla.org/en/DOM/File
 			);
 		};
 
