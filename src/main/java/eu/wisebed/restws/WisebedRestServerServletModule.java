@@ -9,6 +9,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 
+import eu.wisebed.restws.resources.CookieResource;
 import eu.wisebed.restws.resources.ExperimentResource;
 import eu.wisebed.restws.resources.RemoteExperimentConfigurationResource;
 import eu.wisebed.restws.resources.RootResource;
@@ -29,6 +30,7 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 	protected void configureServlets() {
 
 		bind(RootResource.class);
+		bind(CookieResource.class);
 		bind(SnaaResource.class);
 		bind(RsResource.class);
 		bind(ExperimentResource.class);

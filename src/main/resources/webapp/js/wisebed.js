@@ -17,6 +17,26 @@ Array.prototype.compareArrays = function(arr) {
 
 var Wisebed = new function() {
 
+	this.testCookie = function (callbackOK, callbackError) {
+		// Check cookie
+		var getCookieCallbackDone = function() {
+			$.ajax({
+				url: wisebedBaseUrl + "/rest/2.3/cookies/check",
+				success: callbackOK,
+				error: callbackError,
+				xhrFields: { withCredentials: true }
+			});
+		};
+
+		// Get cookie
+		$.ajax({
+			url: wisebedBaseUrl + "/rest/2.3/cookies/get",
+			success: getCookieCallbackDone,
+			error: callbackError,
+			xhrFields: { withCredentials: true }
+		});
+	}
+
 	this.reservations = new function() {
 
 		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
@@ -56,7 +76,7 @@ var Wisebed = new function() {
 				"to" : to.toISOString(),
 				"userData" : userData
 			};
-			
+
 			$.ajax({
 				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/reservations/create",
 				type		:	"POST",
@@ -67,7 +87,7 @@ var Wisebed = new function() {
 				error		: 	callbackError,
 				xhrFields: { withCredentials: true }
 			});
-			
+
 		};
 
 		this.equals = function(res1, res2) {

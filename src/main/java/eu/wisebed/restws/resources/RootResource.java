@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.dto.TestbedMap;
 
-@Path("/" + Constants.WISEBED_API_VERSION + "/testbeds/")
+@Path("/" + Constants.WISEBED_API_VERSION + "/testbeds")
 public class RootResource {
 
 	@Inject
