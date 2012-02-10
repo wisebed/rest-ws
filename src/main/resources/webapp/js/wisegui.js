@@ -1852,13 +1852,10 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 
 					// last modified: ' + imageFile.lastModifiedDate.toLocaleDateString()
 					//
-					// Crahes FF. Even if the File interface specifies[1] a lastModifiedDate,
-					// it is not working/existing in FF[2].
+					// Crashes in FF. Even if the File interface specifies a lastModifiedDate,
+					// it is not working/existing in FF.
 					//
 					// @see https://github.com/wisebed/rest-ws/issues/32
-					//
-					// [1] http://www.w3.org/TR/FileAPI/#dfn-file
-					// [2] https://developer.mozilla.org/en/DOM/File
 			);
 		};
 
@@ -2368,6 +2365,12 @@ $(function () {
 
 				$(window).bind('hashchange', onHashChange);
 				$(window).trigger('hashchange');
+
+				// Test for 3rd party cookies
+				var cookieCallbackError = function(jqXHR, textStatus, errorThrown) {
+					WiseGui.showErrorAlert("Your browser doesn't support 3rd party cookies.");
+				};
+				Wisebed.testCookie(function() {}, cookieCallbackError);
 			},
 			WiseGui.showAjaxError
 	);
