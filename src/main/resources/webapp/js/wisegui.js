@@ -2368,7 +2368,10 @@ $(function () {
 
 				// Test for 3rd party cookies
 				var cookieCallbackError = function(jqXHR, textStatus, errorThrown) {
-					WiseGui.showErrorAlert("Your browser doesn't support 3rd party cookies.");
+					WiseGui.showErrorAlert(
+							'Your browser doesn\'t support 3rd party cookies. '
+							+ 'Please enable them or you will not be able to login. '
+							+ 'Otherwise you can go to <a href="' + wisebedBaseUrl + '">' + wisebedBaseUrl + '</a>');
 				};
 				Wisebed.testCookie(function() {}, cookieCallbackError);
 			},
