@@ -387,7 +387,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
     var span_end = $('<span style="margin-left:10px;">End: </span>');
     var span_description = $('<span style="margin-left:10px;">Description: </span>');
 
-	var dialogBody = $('<div class="modal-body" style="	height:300px;overflow: auto;padding:5px"/></div>');
+	var dialogBody = $('<div class="modal-body" style="	height:400px;overflow: auto;padding:5px"/></div>');
 	dialogBody.append(error, span_start, input_date_start, input_time_start);
 	dialogBody.append(span_end, input_date_end, input_time_end);
 	dialogBody.append(span_description, input_desciption);
