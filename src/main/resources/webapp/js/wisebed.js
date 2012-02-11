@@ -134,13 +134,20 @@ var Wisebed = new function() {
 				}
 			});
 
+			var succ = function(data, textStatus, jqXHR) {
+				var header = jqXHR.getAllResponseHeaders();
+				console.log(header);
+				callbackDone(jqXHR.getResponseHeader("Location"))
+			}
+
+
 			$.ajax({
 				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments",
 				type		:	"POST",
 				data		:	JSON.stringify(secretReservationKeys, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
 				dataType	:	"json",
-				success		: 	function(data, textStatus, jqXHR) {callbackDone(jqXHR.getResponseHeader("Location"))},
+				success		: 	succ,
 				error		: 	callbackError,
 				xhrFields: { withCredentials: true }
 			});
