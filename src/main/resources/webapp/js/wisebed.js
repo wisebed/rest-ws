@@ -230,6 +230,7 @@ var Wisebed = new function() {
 						type        : "GET",
 						success     : onProgressRequestSuccess,
 						error       : onProgressRequestError,
+						dataType: "json",
 						xhrFields: { withCredentials: true }
 					});
 
