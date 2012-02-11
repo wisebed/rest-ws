@@ -1368,13 +1368,22 @@ WiseGuiExperimentDropDown.prototype.update = function() {
 
 WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reservations) {
 
-	this.view.find('.dropdown-menu li').remove();
+	//this.view.find('.dropdown-menu li').remove();
+	this.view.find('.dropdown-menu').empty();
 
 	for (var i=0; i<reservations.length; i++) {
 
 		var reservation = reservations[i];
-		var fromStr = $.format.date(new Date(reservation.from), "yyyy-MM-dd HH:mm");
-		var toStr = $.format.date(new Date(reservation.to), "yyyy-MM-dd HH:mm");
+
+		var dateNow = new Date();
+		var dateFrom = new Date(reservation.from);
+		var dateTo = new Date(reservation.to);
+
+		var fromStr = $.format.date(dateFrom, "yyyy-MM-dd HH:mm");
+		var toStr = $.format.date(dateTo, "yyyy-MM-dd HH:mm");
+
+		// Skip old reservations
+		if(dateTo < dateNow) continue;
 
 		var li = $('<li><a href="#">' + fromStr + ' - ' + toStr + ' | ' + reservation.userData + '</a></li>');
 		var self = this;
