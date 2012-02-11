@@ -271,7 +271,7 @@ public class ExperimentResource {
 
 			log.debug("Returning instance URL {}", location.toString());
 
-			return Response.ok().location(location).build();
+			return Response.ok(location.toString()).location(location).build();
 
 		} catch (ExperimentNotRunningException_Exception e) {
 			return returnError("Experiment not running", e, Status.BAD_REQUEST);
@@ -304,12 +304,12 @@ public class ExperimentResource {
 	 * ]
 	 * }
 	 * </code>
-	 * 
+	 *
 	 * @param experimentUrlBase64
 	 *            the base64-encoded URL of the experiment
 	 * @param flashData
 	 *            the data to flash onto the nodes
-	 * 
+	 *
 	 * @return a response
 	 */
 	@POST
@@ -399,12 +399,12 @@ public class ExperimentResource {
 	 * ]
 	 * }
 	 * </code>
-	 * 
+	 *
 	 * @param experimentUrlBase64
 	 *            the base64-encoded URL of the experiment
 	 * @param requestIdBase64
 	 *            the base64-encoded requestId of the flash operation
-	 * 
+	 *
 	 * @return the current state of the flash operation
 	 */
 	@GET

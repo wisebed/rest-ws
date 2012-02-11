@@ -135,18 +135,16 @@ var Wisebed = new function() {
 			});
 
 			var succ = function(data, textStatus, jqXHR) {
-				var header = jqXHR.getAllResponseHeaders();
-				console.log(header);
-				callbackDone(jqXHR.getResponseHeader("Location"))
+				// Headers are empty in Cross-Site-Environment
+				// callbackDone(jqXHR.getResponseHeader("Location"))
+				callbackDone(jqXHR.responseText);
 			}
-
 
 			$.ajax({
 				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments",
 				type		:	"POST",
 				data		:	JSON.stringify(secretReservationKeys, null, '  '),
 				contentType	:	"application/json; charset=utf-8",
-				dataType	:	"json",
 				success		: 	succ,
 				error		: 	callbackError,
 				xhrFields: { withCredentials: true }
