@@ -8,7 +8,7 @@ if( typeof wisebedWebSocketBaseUrl === 'undefined' ) {
 	if(port == "") {
 		port = 80;
 	}
-	var wisebedWebSocketBaseUrl = 'ws://'+hostname+':'+port;
+	var wisebedWebSocketBaseUrl = 'ws://' + hostname + ':' + port;
 }
 
 Array.prototype.compareArrays = function(arr) {

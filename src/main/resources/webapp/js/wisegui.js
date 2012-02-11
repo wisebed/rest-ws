@@ -760,7 +760,9 @@ Table.prototype.generateFilter = function () {
 	// Filter
 	this.filter = $('<p style="margin-top:3px;"></p>');
 
-	var img_help = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;" src="img/famfamfam/help.png">');
+	var img_help = $('<img class="WiseGuiNodeTable" style="float:right;cursor:pointer;margin-top:5px;">');
+	img_help.attr("src", wisebedBaseUrl + "/img/famfamfam/help.png");
+
 	var div_text = $('<span style="float:left;margin-top:3px;">Filter displayed nodes:</span>');
 	var div_help = $('<div style="margin-right:95px;margin-left:135px;"></div>');
 	var div_adv = $('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
@@ -1418,19 +1420,26 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 
 	this.dialogDivId = 'WiseGuiNodeSelectionDialog-' + Math.random();
 
-	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide WiseGuiNodeSelectionDialog">'
-			+ '	<div class="modal-header">'
+	this.dialogDiv = $('<div id="'+this.dialogDivId+'" class="modal hide WiseGuiNodeSelectionDialog"></div>');
+
+	var bodyHeader = $('	<div class="modal-header">'
 			+ '		<h3>' + headerHtml + '</h3>'
-			+ '	</div>'
-			+ '	<div class="modal-body">'
+			+ '	</div>');
+
+	var body = $('	<div class="modal-body">'
 			+ '		<p>' + bodyHtml + '</p>'
-			+ '		<img class="ajax-loader" src="img/ajax-loader-big.gif" width="32" height="32"/>'
-			+ '	</div>'
-			+ ' <div class="modal-footer">'
+			+ '	</div>');
+
+	var imgAjaxLoader = $('<img class="ajax-loader" width="32" height="32"/>');
+	imgAjaxLoader.attr("src", wisebedBaseUrl + "/img/ajax-loader-big.gif");
+	body.append(imgAjaxLoader);
+
+	var bodyFooter = $(' <div class="modal-footer">'
 			+ '		<a class="btn secondary">Cancel</a>'
 			+ '		<a class="btn primary">OK</a>'
-			+ '	</div>'
-			+ '</div>');
+			+ '	</div>');
+
+	this.dialogDiv.append(bodyHeader, body, bodyFooter);
 };
 
 WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel) {
