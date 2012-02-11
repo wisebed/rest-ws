@@ -397,7 +397,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	dialogBody.append(h4_nodes, p_nodes);
 
 	var okButton = $('<input class="btn primary" value="Reserve" style="width:50px;text-align:center;">');
-	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:50px;text-align:center;">');
+	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
 
 	okButton.bind('click', this, function(e) {
 
@@ -499,6 +499,9 @@ var WiseGuiLoginDialog = function(testbedId) {
 
 	this.view = $('<div id="WisebedLoginDialog-'+this.testbedId+'" class="modal hide"></div>');
 
+	this.okButton = null;
+	this.cancelButton = null;
+
 	var self = this;
 	Wisebed.getTestbeds(function(testbeds){self.buildView(testbeds)}, WiseGui.showAjaxError);
 };
@@ -527,11 +530,16 @@ WiseGuiLoginDialog.prototype.doLogin = function() {
 };
 
 WiseGuiLoginDialog.prototype.onLoginError = function() {
+
+	var that = this;
+
 	$.each(this.loginFormRows, function(index, elem) {
 		$(elem.inputUsername).removeClass('success');
 		$(elem.inputPassword).removeClass('success');
 		$(elem.inputUsername).addClass('error');
 		$(elem.inputPassword).addClass('error');
+		that.okButton.removeAttr("disabled");
+		that.cancelButton.removeAttr("disabled");
 	});
 };
 
@@ -652,19 +660,19 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '		</form>'
 			+ '	</div>');
 
-	var cancelButton = $('<a class="btn secondary">Cancel</a>');
-	var okButton = $('<a class="btn primary">OK</a>');
+	this.okButton = $('<input class="btn primary" value="OK" style="width:25px;text-align:center;">');
+	this.cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
 
-	cancelButton.bind('click', this, function(e) {
+	this.cancelButton.bind('click', this, function(e) {
 		e.data.hide();
 	});
 
-	okButton.bind('click', this, function(e) {
+	this.okButton.bind('click', this, function(e) {
 		that.startLogin();
 	});
 
 	var dialogFooter = $('<div class="modal-footer"/>');
-	dialogFooter.append(cancelButton, okButton);
+	dialogFooter.append(this.cancelButton, this.okButton);
 	this.view.append(dialogHeader, dialogBody, dialogFooter);
 
 	var loginFormTableBody = this.view.find('#WisebedLoginDialogFormTable-'+this.testbedId+' tbody');
@@ -676,6 +684,9 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 };
 
 WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
+	this.okButton.attr("disabled", "true");
+	this.cancelButton.attr("disabled", "true");
+
 	this.updateLoginDataFromForm();
 	this.doLogin();
 }
