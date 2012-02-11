@@ -84,12 +84,12 @@ public class SnaaResource {
 	 * ]
 	 * }
 	 * </code>
-	 * 
+	 *
 	 * @param testbedId
 	 *            the ID of the testbed
 	 * @param loginData
 	 *            login data
-	 * 
+	 *
 	 * @return a response
 	 */
 	@POST
@@ -109,7 +109,7 @@ public class SnaaResource {
 			String jsonResponse = toJSON(loginResult);
 
 			List<NewCookie> cookies = new LinkedList<NewCookie>();
-			cookies.add(createCookie(testbedId, loginResult, ""));
+			cookies.add(createCookie(testbedId, loginResult, "", false));
 
 			log.trace("Received {}, returning {}", toJSON(loginData), jsonResponse);
 			return Response.ok(jsonResponse).cookie(cookies.toArray(new NewCookie[cookies.size()])).build();
@@ -122,11 +122,17 @@ public class SnaaResource {
 
 	}
 
-	private NewCookie createCookie(final String testbedId, SnaaSecretAuthenticationKeyList loginData, String domain) {
-		int maxAge = 60 * 60 * 24;
+	@GET
+	@Path("logout")
+	public Response deleteCookie(@PathParam("testbedId") final String testbedId) {
+		return Response.ok().cookie(createCookie(testbedId, null, "", true)).build();
+	}
+
+	private NewCookie createCookie(final String testbedId, SnaaSecretAuthenticationKeyList loginData, String domain, boolean isReset) {
+		int maxAge = isReset ? 0 : 60 * 60 * 24;
 		boolean secure = false;
 		String comment = "";
-		String value = Base64Helper.encode(toJSON(loginData));
+		String value = (loginData == null) ? "" : Base64Helper.encode(toJSON(loginData));
 		String name = createSecretAuthenticationKeyCookieName(testbedId);
 		String path = "/";
 

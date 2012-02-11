@@ -549,9 +549,17 @@ WiseGuiLoginDialog.prototype.isLoggedIn = function(callback) {
 };
 
 WiseGuiLoginDialog.prototype.doLogout = function() {
-	Wisebed.deleteSecretAuthenticationKeyCookie(this.testbedId);
-	delete loginDialogs[this.testbedId];
-	$(window).trigger('wisegui-logged-out', {testbedId : this.testbedId});
+
+	var callbackOK = function() {
+		delete loginDialogs[this.testbedId];
+		$(window).trigger('wisegui-logged-out', {testbedId : this.testbedId});
+	};
+
+	var callbackError = function(jqXHR, textStatus, errorThrown) {
+		WiseGui.showErrorAlert("Logout failed.");
+	};
+
+	Wisebed.logout(this.testbedId, callbackOK, callbackError);
 };
 
 WiseGuiLoginDialog.prototype.hide = function() {

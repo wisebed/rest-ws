@@ -288,10 +288,6 @@ var Wisebed = new function() {
 		});
 	};
 
-	this.deleteSecretAuthenticationKeyCookie = function(testbedId) {
-		$.cookie('wisebed-secret-authentication-key-' + testbedId, null);
-	};
-
 	this.hasSecretAuthenticationKeyCookie = function(testbedId) {
 		return $.cookie('wisebed-secret-authentication-key-' + testbedId) != null;
 	};
@@ -322,6 +318,15 @@ var Wisebed = new function() {
 			dataType	: "json",
 			error		: callbackError,
 			success		: callbackDone,
+			xhrFields: { withCredentials: true }
+		});
+	};
+
+	this.logout = function(testbedId, callbackDone, callbackError) {
+		$.ajax({
+			url      : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/logout",
+			success  : callbackDone,
+			error    : callbackError,
 			xhrFields: { withCredentials: true }
 		});
 	};
