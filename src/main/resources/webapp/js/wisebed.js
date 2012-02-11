@@ -194,7 +194,9 @@ var Wisebed = new function() {
 
 			var requestSuccessCallback = function(data, textStatus, jqXHR){
 
-				var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
+				// Headers are empty in Cross-Site-Environment
+				//var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
+				var flashRequestStatusURL = jqXHR.responseText;
 
 				var schedule = setInterval(function() {
 

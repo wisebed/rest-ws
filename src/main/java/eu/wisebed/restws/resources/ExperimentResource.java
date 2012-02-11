@@ -364,7 +364,7 @@ public class ExperimentResource {
 
 			URI location = UriBuilder.fromUri(uriInfo.getRequestUri()).path("{requestId}").build(Base64Helper.encode(requestId));
 
-			return Response.ok().location(location).build();
+			return Response.ok(location.toString()).location(location).build();
 
 		} catch (Exception e) {
 			return returnError(String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
