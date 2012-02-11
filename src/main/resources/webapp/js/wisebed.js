@@ -227,7 +227,6 @@ var Wisebed = new function() {
 					$.ajax({
 						url         : flashRequestStatusURL,
 						type        : "GET",
-						dataType    : "json",
 						success     : onProgressRequestSuccess,
 						error       : onProgressRequestError,
 						xhrFields: { withCredentials: true }
@@ -241,7 +240,6 @@ var Wisebed = new function() {
 				type        : "POST",
 				data        : JSON.stringify(data, null, '  '),
 				contentType : "application/json; charset=utf-8",
-				dataType    : "json",
 				success     : requestSuccessCallback,
 				error       : callbackError,
 				xhrFields: { withCredentials: true }
