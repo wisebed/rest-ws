@@ -9,6 +9,7 @@ var WiseGui = new function() {
 				}
 		);
 	};
+
 	this.showWarningAlert = function(message) { this.showAlert(message, 'warning'); };
 	this.showErrorAlert = function(message) { this.showAlert(message, 'error'); };
 	this.showSuccessAlert = function(message) { this.showAlert(message, 'success'); };
@@ -1580,18 +1581,13 @@ WiseGuiExperimentationView.prototype.onWebSocketClose = function(event) {
 
 WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 
-	if (!window.WebSocket) {
-		window.WebSocket = window.MozWebSocket;
-	}
+	window.WebSocket = window.MozWebSocket || window.WebSocket;
 
 	if (window.WebSocket) {
 
 		var self = this;
 
-		var hostname = document.location.hostname;
-		var port     = document.location.port;
-
-		this.socket = new WebSocket('ws://'+hostname+':'+port+'/ws/experiments/'+this.experimentId);
+		this.socket = new WebSocket(wisebedWebSocketBaseUrl + '/ws/experiments/'+this.experimentId);
 		this.socket.onmessage = function(event) {self.onWebSocketMessageEvent(event)};
 		this.socket.onopen = function(event) {self.onWebSocketOpen(event)};
 		this.socket.onclose = function(event) {self.onWebSocketClose(event)};

@@ -2,6 +2,14 @@
 if( typeof wisebedBaseUrl === 'undefined' )
 	var wisebedBaseUrl = "";
 
+if( typeof wisebedWebSocketBaseUrl === 'undefined' ) {
+	hostname = document.location.hostname;
+	port     = document.location.port;
+	if(port == "") {
+		port = 80;
+	}
+	var wisebedWebSocketBaseUrl = 'ws://'+hostname+':'+port;
+}
 
 Array.prototype.compareArrays = function(arr) {
 	if (this.length != arr.length) return false;
