@@ -2094,6 +2094,7 @@ WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
 	});
 
 	if (contentsEmpty) {
+		this.view.append("All nodes are flashed successfully.");
 		setTimeout(function() {self.view.remove()}, 1000);
 	}
 };
