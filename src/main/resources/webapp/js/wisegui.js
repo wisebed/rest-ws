@@ -558,9 +558,11 @@ WiseGuiLoginDialog.prototype.isLoggedIn = function(callback) {
 
 WiseGuiLoginDialog.prototype.doLogout = function() {
 
+	var that = this;
+
 	var callbackOK = function() {
-		delete loginDialogs[this.testbedId];
-		$(window).trigger('wisegui-logged-out', {testbedId : this.testbedId});
+		delete loginDialogs[that.testbedId];
+		$(window).trigger('wisegui-logged-out', {testbedId : that.testbedId});
 	};
 
 	var callbackError = function(jqXHR, textStatus, errorThrown) {
