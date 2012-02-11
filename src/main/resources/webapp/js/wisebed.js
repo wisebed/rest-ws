@@ -192,7 +192,7 @@ var Wisebed = new function() {
 
 			var allNodeUrns = getAllNodeUrnsFromRequestData(data);
 
-			var requestSuccessCallback = function(data, textStatus, jqXHR){
+			var requestSuccessCallback = function(d, textStatus, jqXHR){
 
 				// Headers are empty in Cross-Site-Environment
 				//var flashRequestStatusURL = jqXHR.getResponseHeader("Location");
@@ -202,6 +202,7 @@ var Wisebed = new function() {
 
 					var onProgressRequestSuccess = function(data) {
 
+						//var data = JSON.parse(d);
 						var completeNodeUrns = [];
 
 						$.each(data.operationStatus, function(nodeUrn, nodeStatus) {
