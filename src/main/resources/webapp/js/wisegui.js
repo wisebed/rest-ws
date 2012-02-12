@@ -399,8 +399,8 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 */
 	var dialogBody = $('<div class="modal-body" style="height:70px;overflow:auto;padding:5px"/>');
 
-	var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
-
+	//var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+	var url = "";
 
 	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
 	var input_checkbox_url  = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_url_' + this.testbedId + '" value="url" checked>');
