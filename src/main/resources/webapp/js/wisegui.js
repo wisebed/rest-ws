@@ -354,10 +354,10 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	function loadFromFile() {
 		// TODO: Why does jQuery not work here?
 		// var files = input_file.attr('files');
+		// var f = input_file.files[0];
 		var files = document.getElementById('input_file_' + that.testbedId).files;
 		var f = files[0];
 
-		// var f = input_file.files[0];
 		if(f != "") {
 			var fr = new FileReader();
 			fr.onloadend = function(progressEvent) {
@@ -430,78 +430,6 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 * Build view
 	 */
 	this.view.append(dialogHeader, dialogBody, dialogFooter);
-
-	/*
-	 *
-	 * //input_date_start.removeClass("error"); var input_time_start = $('<input
-	 * type="text" value="' + time_start + '"
-	 * id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
-	 *
-	 * var now = new Date(); now.setSeconds(0);
-	 *
-	 * var format = function(val) { // Prepend a zero if(val >=0 && val <= 9) {
-	 * return "0" + val; } else { return val; } }
-	 *
-	 * var yyyy = now.getFullYear(); var mm = (now.getMonth()); var dd =
-	 * now.getDate(); var ii = now.getMinutes(); var hh = now.getHours(); var ss =
-	 * now.getSeconds();
-	 *  // Hint: it works even over years var in_one_hour = new
-	 * Date(yyyy,mm,dd,hh+1,ii,0);
-	 *
-	 * var date_start = format(dd) + "." + format(mm+1) + "." + yyyy; var
-	 * time_start = format(hh) + ":" + format(ii);
-	 *
-	 * var date_end = format(in_one_hour.getDate()) + "." +
-	 * format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear(); var
-	 * time_end = format(in_one_hour.getHours()) + ":" +
-	 * format(in_one_hour.getMinutes());
-	 *  // Create the inputs var input_date_start = $('<input type="text"
-	 * value="' + date_start + '" id="input_date_start_'+this.testbedId+'"
-	 * style="width:75px"/>'); var input_time_start = $('<input type="text"
-	 * value="' + time_start + '" id="input_time_start_'+this.testbedId+'"
-	 * style="width:40px"/>'); var input_date_end = $('<input type="text"
-	 * value="' + date_end + '" id="input_date_end__'+this.testbedId+'"
-	 * style="width:75px"/>'); var input_time_end = $('<input type="text"
-	 * value="' + time_end + '" id="input_time_end_'+this.testbedId+'"
-	 * style="width:40px"/>'); var input_desciption = $('<input type="text"
-	 * id="description_'+this.testbedId+'" style="width:330px"/>');
-	 *
-	 * var p_nodes = $("<p></p>");
-	 *
-	 * var showTable = function (wiseML) { that.table = new
-	 * WiseGuiNodeTable(wiseML, p_nodes, true, true); }
-	 *
-	 * Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable, function(jqXHR,
-	 * textStatus, errorThrown) { console.log('TODO handle error in
-	 * WiseGuiReservationDialog'); } );
-	 *  // Add the picker input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
-	 * input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
-	 * input_time_start.timePicker({step: 5}); input_time_end.timePicker({step:
-	 * 5});
-	 *
-	 * var h4_nodes = $("<h4>Select the nodes to reserve</h4>");
-	 *
-	 * var error = $('<div class="alert-message error"></div>'); var
-	 * error_close = $('<span class="close" style="cursor:pointer;">×</span>');
-	 * error_close.click(function() { error.hide(); }); var error_msg = $('<p></p>');
-	 * error.append(error_close, $('<p><strong>Error:</strong></p>'),
-	 * error_msg); error.hide();
-	 *
-	 * var showError = function (msg) { okButton.removeAttr("disabled");
-	 * cancelButton.removeAttr("disabled");
-	 *
-	 * error_msg.empty(); error_msg.append(msg); error.show(); }
-	 *
-	 * var span_start = $('<span>Start: </span>'); var span_end = $('<span
-	 * style="margin-left:10px;">End: </span>'); var span_description = $('<span
-	 * style="margin-left:10px;">Description: </span>');
-	 *
-	 * dialogBody.append(error, span_start, input_date_start, input_time_start);
-	 * dialogBody.append(span_end, input_date_end, input_time_end);
-	 * dialogBody.append(span_description, input_desciption);
-	 * dialogBody.append(h4_nodes, p_nodes);
-	 *
-	 */
 };
 
 /**
@@ -702,9 +630,6 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	var dialogFooter = $('<div class="modal-footer"/>');
 	dialogFooter.append(okButton, cancelButton);
 	this.view.append(dialogHeader, dialogBody, dialogFooter);
-
-
-
 };
 
 /**

@@ -1,7 +1,7 @@
 /* BlobBuilder.js
  * A BlobBuilder implementation.
  * 2011-07-13
- * 
+ *
  * By Eli Grey, http://eligrey.com
  * License: X11/MIT
  *   See LICENSE.md
@@ -49,7 +49,7 @@ var
 	, can_apply_typed_arrays_test = function(pass) {
 		can_apply_typed_arrays = !pass;
 	}
-	
+
 	, ArrayBuffer = view.ArrayBuffer
 	, Uint8Array = view.Uint8Array
 ;
