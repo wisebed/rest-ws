@@ -318,27 +318,39 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	function errorHandling(error) {
 		okButton.removeAttr("disabled");
 		cancelButton.removeAttr("disabled");
-		input_url.addClass("error");
-		alert("Conf error.");
+
+		var val = dialogBody.find("input:checked").val();
+		if(val == "url") {
+			input_url.addClass("error");
+		} else if (val == "file") {
+			input_file.addClass("error");
+		}
+		alert(error);
 	}
 
-	function loadFromURL(url) {
+	function callCallback(data) {
+		if(data.configurations != null) {
+			if(typeof(that.callback) == "function") {
+				that.hide();
+				that.callback(data.configurations);
+			} else {
+				errorHandling("No configurations available in the file.");
+			}
+		} else {
+			errorHandling("Configuration is null");
+		}
+	}
+
+	function loadFromURL() {
+
+		var url = input_url.val()
+
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
 			errorHandling("Configuration error: " + jqXHR.responseText);
 		};
 
 		var callbackDone = function(data, textStatus, jqXHR) {
-			if(data.configurations != null) {
-				if(typeof(that.callback) == "function") {
-					input_url.addClass('success');
-					that.hide();
-					that.callback(data.configurations);
-				} else {
-					errorHandling("No configurations available in the file.");
-				}
-			} else {
-				errorHandling("Configuration is null");
-			}
+			callCallback(data);
 		};
 
 		$.ajax({
@@ -348,9 +360,35 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 			dataType: "json",
 			xhrFields: { withCredentials: true }
 		});
-
 	}
 
+	function loadFromFile() {
+		// TODO: Why does jQuery not work here?
+		// var files = input_file.attr('files');
+		var files = document.getElementById('input_file_' + that.testbedId).files;
+		var f = files[0];
+
+		//var f = input_file.files[0];
+		if(f != "") {
+			var fr = new FileReader();
+			fr.onloadend = function(progressEvent) {
+				that.hide();
+				var data = JSON.parse(fr.result);
+				callCallback(data);
+			};
+			fr.readAsText(f);
+		} else {
+			errorHandling("No file choosen");
+		}
+
+		/*
+	    var output = [];
+	      output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+	                  f.size, ' bytes, last modified: ',
+	                  f.lastModifiedDate.toLocaleDateString(), '</li>');
+	    console.log(output);
+	    */
+	}
 	/*
 	 * Header
 	 */
@@ -359,27 +397,40 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	/*
 	 * Body
 	 */
-
-	var dialogBody = $('<div class="modal-body" style="height:35px;overflow:auto;padding:5px"/>');
+	var dialogBody = $('<div class="modal-body" style="height:70px;overflow:auto;padding:5px"/>');
 
 	var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
-	var span_url = $('<span>URL: </span>')
-	var input_url = $('<input type="text" value="' + url + '" id="input_url_'+this.testbedId+'" style="width:300px"/>');
-	dialogBody.append(span_url, input_url);
+
+
+	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
+	var input_checkbox_url  = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_url_' + this.testbedId + '" value="url" checked>');
+	var input_url = $('<input type="text" value="' + url + '" id="input_url_' + this.testbedId + '" style="width:600px"/>');
+
+	var label_file = $('<label for="type_file_' + this.testbedId + '" style="width:50px;">File:</label>')
+	var input_checkbox_file = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_file_' + this.testbedId + '"value="file">');
+	var input_file = $('<input type="file" id="input_file_' + this.testbedId + '"/>')
+
+	dialogBody.append(input_checkbox_url, label_url, input_url, $("<br>"), input_checkbox_file, label_file, input_file);
 
 	/*
 	 * Footer
 	 */
-
 	var dialogFooter = $('<div class="modal-footer"/>');
 
 	var okButton = $('<input class="btn primary" value="Load" style="width:35px;text-align:center;">');
 	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
 	okButton.bind('click', this, function(e) {
-
 		okButton.attr("disabled", "true");
 		cancelButton.attr("disabled", "true");
-		loadFromURL(input_url.val());
+
+		// Check, which radio button is uses
+
+		var val = dialogBody.find("input:checked").val();
+		if(val == "url") {
+			loadFromURL();
+		} else if (val == "file") {
+			loadFromFile();
+		}
 	});
 
 	cancelButton.bind('click', this, function(e) {
@@ -398,11 +449,6 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 *
 	 * 		//input_date_start.removeClass("error");
 	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
-
-
-<input type="checkbox" name="ausstattung[]" value="Sumpfgaseinspritzung">&nbsp;Sumpfgaseinspritzung<br>
-13 <input type="checkbox" name="ausstattung[]" value="drei Ersatzreifen">&nbsp;drei Ersatzreifen<br>
-
 
 	var now = new Date();
 	now.setSeconds(0);
