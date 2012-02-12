@@ -582,7 +582,12 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 			input_time_end.addClass("error");
 			showError("End time incorrect.");
 			return;
-		} else if(to <= from) {
+		}
+
+		var from = new Date(dateStart[2], dateStart[1]-1, dateStart[0], timeStart[0], timeStart[1], 0);
+		var to = new Date(dateEnd[2], dateEnd[1]-1, dateEnd[0], timeEnd[0], timeEnd[1], 0);
+
+		if(to <= from) {
 			input_date_start.addClass("error");
 			input_date_end.addClass("error");
 			input_time_start.addClass("error");
@@ -593,9 +598,6 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 			showError("You must select at least one node");
 			return;
 		}
-
-		var from = new Date(dateStart[2], dateStart[1]-1, dateStart[0], timeStart[0], timeStart[1], 0);
-		var to = new Date(dateEnd[2], dateEnd[1]-1, dateEnd[0], timeEnd[0], timeEnd[1], 0);
 
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
 			showError(jqXHR.responseText);
