@@ -384,14 +384,6 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 		} else {
 			errorHandling("No file choosen");
 		}
-
-		/*
-	    var output = [];
-	      output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
-	                  f.size, ' bytes, last modified: ',
-	                  f.lastModifiedDate.toLocaleDateString(), '</li>');
-	    console.log(output);
-	    */
 	}
 	/*
 	 * Header
