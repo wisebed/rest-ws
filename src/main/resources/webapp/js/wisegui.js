@@ -1660,7 +1660,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '					<div class="span10">'
 			+ '						<button class="btn addSet span1"> + </button>'
 			+ '						<button class="btn removeSet span1"> - </button>'
-			+ '						<button class="btn loadConfiguration span2" disabled>Load</button>'
+			+ '						<button class="btn loadConfiguration span2">Load</button>'
 			+ '						<button class="btn saveConfiguration span2" disabled>Save</button>'
 			+ '						<button class="btn primary flashNodes span3">Flash</button>'
 			+ '					</div>'
@@ -1747,7 +1747,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.flashLoadConfigurationButton.bind('click', self, function(e) {
-		alert('TODO loadConfiguration');
+		self.loadFlashConfiguration();
 	});
 
 	this.flashSaveConfigurationButton.bind('click', self, function(e) {
@@ -1828,7 +1828,77 @@ WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 	return flashFormData;
 };
 
-WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
+WiseGuiExperimentationView.prototype.loadFlashConfiguration = function() {
+
+	var that = this;
+
+	// Reset
+	this.flashConfigurationsTableBody.empty();
+	this.flashConfigurations = [];
+
+	var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+
+	var callbackError = function(jqXHR, textStatus, errorThrown) {
+		console.log("Conf error.");
+		//showError(jqXHR.responseText);
+	};
+
+	var callbackDone = function(data, textStatus, jqXHR) {
+
+		if(data.configurations != null && data.configurations.length > 0) {
+
+			// Iterate all configurations
+			for(var i = 0; i < data.configurations.length; i++) {
+				var conf = data.configurations[i];
+				//var nodes = conf.nodeUrns;
+				//var image = conf.image;
+				// { nodeUrns : null, image : null }
+				//console.log("CONF " + i);
+				//console.log(nodes);
+				//console.log(image);
+				that.addFlashConfiguration(conf);
+			}
+		}
+
+	};
+
+	$.ajax({
+		url: url,
+		success: callbackDone,
+		error: callbackError,
+		dataType: "json",
+		xhrFields: { withCredentials: true }
+	});
+}
+
+// @see: http://stackoverflow.com/a/5100158/605890
+WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
+    // convert base64 to raw binary data held in a string
+    // doesn't handle URLEncoded DataURIs
+    var byteString = atob(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+
+    // write the bytes of the string to an ArrayBuffer
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    var BlobBuilder = (window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder);
+
+    // write the ArrayBuffer to a blob, and you're done
+    var bb = new BlobBuilder();
+    bb.append(ab);
+    return bb.getBlob(mimeString);
+}
+
+
+
+
+WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
 	// build and append the gui elements
 	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton">Select Nodes</button>');
@@ -1861,8 +1931,29 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function() {
 		imageFileButton     : imageFileButton,
 		imageFileLabel      : imageFileInfoLabel,
 		tr                  : tr,
-		config              : { nodeUrns : null, image : null }
+		config              : (typeof(conf) == "undefined") ? { nodeUrns : null, image : null } : conf
 	};
+
+	if(configuration.config.nodeUrns != null && configuration.config.nodeUrns.length > 0) {
+		nodeSelectionLabel.append((configuration.config.nodeUrns.length == 1 ? '1 node selected' : (configuration.config.nodeUrns.length + ' nodes selected')));
+	}
+
+	if(configuration.config.image != null) {
+
+		var blob = this.dataURItoBlob(configuration.config.image);
+		var fr = new FileReader();
+		fr.onloadend = function(progressEvent) {
+			if(configuration.config.image == fr.result) {
+				imageFileInfoLabel.append(
+					'<strong>' + blob.name + '</strong> (' + (blob.type || 'n/a') + ')<br/>'
+					+ blob.size + ' bytes'
+				);
+			}
+		};
+		fr.readAsDataURL(blob);
+	}
+
+
 
 	this.flashConfigurations.push(configuration);
 
