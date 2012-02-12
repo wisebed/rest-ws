@@ -287,6 +287,210 @@ WiseGuiLoginObserver.prototype.stopObserving = function() {
 
 /**
  * #################################################################
+ * WiseGuiLoadConfigurationDialog
+ * #################################################################
+ */
+
+var WiseGuiLoadConfigurationDialog = function(testbedId, callback) {
+
+	this.testbedId = testbedId;
+	this.callback = callback;
+	this.table = null;
+	this.view = $('<div id="WisebedLoadDialog-'+this.testbedId+'" class="modal hide"></div>');
+	this.buildView();
+	this.show();
+}
+
+WiseGuiLoadConfigurationDialog.prototype.hide = function() {
+	this.view.hide();
+	this.view.remove();
+};
+
+WiseGuiLoadConfigurationDialog.prototype.show = function() {
+	$(document.body).append(this.view);
+	this.view.show();
+};
+
+WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
+
+	var that = this;
+
+	function errorHandling(error) {
+		okButton.removeAttr("disabled");
+		cancelButton.removeAttr("disabled");
+		input_url.addClass("error");
+		alert("Conf error.");
+	}
+
+	function loadFromURL(url) {
+		var callbackError = function(jqXHR, textStatus, errorThrown) {
+			errorHandling("Configuration error: " + jqXHR.responseText);
+		};
+
+		var callbackDone = function(data, textStatus, jqXHR) {
+			if(data.configurations != null) {
+				if(typeof(that.callback) == "function") {
+					input_url.addClass('success');
+					that.hide();
+					that.callback(data.configurations);
+				} else {
+					errorHandling("No configurations available in the file.");
+				}
+			} else {
+				errorHandling("Configuration is null");
+			}
+		};
+
+		$.ajax({
+			url: url,
+			success: callbackDone,
+			error: callbackError,
+			dataType: "json",
+			xhrFields: { withCredentials: true }
+		});
+
+	}
+
+	/*
+	 * Header
+	 */
+	var dialogHeader = $('<div class="modal-header"><h3>Load a configuration for Testbed ' + this.testbedId + '</h3></div>');
+
+	/*
+	 * Body
+	 */
+
+	var dialogBody = $('<div class="modal-body" style="height:35px;overflow:auto;padding:5px"/>');
+
+	var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+	var span_url = $('<span>URL: </span>')
+	var input_url = $('<input type="text" value="' + url + '" id="input_url_'+this.testbedId+'" style="width:300px"/>');
+	dialogBody.append(span_url, input_url);
+
+	/*
+	 * Footer
+	 */
+
+	var dialogFooter = $('<div class="modal-footer"/>');
+
+	var okButton = $('<input class="btn primary" value="Load" style="width:35px;text-align:center;">');
+	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	okButton.bind('click', this, function(e) {
+
+		okButton.attr("disabled", "true");
+		cancelButton.attr("disabled", "true");
+		loadFromURL(input_url.val());
+	});
+
+	cancelButton.bind('click', this, function(e) {
+		that.callback(null);
+		e.data.hide();
+	});
+
+	dialogFooter.append(okButton, cancelButton);
+
+	/**
+	 * Build view
+	 */
+	this.view.append(dialogHeader, dialogBody, dialogFooter);
+
+	/*
+	 *
+	 * 		//input_date_start.removeClass("error");
+	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
+
+
+<input type="checkbox" name="ausstattung[]" value="Sumpfgaseinspritzung">&nbsp;Sumpfgaseinspritzung<br>
+13 <input type="checkbox" name="ausstattung[]" value="drei Ersatzreifen">&nbsp;drei Ersatzreifen<br>
+
+
+	var now = new Date();
+	now.setSeconds(0);
+
+	var format = function(val) {
+		// Prepend a zero
+		if(val >=0 && val <= 9) {
+			return "0" + val;
+		} else {
+			return val;
+		}
+	}
+
+	var yyyy = now.getFullYear();
+	var mm = (now.getMonth());
+	var dd = now.getDate();
+	var ii = now.getMinutes();
+	var hh = now.getHours();
+	var ss = now.getSeconds();
+
+	// Hint: it works even over years
+	var in_one_hour = new Date(yyyy,mm,dd,hh+1,ii,0);
+
+	var date_start = format(dd) + "." + format(mm+1) + "." + yyyy;
+	var time_start = format(hh) + ":" + format(ii);
+
+	var date_end = format(in_one_hour.getDate()) + "." + format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear();
+	var time_end = format(in_one_hour.getHours()) + ":" + format(in_one_hour.getMinutes());
+
+	// Create the inputs
+	var input_date_start = $('<input type="text" value="' + date_start + '" id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
+	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
+	var input_date_end =   $('<input type="text" value="' + date_end + '" id="input_date_end__'+this.testbedId+'" style="width:75px"/>');
+	var input_time_end =   $('<input type="text" value="' + time_end + '" id="input_time_end_'+this.testbedId+'" style="width:40px"/>');
+	var input_desciption = $('<input type="text" id="description_'+this.testbedId+'" style="width:330px"/>');
+
+	var p_nodes = $("<p></p>");
+
+	var showTable = function (wiseML) {
+		that.table = new WiseGuiNodeTable(wiseML, p_nodes, true, true);
+	}
+
+	Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable,
+			function(jqXHR, textStatus, errorThrown) {
+				console.log('TODO handle error in WiseGuiReservationDialog');
+			}
+	);
+
+	// Add the picker
+    input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
+    input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
+    input_time_start.timePicker({step: 5});
+    input_time_end.timePicker({step: 5});
+
+    var h4_nodes = $("<h4>Select the nodes to reserve</h4>");
+
+    var error = $('<div class="alert-message error"></div>');
+    var error_close = $('<span class="close" style="cursor:pointer;">×</span>');
+    error_close.click(function() {
+		error.hide();
+	});
+    var error_msg = $('<p></p>');
+    error.append(error_close, $('<p><strong>Error:</strong></p>'), error_msg);
+    error.hide();
+
+    var showError = function (msg) {
+		okButton.removeAttr("disabled");
+		cancelButton.removeAttr("disabled");
+
+    	error_msg.empty();
+    	error_msg.append(msg);
+    	error.show();
+    }
+
+    var span_start = $('<span>Start: </span>');
+    var span_end = $('<span style="margin-left:10px;">End: </span>');
+    var span_description = $('<span style="margin-left:10px;">Description: </span>');
+
+	dialogBody.append(error, span_start, input_date_start, input_time_start);
+	dialogBody.append(span_end, input_date_end, input_time_end);
+	dialogBody.append(span_description, input_desciption);
+	dialogBody.append(h4_nodes, p_nodes);
+
+	 */
+};
+
+/**
+ * #################################################################
  * WiseGuiReservationDialog
  * #################################################################
  */
@@ -296,6 +500,7 @@ var WiseGuiReservationDialog = function(testbedId) {
 	this.table = null;
 	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide"></div>');
 	this.buildView();
+	this.show();
 }
 
 WiseGuiReservationDialog.prototype.hide = function() {
@@ -1747,7 +1952,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.flashLoadConfigurationButton.bind('click', self, function(e) {
-		self.loadFlashConfiguration();
+		self.loadFlashConfiguration(self.flashLoadConfigurationButton);
 	});
 
 	this.flashSaveConfigurationButton.bind('click', self, function(e) {
@@ -1828,47 +2033,28 @@ WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 	return flashFormData;
 };
 
-WiseGuiExperimentationView.prototype.loadFlashConfiguration = function() {
+WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
+
+	button.attr("disabled", "true");
 
 	var that = this;
+	new WiseGuiLoadConfigurationDialog(this.testbedId, configCallback.bind(this));
 
-	// Reset
-	this.flashConfigurationsTableBody.empty();
-	this.flashConfigurations = [];
+	// @param: Type is conf-object
+	function configCallback(conf) {
+		button.removeAttr("disabled");
 
-	var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+		if(conf == null) return;
 
-	var callbackError = function(jqXHR, textStatus, errorThrown) {
-		console.log("Conf error.");
-		//showError(jqXHR.responseText);
-	};
+		// Reset
+		this.flashConfigurationsTableBody.empty();
+		this.flashConfigurations = [];
 
-	var callbackDone = function(data, textStatus, jqXHR) {
-
-		if(data.configurations != null && data.configurations.length > 0) {
-
-			// Iterate all configurations
-			for(var i = 0; i < data.configurations.length; i++) {
-				var conf = data.configurations[i];
-				//var nodes = conf.nodeUrns;
-				//var image = conf.image;
-				// { nodeUrns : null, image : null }
-				//console.log("CONF " + i);
-				//console.log(nodes);
-				//console.log(image);
-				that.addFlashConfiguration(conf);
-			}
+		// Iterate all configurations
+		for(var i = 0; i < conf.length; i++) {
+			that.addFlashConfiguration(conf[i]);
 		}
-
-	};
-
-	$.ajax({
-		url: url,
-		success: callbackDone,
-		error: callbackError,
-		dataType: "json",
-		xhrFields: { withCredentials: true }
-	});
+	}
 }
 
 // @see: http://stackoverflow.com/a/5100158/605890
@@ -1894,9 +2080,6 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
     bb.append(ab);
     return bb.getBlob(mimeString);
 }
-
-
-
 
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
@@ -2385,7 +2568,6 @@ function getCreateContentFunction(navigationData) {
 
 function showReservationsDialog(testbedId) {
 	var d = new WiseGuiReservationDialog(testbedId);
-	d.show();
 }
 
 function getLoginDialog(testbedId) {
