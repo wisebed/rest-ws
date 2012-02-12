@@ -181,21 +181,10 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
  * WiseGuiLoginObserver
  * #################################################################
  *
- * Listens to WiseGui events 'wisegui-logged-in' and 'wisegui-logged-out'. The former carries an object
- *
- * {
- *   testbedId : "uzl",
- *   loginData : {
- * 	   authenticationData :
- * 	   [
- *       {
- *         urnPrefix : 'urn:wisebed:uzl1:',
- *         username  : 'bla',
- *         password  : 'blub'
- *       }
- * 	   ]
- *   }
- * }
+ * Listens to WiseGui events 'wisegui-logged-in' and 'wisegui-logged-out'. The
+ * former carries an object
+ *  { testbedId : "uzl", loginData : { authenticationData : [ { urnPrefix :
+ * 'urn:wisebed:uzl1:', username : 'bla', password : 'blub' } ] } }
  */
 var WiseGuiLoginObserver = function() {
 	this.isObserving = false;
@@ -368,7 +357,7 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 		var files = document.getElementById('input_file_' + that.testbedId).files;
 		var f = files[0];
 
-		//var f = input_file.files[0];
+		// var f = input_file.files[0];
 		if(f != "") {
 			var fr = new FileReader();
 			fr.onloadend = function(progressEvent) {
@@ -395,7 +384,8 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 */
 	var dialogBody = $('<div class="modal-body" style="height:70px;overflow:auto;padding:5px"/>');
 
-	//var url = "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+	// var url =
+	// "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
 	var url = "";
 
 	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
@@ -443,91 +433,74 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 
 	/*
 	 *
-	 * 		//input_date_start.removeClass("error");
-	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
-
-	var now = new Date();
-	now.setSeconds(0);
-
-	var format = function(val) {
-		// Prepend a zero
-		if(val >=0 && val <= 9) {
-			return "0" + val;
-		} else {
-			return val;
-		}
-	}
-
-	var yyyy = now.getFullYear();
-	var mm = (now.getMonth());
-	var dd = now.getDate();
-	var ii = now.getMinutes();
-	var hh = now.getHours();
-	var ss = now.getSeconds();
-
-	// Hint: it works even over years
-	var in_one_hour = new Date(yyyy,mm,dd,hh+1,ii,0);
-
-	var date_start = format(dd) + "." + format(mm+1) + "." + yyyy;
-	var time_start = format(hh) + ":" + format(ii);
-
-	var date_end = format(in_one_hour.getDate()) + "." + format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear();
-	var time_end = format(in_one_hour.getHours()) + ":" + format(in_one_hour.getMinutes());
-
-	// Create the inputs
-	var input_date_start = $('<input type="text" value="' + date_start + '" id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
-	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
-	var input_date_end =   $('<input type="text" value="' + date_end + '" id="input_date_end__'+this.testbedId+'" style="width:75px"/>');
-	var input_time_end =   $('<input type="text" value="' + time_end + '" id="input_time_end_'+this.testbedId+'" style="width:40px"/>');
-	var input_desciption = $('<input type="text" id="description_'+this.testbedId+'" style="width:330px"/>');
-
-	var p_nodes = $("<p></p>");
-
-	var showTable = function (wiseML) {
-		that.table = new WiseGuiNodeTable(wiseML, p_nodes, true, true);
-	}
-
-	Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable,
-			function(jqXHR, textStatus, errorThrown) {
-				console.log('TODO handle error in WiseGuiReservationDialog');
-			}
-	);
-
-	// Add the picker
-    input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
-    input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
-    input_time_start.timePicker({step: 5});
-    input_time_end.timePicker({step: 5});
-
-    var h4_nodes = $("<h4>Select the nodes to reserve</h4>");
-
-    var error = $('<div class="alert-message error"></div>');
-    var error_close = $('<span class="close" style="cursor:pointer;">×</span>');
-    error_close.click(function() {
-		error.hide();
-	});
-    var error_msg = $('<p></p>');
-    error.append(error_close, $('<p><strong>Error:</strong></p>'), error_msg);
-    error.hide();
-
-    var showError = function (msg) {
-		okButton.removeAttr("disabled");
-		cancelButton.removeAttr("disabled");
-
-    	error_msg.empty();
-    	error_msg.append(msg);
-    	error.show();
-    }
-
-    var span_start = $('<span>Start: </span>');
-    var span_end = $('<span style="margin-left:10px;">End: </span>');
-    var span_description = $('<span style="margin-left:10px;">Description: </span>');
-
-	dialogBody.append(error, span_start, input_date_start, input_time_start);
-	dialogBody.append(span_end, input_date_end, input_time_end);
-	dialogBody.append(span_description, input_desciption);
-	dialogBody.append(h4_nodes, p_nodes);
-
+	 * //input_date_start.removeClass("error"); var input_time_start = $('<input
+	 * type="text" value="' + time_start + '"
+	 * id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
+	 *
+	 * var now = new Date(); now.setSeconds(0);
+	 *
+	 * var format = function(val) { // Prepend a zero if(val >=0 && val <= 9) {
+	 * return "0" + val; } else { return val; } }
+	 *
+	 * var yyyy = now.getFullYear(); var mm = (now.getMonth()); var dd =
+	 * now.getDate(); var ii = now.getMinutes(); var hh = now.getHours(); var ss =
+	 * now.getSeconds();
+	 *  // Hint: it works even over years var in_one_hour = new
+	 * Date(yyyy,mm,dd,hh+1,ii,0);
+	 *
+	 * var date_start = format(dd) + "." + format(mm+1) + "." + yyyy; var
+	 * time_start = format(hh) + ":" + format(ii);
+	 *
+	 * var date_end = format(in_one_hour.getDate()) + "." +
+	 * format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear(); var
+	 * time_end = format(in_one_hour.getHours()) + ":" +
+	 * format(in_one_hour.getMinutes());
+	 *  // Create the inputs var input_date_start = $('<input type="text"
+	 * value="' + date_start + '" id="input_date_start_'+this.testbedId+'"
+	 * style="width:75px"/>'); var input_time_start = $('<input type="text"
+	 * value="' + time_start + '" id="input_time_start_'+this.testbedId+'"
+	 * style="width:40px"/>'); var input_date_end = $('<input type="text"
+	 * value="' + date_end + '" id="input_date_end__'+this.testbedId+'"
+	 * style="width:75px"/>'); var input_time_end = $('<input type="text"
+	 * value="' + time_end + '" id="input_time_end_'+this.testbedId+'"
+	 * style="width:40px"/>'); var input_desciption = $('<input type="text"
+	 * id="description_'+this.testbedId+'" style="width:330px"/>');
+	 *
+	 * var p_nodes = $("<p></p>");
+	 *
+	 * var showTable = function (wiseML) { that.table = new
+	 * WiseGuiNodeTable(wiseML, p_nodes, true, true); }
+	 *
+	 * Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable, function(jqXHR,
+	 * textStatus, errorThrown) { console.log('TODO handle error in
+	 * WiseGuiReservationDialog'); } );
+	 *  // Add the picker input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
+	 * input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
+	 * input_time_start.timePicker({step: 5}); input_time_end.timePicker({step:
+	 * 5});
+	 *
+	 * var h4_nodes = $("<h4>Select the nodes to reserve</h4>");
+	 *
+	 * var error = $('<div class="alert-message error"></div>'); var
+	 * error_close = $('<span class="close" style="cursor:pointer;">×</span>');
+	 * error_close.click(function() { error.hide(); }); var error_msg = $('<p></p>');
+	 * error.append(error_close, $('<p><strong>Error:</strong></p>'),
+	 * error_msg); error.hide();
+	 *
+	 * var showError = function (msg) { okButton.removeAttr("disabled");
+	 * cancelButton.removeAttr("disabled");
+	 *
+	 * error_msg.empty(); error_msg.append(msg); error.show(); }
+	 *
+	 * var span_start = $('<span>Start: </span>'); var span_end = $('<span
+	 * style="margin-left:10px;">End: </span>'); var span_description = $('<span
+	 * style="margin-left:10px;">Description: </span>');
+	 *
+	 * dialogBody.append(error, span_start, input_date_start, input_time_start);
+	 * dialogBody.append(span_end, input_date_end, input_time_end);
+	 * dialogBody.append(span_description, input_desciption);
+	 * dialogBody.append(h4_nodes, p_nodes);
+	 *
 	 */
 };
 
@@ -956,13 +929,9 @@ var TableElem = function (data) {
 }
 
 /**
- * Model: 			Object[]
- * headers: 		String[]
- * rowProducer:		fun(obj) -> String[]
- * preFilterFun:	fun(obj) -> true | false
- * preSelectFun:	fun(obj) -> true | false
- * showCheckBoxes:	true | false
- * showFiterBox:	true | false
+ * Model: Object[] headers: String[] rowProducer: fun(obj) -> String[]
+ * preFilterFun: fun(obj) -> true | false preSelectFun: fun(obj) -> true | false
+ * showCheckBoxes: true | false showFiterBox: true | false
  */
 var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, showCheckBoxes, showFiterBox) {
 	this.model = model;
@@ -1439,7 +1408,8 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(testb
 
 		$(window).trigger('wisegui-reservation-added-'+testbedId, newReservations[k]);
 
-		// schedule events for reservation started and ended in order to e.g. display user notifications
+		// schedule events for reservation started and ended in order to e.g.
+		// display user notifications
 		var nowInMillis = new Date().valueOf();
 		if (nowInMillis < newReservations[k].from) {
 
@@ -1503,15 +1473,12 @@ WiseGuiReservationObserver.prototype.stopObservationOf = function(testbedId) {
  * WiseGuiNotificationsViewer
  * #################################################################
  *
- * Consumes wisegui events of type 'wisegui-notification' and displays them in a notification area.
- * A 'wisegui-notification' event has to carry data of the following type:
- *
- * {
- *  type     : "alert"|"block-alert"
- *  severity : "warning"|"error"|"success"|"info"
- *  message  : "Oh snap! Change this and that and try again."
- *  actions  : an array of buttons (only for block-alerts)
- * }
+ * Consumes wisegui events of type 'wisegui-notification' and displays them in a
+ * notification area. A 'wisegui-notification' event has to carry data of the
+ * following type:
+ *  { type : "alert"|"block-alert" severity : "warning"|"error"|"success"|"info"
+ * message : "Oh snap! Change this and that and try again." actions : an array
+ * of buttons (only for block-alerts) }
  *
  */
 
@@ -1578,7 +1545,8 @@ WiseGuiNotificationsViewer.prototype.buildView = function() {
  * WiseGuiExperimentDropDown
  * #################################################################
  *
- * Consumes wisegui events of type 'wisegui-reservation-ended', 'wisegui-reservation-started', 'wisegui-reservation-added'.
+ * Consumes wisegui events of type 'wisegui-reservation-ended',
+ * 'wisegui-reservation-started', 'wisegui-reservation-added'.
  *
  */
 
@@ -1617,7 +1585,7 @@ WiseGuiExperimentDropDown.prototype.update = function() {
 
 WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reservations) {
 
-	//this.view.find('.dropdown-menu li').remove();
+	// this.view.find('.dropdown-menu li').remove();
 	var menu = this.view.find('.dropdown-menu')
 	menu.empty();
 
@@ -1884,7 +1852,7 @@ WiseGuiExperimentationView.prototype.send = function(targetNodeUrns, payloadBase
 	}
 };
 
-/**********************************************************************************************************************/
+/** ******************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.buildView = function() {
 
@@ -1908,7 +1876,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<button class="btn addSet span1"> + </button>'
 			+ '						<button class="btn removeSet span1"> - </button>'
 			+ '						<button class="btn loadConfiguration span2">Load</button>'
-			+ '						<button class="btn saveConfiguration span2" disabled>Save</button>'
+			+ '						<button class="btn saveConfiguration span2">Save</button>'
 			+ '						<button class="btn primary flashNodes span3">Flash</button>'
 			+ '					</div>'
 			+ '				</div>'
@@ -1998,7 +1966,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.flashSaveConfigurationButton.bind('click', self, function(e) {
-		alert('TODO saveConfiguration');
+		self.saveFlashConfiguration();
 	});
 
 	this.flashFlashButton.bind('click', self, function(e) {
@@ -2060,7 +2028,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.addFlashConfiguration();
 };
 
-/**********************************************************************************************************************/
+/** ******************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 
@@ -2074,6 +2042,28 @@ WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 
 	return flashFormData;
 };
+
+WiseGuiExperimentationView.prototype.saveFlashConfiguration = function(button) {
+
+	var json = {
+		configurations : []
+	}
+
+	for (var i=0; i<this.flashConfigurations.length; i++) {
+		json.configurations.push(this.flashConfigurations[i].config);
+	}
+	var json = JSON.stringify(json);
+
+	//if(window.MozBlobBuilder) {
+	//	var uriContent = "data:application/octet-stream;base64," + btoa(json);
+	//	//window.open(uriContent, 'configuration.json');
+	//	window.location = uriContent;
+	//} else {
+		var bb = new BlobBuilder();
+		bb.append(json);
+		saveAs(bb.getBlob("text/plain;charset=utf-8"), "configuration.json");
+	//}
+}
 
 WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
 
@@ -2114,8 +2104,6 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
     for (var i = 0; i < byteString.length; i++) {
         ia[i] = byteString.charCodeAt(i);
     }
-
-    var BlobBuilder = (window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder);
 
     // write the ArrayBuffer to a blob, and you're done
     var bb = new BlobBuilder();
@@ -2217,9 +2205,11 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 					'<strong>' + imageFile.name + '</strong> (' + (imageFile.type || 'n/a') + ')<br/>'
 					+ imageFile.size + ' bytes'
 
-					// last modified: ' + imageFile.lastModifiedDate.toLocaleDateString()
+					// last modified: ' +
+					// imageFile.lastModifiedDate.toLocaleDateString()
 					//
-					// Crashes in FF. Even if the File interface specifies a lastModifiedDate,
+					// Crashes in FF. Even if the File interface specifies a
+					// lastModifiedDate,
 					// it is not working/existing in FF.
 					//
 					// @see https://github.com/wisebed/rest-ws/issues/32
@@ -2288,7 +2278,7 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 	);
 };
 
-/**********************************************************************************************************************/
+/** ******************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
 	this.resetSelectedNodeUrns = selectedNodeUrns;
@@ -2413,14 +2403,13 @@ WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
 
 	if (contentsEmpty) {
 		self.view.append("All nodes were flashed successfully.");
-		//setTimeout(function() {self.view.remove()}, 1000);
+		// setTimeout(function() {self.view.remove()}, 1000);
 	}
 };
 
 /**
- * #################################################################
- * Global Functions
- * #################################################################
+ * ################################################################# Global
+ * Functions #################################################################
  */
 
 function loadTestbedDetailsContainer(navigationData, parentDiv) {
@@ -2464,7 +2453,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
 
-				//Show google map
+				// Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
 
 				tabs.find('li a[href=#WisebedTestbedDetailsOverview-'+navigationData.testbedId+']').bind('change', function(e) {
