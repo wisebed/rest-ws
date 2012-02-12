@@ -1939,21 +1939,12 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 	}
 
 	if(configuration.config.image != null) {
-
 		var blob = this.dataURItoBlob(configuration.config.image);
-		var fr = new FileReader();
-		fr.onloadend = function(progressEvent) {
-			if(configuration.config.image == fr.result) {
-				imageFileInfoLabel.append(
-					'<strong>' + blob.name + '</strong> (' + (blob.type || 'n/a') + ')<br/>'
-					+ blob.size + ' bytes'
-				);
-			}
-		};
-		fr.readAsDataURL(blob);
+		imageFileInfoLabel.append(
+				'<strong>' + blob.name + '</strong> (' + (blob.type || 'n/a') + ')<br/>'
+				+ blob.size + ' bytes'
+		);
 	}
-
-
 
 	this.flashConfigurations.push(configuration);
 
