@@ -1371,7 +1371,8 @@ WiseGuiExperimentDropDown.prototype.update = function() {
 WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reservations) {
 
 	//this.view.find('.dropdown-menu li').remove();
-	this.view.find('.dropdown-menu').empty();
+	var menu = this.view.find('.dropdown-menu')
+	menu.empty();
 
 	for (var i=0; i<reservations.length; i++) {
 
@@ -1394,8 +1395,15 @@ WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reserv
 			navigateToExperiment(self.testbedId, e.data);
 		});
 
-		this.view.find('.dropdown-menu').append(li);
+		menu.append(li);
 	}
+
+	if(menu.children().length == 0) {
+		var li = $('<li style="padding:4px 15px">No reservations available</li>');
+		this.view.find('.dropdown-menu').append(li);
+		return;
+	}
+
 };
 
 WiseGuiExperimentDropDown.prototype.buildView = function() {
@@ -1404,6 +1412,9 @@ WiseGuiExperimentDropDown.prototype.buildView = function() {
 			+ '	<ul class="dropdown-menu">'
 			+ '	</ul>'
 			+ '</li>');
+
+	var li = $('<li style="padding:4px 15px">No reservations available</li>');
+	this.view.find('.dropdown-menu').append(li);
 };
 
 /**
