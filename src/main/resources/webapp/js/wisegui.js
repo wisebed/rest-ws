@@ -372,9 +372,13 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 		if(f != "") {
 			var fr = new FileReader();
 			fr.onloadend = function(progressEvent) {
-				that.hide();
-				var data = JSON.parse(fr.result);
-				callCallback(data);
+				try {
+					var data = JSON.parse(fr.result);
+					that.hide();
+					callCallback(data);
+				} catch(e) {
+					errorHandling("Error:" + e);
+				}
 			};
 			fr.readAsText(f);
 		} else {
