@@ -802,8 +802,10 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '			<tbody>'
 			+ '			</tbody>'
 			+ '		</table>'
+			+ '     <div style="padding:0px 10px">No account yet, <a href="http://wisebed.eu/site/index.php/register/" target="_blank">register here</a>.</div>'
 			+ '		</form>'
 			+ '	</div>');
+
 
 	this.okButton = $('<input class="btn primary" value="OK" style="width:25px;text-align:center;">');
 	this.cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
