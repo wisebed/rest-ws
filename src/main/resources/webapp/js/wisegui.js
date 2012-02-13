@@ -437,17 +437,16 @@ var WiseGuiReservationDialog = function(testbedId) {
 	this.testbedId = testbedId;
 	this.table = null;
 	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide"></div>');
+	$(document.body).append(this.view);
 	this.buildView();
 	this.show();
 }
 
 WiseGuiReservationDialog.prototype.hide = function() {
 	this.view.hide();
-	this.view.remove();
 };
 
 WiseGuiReservationDialog.prototype.show = function() {
-	$(document.body).append(this.view);
 	this.view.show();
 };
 
@@ -641,6 +640,7 @@ var WiseGuiLoginDialog = function(testbedId) {
 	this.loginData = { authenticationData : [] };
 
 	this.view = $('<div id="WisebedLoginDialog-'+this.testbedId+'" class="modal hide"></div>');
+	$(document.body).append(this.view);
 
 	this.okButton = null;
 	this.cancelButton = null;
@@ -717,11 +717,9 @@ WiseGuiLoginDialog.prototype.doLogout = function() {
 
 WiseGuiLoginDialog.prototype.hide = function() {
 	this.view.hide();
-	this.view.remove();
 };
 
 WiseGuiLoginDialog.prototype.show = function() {
-	$(document.body).append(this.view);
 	this.view.show();
 };
 
