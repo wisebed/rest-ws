@@ -743,6 +743,10 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 
 	var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
 	var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
+
+	helpText = 'Please enter your username in the format username@idphost (in case you have registered on wisebed.eu, use yourusername@wisebed1.itm.uni-luebeck.de)';
+	inputUsername.popover({placement:'below', animate:true, html: true, content: helpText, title: function() {return "Username";}});
+
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
 	inputUsername.keyup(function(e) {
@@ -826,13 +830,10 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
 	}
 
-	var trHelp = $('<tr/>');
-	trHelp.append($('<td colspan="4">Please enter your username in the format username@idphost (in case you have registered on wisebed.eu, use yourusername@wisebed1.itm.uni-luebeck.de)</td>'));
-
 	var trRegister = $('<tr/>');
 	trRegister.append($('<td style="padding-bottom:0px" colspan="4">No account yet, <a href="http://wisebed.eu/site/index.php/register/" target="_blank">register here</td>'));
 
-	loginFormTableBody.append(trHelp, trRegister);
+	loginFormTableBody.append(trRegister);
 };
 
 WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
