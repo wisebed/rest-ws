@@ -51,12 +51,13 @@ var WiseGuiNavigationViewer = function(navigationData) {
 	this.primaryMenu          = null;
 	this.secondaryMenu        = null;
 
-	this.loginButton          = null;
+	this.aboutButton          = null;
 	this.loginButtonLi        = null;
-	this.logoutButton         = null;
+	this.loginButton          = null;
 	this.logoutButtonLi       = null;
-	this.reservationsButton   = null;
+	this.logoutButton         = null;
 	this.reservationsButtonLi = null;
+	this.reservationsButton   = null;
 
 	this.buildView();
 };
@@ -73,11 +74,9 @@ WiseGuiNavigationViewer.prototype.buildViewForTestbed = function() {
 	this.experimentDropDown   = new WiseGuiExperimentDropDown(this.navigationData.testbedId);
 	this.primaryMenu.append(this.experimentDropDown.view);
 
-	this.secondaryMenu.append(
-			  '<li class="WiseGuiNavReservationsButton"><a href="#">Make Reservation</a></li>'
+	this.secondaryMenu.append('<li class="WiseGuiNavReservationsButton"><a href="#">Make Reservation</a></li>'
 			+ '<li class="WiseGuiNavLogoutButton"><a href="#">Logout</a></li>'
-			+ '<li class="WiseGuiNavLoginButton"><a href="#">Login</a></li>'
-	);
+			+ '<li class="WiseGuiNavLoginButton"><a href="#">Login</a></li>');
 
 	this.reservationsButtonLi = this.secondaryMenu.find('li.WiseGuiNavReservationsButton').first();
 	this.reservationsButton   = this.reservationsButtonLi.find('a').first();
@@ -153,13 +152,16 @@ WiseGuiNavigationViewer.prototype.buildViewForTestbedOverview = function() {
 
 WiseGuiNavigationViewer.prototype.buildView = function() {
 
-	this.view = $(
-			  '<div class="topbar-wrapper" style="z-index: 5;">'
+	this.view = $('<div class="topbar-wrapper" style="z-index: 5;">'
 			+ '	<div class="topbar" data-dropdown="dropdown">'
 			+ '		<div class="topbar-inner">'
 			+ '			<div class="container">'
 			+ '				<ul class="nav"/>'
-			+ '				<ul class="nav secondary-nav"/>'
+			+ '				<ul class="nav secondary-nav">'
+			+ '					<li class="WiseGuiNavAboutButton">'
+			+ '						<a href="#">About</a>'
+			+ '				</li>'
+			+ '				</ul>'
 			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
@@ -174,6 +176,27 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
 	} else if (this.navigationData.nav == 'testbed') {
 		this.buildViewForTestbed();
 	}
+
+	this.aboutButton = this.view.find('li.WiseGuiNavAboutButton a').first();
+	this.aboutButton.popover({
+		offset    : 0,
+		placement : 'left',
+		trigger   : 'manual',
+		title     : function() {return 'About WiseGui'},
+		html      : true,
+		content   : 'This is an open-source project published under the terms of the BSD license. The sources are freely'
+				+ ' available from <a href="https://github.com/wisebed/rest-ws" target="_blank">github.com/wisebed/rest-ws</a>.'
+				+ ' <br/>'
+				+ ' <br/>'
+				+ '	&copy; <a href="http://www.itm.uni-luebeck.de/users/bimschas/" target="_blank">Daniel Bimschas</a>,'
+				+ '	<a href="http://www.itm.uni-luebeck.de/users/pfisterer/" target="_blank">Dennis Pfisterer</a><br/>'
+	}).click(function(e) { e.preventDefault();});
+	var self = this;
+	this.aboutButtonPopoverVisible = false;
+	this.aboutButton.bind('click', function(e) {
+		self.aboutButtonPopoverVisible = !self.aboutButtonPopoverVisible;
+		self.aboutButton.popover(self.aboutButtonPopoverVisible ? 'show' : 'hide');
+	});
 };
 
 /**

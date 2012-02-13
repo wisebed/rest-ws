@@ -73,3 +73,11 @@ input.success {
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
+
+#WisebedContainer {
+}
+
+.CopyrightContainer, .CopyrightContainer > a {
+	color: #CCC;
+	margin-top: 20px;
+}
