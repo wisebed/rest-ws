@@ -1831,7 +1831,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	<div class="row">'
 			+ '		<div class="span8"><h2>Live Data</h2></div>'
 			+ '		<div class="span8" style="text-align: right">'
-			+ '			Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages.'
+			+ '			Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages'
 			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'">'
 			+ '				<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
 			+ '				Follow Outputs'
