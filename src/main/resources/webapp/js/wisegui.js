@@ -1841,7 +1841,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</div>'
 			+ '	<div class="row">'
 			+ '		<div class="span16">'
-			+ '			<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '			<textarea class="WiseGuiOutputsTextArea" id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>'
@@ -1919,7 +1919,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '</div>');
 
 	this.outputsNumMessagesInput      = this.view.find('input.WiseGuiExperimentViewOutputNumMessages').first();
-	this.outputsTextArea              = this.view.find('#' + this.outputsTextAreaId).first();
+	this.outputsTextArea              = this.view.find('textarea.WiseGuiOutputsTextArea').first();
 	this.outputsClearButton           = this.view.find('button.WiseGuiExperimentViewOutputsClearButton').first();
 	this.outputsFollowCheckbox        = this.view.find('input.FollowOutputsCheckbox').first();
 
