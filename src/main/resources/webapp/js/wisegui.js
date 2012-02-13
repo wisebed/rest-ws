@@ -2418,7 +2418,7 @@ function buildReservationTable(reservationsTab, navigationData) {
 
 	var now = new Date();
 	var tomorrowSameTime = new Date();
-	tomorrowSameTime.setDate(now.getDate() + 1);
+	tomorrowSameTime.setDate(now.getDate() + 7);
 
 	Wisebed.reservations.getPublic(
 			navigationData.testbedId,
@@ -2455,7 +2455,8 @@ function buildReservationTable(reservationsTab, navigationData) {
 					tableRows[i][3] = nodesContainer;
 				}
 
-				var table = buildTable(tableHead, tableRows);
+				var noEntriesMessage = 'There are no reservations for the next week yet!';
+				var table = buildTable(tableHead, tableRows, noEntriesMessage);
 				reservationsTab.empty()
 				reservationsTab.append(table);
 				if (tableRows.length > 0) {
@@ -2467,7 +2468,7 @@ function buildReservationTable(reservationsTab, navigationData) {
 }
 
 
-function buildTable(tableHead, tableRows) {
+function buildTable(tableHead, tableRows, noEntriesMessage) {
 
 	var table = $('<table class="zebra-striped"/>"');
 	var thead = $('<thead/>');
@@ -2479,6 +2480,11 @@ function buildTable(tableHead, tableRows) {
 	}
 
 	var tbody = $('<tbody/>');
+
+	if(tableRows.length == 0 && noEntriesMessage) {
+	    tbody.append('<tr><td colspan="'+tableHead.length+'">'+noEntriesMessage+'</td></tr>');
+	}
+
 	for (var k=0; k<tableRows.length; k++) {
 		var row = $('<tr/>');
 		tbody.append(row);
