@@ -129,6 +129,18 @@ var Wisebed = new function() {
 
 	this.experiments = new function() {
 
+		this.getConfiguration = function (url, callbackDone, callbackError) {
+			$.ajax({
+				url: wisebedBaseUrl + "/rest/2.3/experimentconfiguration",
+				type: "GET",
+				data: {url: url},
+				success: callbackDone,
+				error: callbackError,
+				dataType: "json",
+				xhrFields: { withCredentials: true }
+			});
+		}
+
 		this.getUrl = function(testbedId, reservation, callbackDone, callbackError) {
 
 			var secretReservationKeys = {

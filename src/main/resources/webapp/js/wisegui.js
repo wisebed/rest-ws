@@ -332,8 +332,6 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 
 	function loadFromURL() {
 
-		var url = input_url.val()
-
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
 			errorHandling("Configuration error: " + jqXHR.responseText);
 		};
@@ -342,16 +340,13 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 			callCallback(data);
 		};
 
-		$.ajax({
-			url: url,
-			success: callbackDone,
-			error: callbackError,
-			dataType: "json",
-			xhrFields: { withCredentials: true }
-		});
+		Wisebed.experiments.getConfiguration($.trim(input_url.val()), callbackDone.bind(that), callbackError.bind(that));
 	}
 
 	function loadFromFile() {
+
+		var that = this;
+
 		// TODO: Why does jQuery not work here?
 		// var files = input_file.attr('files');
 		// var f = input_file.files[0];
@@ -385,7 +380,7 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	var dialogBody = $('<div class="modal-body" style="height:70px;overflow:auto;padding:5px"/>');
 
 	// var url =
-	// "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+	// "?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
 	var url = "";
 
 	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
