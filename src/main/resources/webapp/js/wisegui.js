@@ -1550,7 +1550,7 @@ WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reserv
 
 WiseGuiExperimentDropDown.prototype.buildView = function() {
 	this.view = $('<li class="dropdown">'
-			+ '	<a href="#" class="dropdown-toggle">Experiments</a>'
+			+ '	<a href="#" class="dropdown-toggle">My Reservations</a>'
 			+ '	<ul class="dropdown-menu">'
 			+ '	</ul>'
 			+ '</li>');
