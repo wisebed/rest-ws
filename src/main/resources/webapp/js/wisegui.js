@@ -1713,6 +1713,8 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.resetDivId              = this.experimentationDivId+'-reset';
 	this.scriptingDivId          = this.experimentationDivId+'-scripting';
 
+	this.view = $('<div class="WiseGuiExperimentationView"/>');
+
 	this.flashConfigurations     = [];
 	this.outputsNumMessages      = 100;
 	this.outputs                 = [];
@@ -1720,8 +1722,6 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.flashSelectedNodeUrns   = null;
 	this.resetSelectedNodeUrns   = null;
 	this.socket                  = null;
-
-	this.view = $('<div class="WiseGuiExperimentationView"/>');
 
 	this.buildView();
 	this.connectToExperiment();
