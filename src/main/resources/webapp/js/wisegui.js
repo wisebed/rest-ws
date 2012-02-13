@@ -414,6 +414,22 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	var input_checkbox_file = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_file_' + this.testbedId + '"value="file">');
 	var input_file = $('<input type="file" id="input_file_' + this.testbedId + '"/>')
 
+	input_url.focusin(
+		function() {
+			input_checkbox_file.attr('checked', false);
+			input_checkbox_url.attr('checked', true);
+		}
+	);
+
+	input_file.focusin(
+		function() {
+			input_checkbox_url.attr('checked', false);
+			input_checkbox_file.attr('checked', true);
+		}
+	);
+
+
+
 	dialogBody.append(input_checkbox_url, label_url, input_url, $("<br>"), input_checkbox_file, label_file, input_file);
 
 	/*
@@ -431,9 +447,9 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 
 		var val = dialogBody.find("input:checked").val();
 		if(val == "url") {
-			loadFromURL();
+			loadFromURL.bind(that)();
 		} else if (val == "file") {
-			loadFromFile();
+			loadFromFile.bind(that)();
 		}
 	});
 
@@ -2116,7 +2132,6 @@ WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
 	button.attr("disabled", "true");
 
 	var that = this;
-	new WiseGuiLoadConfigurationDialog(this.testbedId, configCallback.bind(this));
 
 	// @param: Type is conf-object
 	function configCallback(conf) {
@@ -2133,6 +2148,8 @@ WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
 			that.addFlashConfiguration(conf[i]);
 		}
 	}
+
+	new WiseGuiLoadConfigurationDialog(this.testbedId, configCallback.bind(this));
 }
 
 // @see: http://stackoverflow.com/a/5100158/605890
@@ -2190,19 +2207,49 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 		imageFileButton     : imageFileButton,
 		imageFileLabel      : imageFileInfoLabel,
 		tr                  : tr,
-		config              : (typeof(conf) == "undefined") ? { nodeUrns : null, image : null } : conf
+		config              : { nodeUrns : null, image : null }
 	};
 
-	if(configuration.config.nodeUrns != null && configuration.config.nodeUrns.length > 0) {
-		nodeSelectionLabel.append((configuration.config.nodeUrns.length == 1 ? '1 node selected' : (configuration.config.nodeUrns.length + ' nodes selected')));
-	}
+	if(typeof(conf) == "object") {
+		// Set the image
+		if(conf.image != null) {
+			configuration.config.image = conf.image;
+			var blob = this.dataURItoBlob(configuration.config.image);
+			imageFileInfoLabel.append(
+					'<strong>' + blob.name + '</strong> (' + (blob.type || 'n/a') + ')<br/>'
+					+ blob.size + ' bytes'
+			);
+		}
+		// Set the node URNs
+		if(conf.nodeUrns != null) {
 
-	if(configuration.config.image != null) {
-		var blob = this.dataURItoBlob(configuration.config.image);
-		imageFileInfoLabel.append(
-				'<strong>' + blob.name + '</strong> (' + (blob.type || 'n/a') + ')<br/>'
-				+ blob.size + ' bytes'
-		);
+			var checkNodes = function(data) {
+				var reservatedIds = [];
+				for(var i = 0; i < data.setup.node.length; i++) {
+					reservatedIds.push(data.setup.node[i].id);
+				}
+
+				var preSelectedIds = [];
+				for(var i = 0; i < conf.nodeUrns.length;i++) {
+					if($.inArray(conf.nodeUrns[i], reservatedIds) >= 0) {
+						preSelectedIds.push(conf.nodeUrns[i]);
+					}
+				}
+
+				configuration.config.nodeUrns = preSelectedIds;
+				if(configuration.config.nodeUrns.length > 0) {
+					nodeSelectionLabel.append((configuration.config.nodeUrns.length == 1 ? '1 node selected' : (configuration.config.nodeUrns.length + ' nodes selected')));
+				}
+			}
+
+			Wisebed.getWiseMLAsJSON(this.testbedId, this.experimentId, checkNodes,
+					function(jqXHR, textStatus, errorThrown) {
+						console.log('TODO handle error in WiseGuiExperimentationView');
+					}
+			);
+		}
+
+
 	}
 
 	this.flashConfigurations.push(configuration);
