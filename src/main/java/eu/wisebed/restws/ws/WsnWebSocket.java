@@ -115,7 +115,9 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 
 	private void sendMessage(final String data) {
 		try {
-			connection.sendMessage(data);
+			if (connection != null) {
+				connection.sendMessage(data);
+			}
 		} catch (IOException e) {
 			log.error("IOException while sending message over websocket connection " + connection);
 		}
