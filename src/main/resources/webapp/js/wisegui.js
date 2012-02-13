@@ -1689,9 +1689,10 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 
 	this.view = $('<div class="WiseGuiExperimentationView"/>');
 
+	this.outputsFollow         = true;
 	this.flashSelectedNodeUrns = null;
 	this.resetSelectedNodeUrns = null;
-	this.socket = null;
+	this.socket                = null;
 
 	this.buildView();
 	this.connectToExperiment();
@@ -1714,7 +1715,9 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 				atob(message.payloadBase64) + '\n'
 		);
 
-		this.outputsTextArea.scrollTop(this.outputsTextArea[0].scrollHeight);
+		if (this.outputsFollow) {
+			this.outputsTextArea.scrollTop(this.outputsTextArea[0].scrollHeight);
+		}
 
 	} else if (message.type == 'notification') {
 
@@ -1784,8 +1787,21 @@ WiseGuiExperimentationView.prototype.send = function(targetNodeUrns, payloadBase
 WiseGuiExperimentationView.prototype.buildView = function() {
 
 	this.view.append('<div class="WiseGuiExperimentationViewOutputs">'
-			+ '	<h2>Live Data</h2>'
-			+ '	<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '	<div class="row">'
+			+ '		<div class="span8"><h2>Live Data</h2></div>'
+			+ '		<div class="span8" style="text-align: right">'
+			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'">'
+			+ '				<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
+			+ '				Follow Outputs'
+			+ '			</label>'
+			+ '			<button class="btn WiseGuiExperimentViewOutputsClearButton">Clear</button>'
+			+ '		</div>'
+			+ '	</div>'
+			+ '	<div class="row">'
+			+ '		<div class="span16">'
+			+ '			<textarea id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '		</div>'
+			+ '	</div>'
 			+ '</div>'
 			+ '<div class="WiseGuiExperimentationViewControls">'
 			+ '	<h2>Controls</h2></div>'
@@ -1861,6 +1877,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '</div>');
 
 	this.outputsTextArea              = this.view.find('#' + this.outputsTextAreaId).first();
+	this.outputsClearButton           = this.view.find('button.WiseGuiExperimentViewOutputsClearButton').first();
+	this.outputsFollowCheckbox        = this.view.find('input.FollowOutputsCheckbox').first();
 
 	this.flashAddSetButton            = this.view.find('#'+this.flashDivId + ' button.addSet').first();
 	this.flashRemoveSetButton         = this.view.find('#'+this.flashDivId + ' button.removeSet').first();
@@ -1910,6 +1928,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	// bind actions for send message tab buttons
+	this.outputsFollowCheckbox.bind('click', self, function(e) {
+		self.outputsFollow = self.outputsFollowCheckbox[0].checked;
+	});
+
+	this.outputsClearButton.bind('click', self, function(e) {
+		self.outputsTextArea[0].value = '';
+	});
+
 	this.sendNodeSelectionButton.bind('click', self, function(e) {
 		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
 				self.testbedId,
