@@ -772,6 +772,22 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 				+'If you have registered on <strong>wisebed.eu</strong>, use <strong>yourusername@wisebed1.itm.uni-luebeck.de</strong>.';
 	inputUsername.popover({placement:'below', animate:true, html: true, content: helpText, title: function() {return "Format of the username field";}});
 
+	/*
+	trigger: 'manual',
+
+	var pop = img_help
+	img_help.click(function() {
+		if(!that.helpTooltipIsVisable) {
+			img_help.popover("show");
+		} else {
+			img_help.popover("hide");
+		}
+		// Invert
+		that.helpTooltipIsVisable = !that.helpTooltipIsVisable;
+	});
+
+		*/
+
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
 	inputUsername.keyup(function(e) {
@@ -1593,11 +1609,13 @@ WiseGuiExperimentDropDown.prototype.buildView = function() {
  * #################################################################
  */
 
-var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, bodyHtml) {
+var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, bodyHtml, preSelected) {
 
 	this.testbedId = testbedId;
 	this.experimentId = experimentId;
 	this.table = null;
+
+	this.preSelected = preSelected;
 
 	this.dialogDivId = 'WiseGuiNodeSelectionDialog-' + Math.random();
 
@@ -1635,6 +1653,11 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
 		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true, true);
 
+		// Appy preelected
+		if(typeof(self.preSelected) == "function") {
+			self.table.applySelcected(self.preSelected);
+		}
+
 		self.dialogDiv.find('.modal-footer .secondary').first().bind(
 				'click',
 				{dialog : self},
@@ -1665,6 +1688,11 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 	);
 };
 
+/**
+ * #################################################################
+ * WiseGuiTestbedsView
+ * #################################################################
+ */
 
 var WiseGuiTestbedsView = function(testbeds) {
 
@@ -1991,11 +2019,26 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.sendNodeSelectionButton.bind('click', self, function(e) {
+
+		var preSelected = null;
+
+		// TODO: Refactor, also used in addFlashConfiguration
+		if(self.sendSelectedNodeUrns != null && self.sendSelectedNodeUrns.length > 0) {
+			preSelected = function(data) {
+				var nodeids = self.sendSelectedNodeUrns;
+				for(var i = 0; i < nodeids.length; i++) {
+					if(data.id == nodeids[i]) return true;
+				}
+				return false;
+			}
+		}
+
 		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
 				self.testbedId,
 				self.experimentId,
 				'Select Node URNs',
-				'Please select the nodes to which you want to send a message.'
+				'Please select the nodes to which you want to send a message.',
+				preSelected
 		);
 		nodeSelectionDialog.show(function(selectedNodeUrns){
 			self.sendSelectedNodeUrns = selectedNodeUrns;
@@ -2172,12 +2215,27 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 	var self = this;
 
 	nodeSelectionButton.bind('click', function() {
+
+		var preSelected = null;
+
+		if(configuration.config.nodeUrns != null && configuration.config.nodeUrns.length > 0) {
+			preSelected = function(data) {
+				var nodeids = configuration.config.nodeUrns;
+				for(var i = 0; i < nodeids.length; i++) {
+					if(data.id == nodeids[i]) return true;
+				}
+				return false;
+			}
+		}
+
 		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
 				self.testbedId,
 				self.experimentId,
 				'Select Nodes',
-				'Please select the nodes you want to flash.'
+				'Please select the nodes you want to flash.',
+				preSelected
 		);
+
 		nodeSelectionButton.attr('disabled', true);
 		nodeSelectionDialog.show(
 			function(nodeUrns) {
@@ -2310,11 +2368,25 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 
 				self.setResetSelectNodesButtonDisabled(false);
 
+				var preSelected = null;
+
+				// TODO: Refactor, also used in addFlashConfiguration
+				if(self.resetSelectedNodeUrns != null && self.resetSelectedNodeUrns.length > 0) {
+					preSelected = function(data) {
+						var nodeids = self.resetSelectedNodeUrns;
+						for(var i = 0; i < nodeids.length; i++) {
+							if(data.id == nodeids[i]) return true;
+						}
+						return false;
+					}
+				}
+
 				var selectionDialog = new WiseGuiNodeSelectionDialog(
 						self.testbedId,
 						self.experimentId,
 						'Reset Nodes',
-						'Please select the nodes you want to reset.'
+						'Please select the nodes you want to reset.',
+						preSelected
 				);
 
 				selectionDialog.show(function(selectedNodeUrns) { self.updateResetSelectNodeUrns(selectedNodeUrns); });
