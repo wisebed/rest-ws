@@ -1987,7 +1987,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 
 	// bind actions for reset tab buttons
 	this.resetNodeSelectionButton.bind('click', self, function(e) {
-		e.data.showResetNodeSelectionDialog()
+		e.data.showResetNodeSelectionDialog();
 	});
 
 	this.resetResetButton.bind('click', self, function(e) {
@@ -2011,7 +2011,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.outputsClearButton.bind('click', self, function(e) {
-		self.outputsTextArea[0].value = '';
+		self.outputsTextArea.html('');
 	});
 
 	this.sendNodeSelectionButton.bind('click', self, function(e) {
