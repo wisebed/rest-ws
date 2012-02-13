@@ -1708,17 +1708,35 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.resetDivId              = this.experimentationDivId+'-reset';
 	this.scriptingDivId          = this.experimentationDivId+'-scripting';
 
-	this.flashConfigurations = [];
+	this.flashConfigurations     = [];
+	this.outputsNumMessages      = 100;
+	this.outputs                 = [];
+	this.outputsFollow           = true;
+	this.flashSelectedNodeUrns   = null;
+	this.resetSelectedNodeUrns   = null;
+	this.socket                  = null;
 
 	this.view = $('<div class="WiseGuiExperimentationView"/>');
 
-	this.outputsFollow         = true;
-	this.flashSelectedNodeUrns = null;
-	this.resetSelectedNodeUrns = null;
-	this.socket                = null;
-
 	this.buildView();
 	this.connectToExperiment();
+};
+
+WiseGuiExperimentationView.prototype.printMessagesToTextArea = function() {
+
+	// remove messages that are too much
+	if (this.outputs.length > this.outputsNumMessages) {
+		var elementsToRemove = this.outputs.length - this.outputsNumMessages;
+		this.outputs.splice(0, elementsToRemove);
+	}
+
+	// 'draw' messages to textarea
+	this.outputsTextArea.html(this.outputs.join("\n"));
+
+	// scroll down if active
+	if (this.outputsFollow) {
+		this.outputsTextArea.scrollTop(this.outputsTextArea[0].scrollHeight);
+	}
 };
 
 WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
@@ -1732,15 +1750,10 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 
 	if (message.type == 'upstream') {
 
-		this.outputsTextArea.append(
-				message.timestamp           + " | " +
-				message.sourceNodeUrn       + " | " +
-				atob(message.payloadBase64) + '\n'
-		);
+		// append new message
+		this.outputs[this.outputs.length] = message.timestamp + " | " + message.sourceNodeUrn + " | " + atob(message.payloadBase64);
 
-		if (this.outputsFollow) {
-			this.outputsTextArea.scrollTop(this.outputsTextArea[0].scrollHeight);
-		}
+		this.printMessagesToTextArea();
 
 	} else if (message.type == 'notification') {
 
@@ -1813,6 +1826,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	<div class="row">'
 			+ '		<div class="span8"><h2>Live Data</h2></div>'
 			+ '		<div class="span8" style="text-align: right">'
+			+ '			Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages.'
 			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'">'
 			+ '				<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
 			+ '				Follow Outputs'
@@ -1899,6 +1913,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</div>'
 			+ '</div>');
 
+	this.outputsNumMessagesInput      = this.view.find('input.WiseGuiExperimentViewOutputNumMessages').first();
 	this.outputsTextArea              = this.view.find('#' + this.outputsTextAreaId).first();
 	this.outputsClearButton           = this.view.find('button.WiseGuiExperimentViewOutputsClearButton').first();
 	this.outputsFollowCheckbox        = this.view.find('input.FollowOutputsCheckbox').first();
@@ -1951,6 +1966,17 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	// bind actions for send message tab buttons
+	this.outputsNumMessagesInput.bind('change', self, function(e) {
+		var fieldValue = parseInt(self.outputsNumMessagesInput[0].value);
+		if (isNaN(fieldValue)) {
+			self.outputsNumMessagesInput.addClass('error');
+		} else {
+			self.outputsNumMessagesInput.removeClass('error');
+			self.outputsNumMessages = fieldValue;
+			self.printMessagesToTextArea();
+		}
+	});
+
 	this.outputsFollowCheckbox.bind('click', self, function(e) {
 		self.outputsFollow = self.outputsFollowCheckbox[0].checked;
 	});
