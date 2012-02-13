@@ -2374,7 +2374,7 @@ WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
 
 function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
-	parentDiv.append($('<h1>Testbed Details '+navigationData.testbedId+'</h1>'));
+	parentDiv.append($('<h1>Testbed Details "'+testbeds.testbedMap[navigationData.testbedId].name+'"</h1>'));
 
 	var tabs = $('<ul class="tabs">'
 			+ '	<li class="active"><a href="#WisebedTestbedDetailsOverview-'+navigationData.testbedId+'">Description</a></li>'
