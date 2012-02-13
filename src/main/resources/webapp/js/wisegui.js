@@ -1730,7 +1730,7 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.testbedId = testbedId;
 	this.experimentId = experimentId;
 
-	this.experimentationDivId    = 'WisebedExperimentationDiv-'+testbedId+'-'+experimentId;
+	this.experimentationDivId    = 'WisebedExperimentationDiv-'+testbedId+'-'+experimentId.replace(/=/g, '');
 	this.outputsTextAreaId       = this.experimentationDivId+'-outputs-textarea';
 	this.sendDivId               = this.experimentationDivId+'-send';
 	this.flashDivId              = this.experimentationDivId+'-flash';
