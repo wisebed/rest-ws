@@ -2011,7 +2011,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.outputsClearButton.bind('click', self, function(e) {
-		self.outputsTextArea.html('');
+		self.outputs.length = 0;
+		self.printMessagesToTextArea();
 	});
 
 	this.sendNodeSelectionButton.bind('click', self, function(e) {
