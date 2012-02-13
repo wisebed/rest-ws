@@ -355,8 +355,6 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 
 	function loadFromURL() {
 
-		var url = input_url.val()
-
 		var callbackError = function(jqXHR, textStatus, errorThrown) {
 			errorHandling("Configuration error: " + jqXHR.responseText);
 		};
@@ -365,16 +363,13 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 			callCallback(data);
 		};
 
-		$.ajax({
-			url: url,
-			success: callbackDone,
-			error: callbackError,
-			dataType: "json",
-			xhrFields: { withCredentials: true }
-		});
+		Wisebed.experiments.getConfiguration($.trim(input_url.val()), callbackDone.bind(that), callbackError.bind(that));
 	}
 
 	function loadFromFile() {
+
+		var that = this;
+
 		// TODO: Why does jQuery not work here?
 		// var files = input_file.attr('files');
 		// var f = input_file.files[0];
@@ -408,7 +403,7 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	var dialogBody = $('<div class="modal-body" style="height:70px;overflow:auto;padding:5px"/>');
 
 	// var url =
-	// "http://wisebed.itm.uni-luebeck.de/rest/2.3/experimentconfiguration/?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
+	// "?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
 	var url = "";
 
 	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
@@ -465,17 +460,16 @@ var WiseGuiReservationDialog = function(testbedId) {
 	this.testbedId = testbedId;
 	this.table = null;
 	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide"></div>');
+	$(document.body).append(this.view);
 	this.buildView();
 	this.show();
 }
 
 WiseGuiReservationDialog.prototype.hide = function() {
 	this.view.hide();
-	this.view.remove();
 };
 
 WiseGuiReservationDialog.prototype.show = function() {
-	$(document.body).append(this.view);
 	this.view.show();
 };
 
@@ -669,6 +663,7 @@ var WiseGuiLoginDialog = function(testbedId) {
 	this.loginData = { authenticationData : [] };
 
 	this.view = $('<div id="WisebedLoginDialog-'+this.testbedId+'" class="modal hide"></div>');
+	$(document.body).append(this.view);
 
 	this.okButton = null;
 	this.cancelButton = null;
@@ -745,11 +740,9 @@ WiseGuiLoginDialog.prototype.doLogout = function() {
 
 WiseGuiLoginDialog.prototype.hide = function() {
 	this.view.hide();
-	this.view.remove();
 };
 
 WiseGuiLoginDialog.prototype.show = function() {
-	$(document.body).append(this.view);
 	this.view.show();
 };
 
@@ -773,6 +766,12 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 
 	var inputUrnPrefix = $('<input type="text" id="urnprefix'+i+'" name="urnprefix'+i+'" value="'+urnPrefix+'" readonly/>');
 	var inputUsername = $('<input type="text" id="username'+i+'" name="username'+i+'" value="'+username+'"/>');
+
+	helpText = 'Please enter your username in the format <strong>username@idphost</strong>. '
+				+ '<br/><br/>'
+				+'If you have registered on <strong>wisebed.eu</strong>, use <strong>yourusername@wisebed1.itm.uni-luebeck.de</strong>.';
+	inputUsername.popover({placement:'below', animate:true, html: true, content: helpText, title: function() {return "Format of the username field";}});
+
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
 	inputUsername.keyup(function(e) {
@@ -833,6 +832,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '		</form>'
 			+ '	</div>');
 
+
 	this.okButton = $('<input class="btn primary" value="OK" style="width:25px;text-align:center;">');
 	this.cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
 
@@ -854,6 +854,11 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	for (var i=0; i<urnPrefixes.length; i++) {
 		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
 	}
+
+	var trRegister = $('<tr/>');
+	trRegister.append($('<td style="padding-bottom:0px" colspan="4">No account yet? <a href="http://wisebed.eu/site/index.php/register/" target="_blank">Register here!</td>'));
+
+	loginFormTableBody.append(trRegister);
 };
 
 WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
