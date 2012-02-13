@@ -802,7 +802,6 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '			<tbody>'
 			+ '			</tbody>'
 			+ '		</table>'
-			+ '     <div style="padding:0px 10px">No account yet, <a href="http://wisebed.eu/site/index.php/register/" target="_blank">register here</a>.</div>'
 			+ '		</form>'
 			+ '	</div>');
 
@@ -828,6 +827,14 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	for (var i=0; i<urnPrefixes.length; i++) {
 		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
 	}
+
+	var trHelp = $('<tr/>');
+	trHelp.append($('<td colspan="4">Please enter your username in the format username@idphost (in case you have registered on wisebed.eu, use yourusername@wisebed1.itm.uni-luebeck.de)</td>'));
+
+	var trRegister = $('<tr/>');
+	trRegister.append($('<td style="padding-bottom:0px" colspan="4">No account yet, <a href="http://wisebed.eu/site/index.php/register/" target="_blank">register here</td>'));
+
+	loginFormTableBody.append(trHelp, trRegister);
 };
 
 WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
