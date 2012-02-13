@@ -1743,8 +1743,8 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.outputsNumMessages      = 100;
 	this.outputs                 = [];
 	this.outputsFollow           = true;
-	this.flashSelectedNodeUrns   = null;
-	this.resetSelectedNodeUrns   = null;
+	this.sendSelectedNodeUrns    = [];
+	this.resetSelectedNodeUrns   = [];
 	this.socket                  = null;
 
 	this.buildView();
@@ -1865,7 +1865,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '	</div>'
 			+ '	<div class="row">'
 			+ '		<div class="span16">'
-			+ '			<textarea class="WiseGuiOutputsTextArea" id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
+			+ '			<textarea class="WiseGuiExperimentViewOutputsTextArea" id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>'
@@ -1879,14 +1879,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '			<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
 			+ '		</ul>'
 			+ '		<div class="tab-content">'
-			+ '			<div class="active tab-pane" id="'+this.flashDivId+'">'
+			+ '			<div class="active tab-pane WiseGuiExperimentsViewFlashControl" id="'+this.flashDivId+'">'
 			+ '				<div class="row">'
 			+ '					<div class="span10">'
-			+ '						<button class="btn addSet span1"> + </button>'
-			+ '						<button class="btn removeSet span1"> - </button>'
-			+ '						<button class="btn loadConfiguration span2">Load</button>'
-			+ '						<button class="btn saveConfiguration span2">Save</button>'
-			+ '						<button class="btn primary flashNodes span3">Flash</button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlAddSet span1"> + </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet span1"> - </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration span2">Load</button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration span2">Save</button>'
+			+ '						<button class="btn primary WiseGuiExperimentsViewFlashControlFlashNodes span3">Flash</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
@@ -1907,20 +1907,20 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '					</div>'
 			+ '				</div>'
 			+ '			</div>'
-			+ '			<div class="tab-pane" id="'+this.resetDivId+'">'
+			+ '			<div class="tab-pane WiseGuiExperimentsViewResetControl" id="'+this.resetDivId+'">'
 		  	+ '				<div class="row">'
 		  	+ '					<div class="span4">'
-			+ '						<button class="btn selectNodeUrns span4">Select Nodes</button>'
+			+ '						<button class="btn WiseGuiExperimentsViewResetControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
 		  	+ '					<div class="span4">'
-			+ '						<div class="selectedNodeUrnsDiv span4">&nbsp;</div>'
+			+ '						<div class="WiseGuiExperimentsViewResetControlResetSelectedNodeUrnsDiv span4">&nbsp;</div>'
 			+ '					</div>'
 		  	+ '					<div class="span8 pull-left">'
-			+ '						<button class="btn primary resetNodeUrns span4" disabled>Reset Nodes</button>'
+			+ '						<button class="btn primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
 			+ '					</div>'
 		  	+ '				</div>'
 			+ '			</div>'
-		 	+ '			<div class="tab-pane" id="'+this.sendDivId+'">'
+		 	+ '			<div class="tab-pane WiseGuiExperimentsViewSendControl" id="'+this.sendDivId+'">'
 		  	+ '				<div class="row">'
 		  	+ '					<div class="span16">'
 		  	+ '						<p>Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).</p>'
@@ -1929,13 +1929,13 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '				</div>'
 		  	+ '				<div class="row">'
 		  	+ '					<div class="span16">'
-		  	+ '						<button class="btn selectNodeUrns span4">Select Nodes</button>'
-		  	+ '						<input type="text" class="sendMessageInput span8"/>'
-		  	+ '						<button class="btn primary sendMessage span4">Send message</button><br/>'
+		  	+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
+		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span8"/>'
+		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
 		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '			</div>'
-			+ '			<div class="tab-pane" id="'+this.scriptingDivId+'">'
+			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingDivId+'">'
 			+ '				Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
 			+ '			</div>'
 			+ '		</div>'
@@ -1943,24 +1943,23 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '</div>');
 
 	this.outputsNumMessagesInput      = this.view.find('input.WiseGuiExperimentViewOutputNumMessages').first();
-	this.outputsTextArea              = this.view.find('textarea.WiseGuiOutputsTextArea').first();
+	this.outputsTextArea              = this.view.find('textarea.WiseGuiExperimentViewOutputsTextArea').first();
 	this.outputsClearButton           = this.view.find('button.WiseGuiExperimentViewOutputsClearButton').first();
 	this.outputsFollowCheckbox        = this.view.find('input.FollowOutputsCheckbox').first();
 
-	this.flashAddSetButton            = this.view.find('#'+this.flashDivId + ' button.addSet').first();
-	this.flashRemoveSetButton         = this.view.find('#'+this.flashDivId + ' button.removeSet').first();
-	this.flashLoadConfigurationButton = this.view.find('#'+this.flashDivId + ' button.loadConfiguration').first();
-	this.flashSaveConfigurationButton = this.view.find('#'+this.flashDivId + ' button.saveConfiguration').first();
-	this.flashFlashButton             = this.view.find('#'+this.flashDivId + ' button.flashNodes').first();
-	this.flashConfigurationsTableBody = this.view.find('#'+this.flashDivId + ' table tbody').first();
+	this.flashAddSetButton            = this.view.find('button.WiseGuiExperimentsViewFlashControlAddSet').first();
+	this.flashRemoveSetButton         = this.view.find('button.WiseGuiExperimentsViewFlashControlRemoveSet').first();
+	this.flashLoadConfigurationButton = this.view.find('button.WiseGuiExperimentsViewFlashControlLoadConfiguration').first();
+	this.flashSaveConfigurationButton = this.view.find('button.WiseGuiExperimentsViewFlashControlSaveConfiguration').first();
+	this.flashFlashButton             = this.view.find('button.WiseGuiExperimentsViewFlashControlFlashNodes').first();
+	this.flashConfigurationsTableBody = this.view.find('div.WiseGuiExperimentsViewFlashControl table tbody').first();
 
-	this.resetNodeSelectionButton     = this.view.find('#'+this.resetDivId + ' button.selectNodeUrns').first();
-	this.resetResetButton             = this.view.find('#'+this.resetDivId + ' button.resetNodeUrns').first();
+	this.resetNodeSelectionButton     = this.view.find('button.WiseGuiExperimentsViewResetControlSelectNodeUrns').first();
+	this.resetResetButton             = this.view.find('button.WiseGuiExperimentsViewResetControlResetNodeUrns').first();
 
-	this.sendNodeSelectionButton      = this.view.find('#'+this.sendDivId + ' button.selectNodeUrns').first();
-	this.sendSelectedNodeUrns         = [];
-	this.sendMessageInput             = this.view.find('#'+this.sendDivId + ' input.sendMessageInput').first();
-	this.sendSendButton               = this.view.find('#'+this.sendDivId + ' button.sendMessage').first();
+	this.sendNodeSelectionButton      = this.view.find('button.WiseGuiExperimentsViewSendControlSelectNodeUrns').first();
+	this.sendMessageInput             = this.view.find('input.WiseGuiExperimentsViewSendControlSendMessageInput').first();
+	this.sendSendButton               = this.view.find('button.WiseGuiExperimentsViewSendControlSendMessage').first();
 
 	var self = this;
 
@@ -2350,7 +2349,7 @@ WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(select
 	if (selectedNodeUrns.length > 0) {
 		this.setResetButtonDisabled(false);
 	}
-	var selectNodeUrnsDiv = this.view.find('#'+this.resetDivId+' .selectedNodeUrnsDiv').first();
+	var selectNodeUrnsDiv = this.view.find('div.WiseGuiExperimentsViewResetControlResetSelectedNodeUrnsDiv').first();
 	selectNodeUrnsDiv.html((selectedNodeUrns.length == 1 ? '1 node selected' : selectedNodeUrns.length + ' nodes selected'));
 };
 
@@ -2386,21 +2385,22 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 						preSelected
 				);
 
-				selectionDialog.show(function(selectedNodeUrns) { self.updateResetSelectNodeUrns(selectedNodeUrns); });
+				selectionDialog.show(function(selectedNodeUrns) {
+					self.updateResetSelectNodeUrns(selectedNodeUrns);
+				});
 
 			}, function(jqXHR, textStatus, errorThrown) {
-				self.setResetSelectNodesButtonDisabled(false);
 				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
 			}
 	);
 };
 
 WiseGuiExperimentationView.prototype.setResetSelectNodesButtonDisabled = function(disabled) {
-	this.view.find('#'+this.resetDivId + ' button.selectNodeUrns').first().attr('disabled', disabled);
+	this.resetResetButton.attr('disabled', disabled);
 };
 
 WiseGuiExperimentationView.prototype.setResetButtonDisabled = function(disabled) {
-	this.view.find('#'+this.resetDivId + ' button.resetNodeUrns').first().attr('disabled', disabled);
+	this.resetResetButton.attr('disabled', disabled);
 };
 
 WiseGuiExperimentationView.prototype.executeResetNodes = function() {
