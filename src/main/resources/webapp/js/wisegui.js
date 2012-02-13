@@ -2174,7 +2174,10 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 		});
 	});
 
-	var progressViewer = new WiseGuiOperationProgressView(allNodeUrns, 100);
+	var progressViewer = new WiseGuiOperationProgressView(
+			allNodeUrns, 100,
+			"All nodes were successfully flashed."
+	);
 
 	this.setFlashButtonDisabled(true);
 	var self = this;
@@ -2260,7 +2263,10 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 			this.experimentId,
 			this.resetSelectedNodeUrns,
 			function(result) {
-				var progressView = new WiseGuiOperationProgressView(self.resetSelectedNodeUrns, 1);
+				var progressView = new WiseGuiOperationProgressView(
+						self.resetSelectedNodeUrns, 1,
+						"All nodes were successfully reset."
+				);
 				progressView.update(result);
 				WiseGui.showInfoAlert(progressView.view);
 				self.setResetButtonDisabled(false);
@@ -2278,9 +2284,10 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
  * #################################################################
  */
 
-var WiseGuiOperationProgressView = function(nodeUrns, operationMaxValue) {
+var WiseGuiOperationProgressView = function(nodeUrns, operationMaxValue, successMessage) {
 
 	this.view = $('<div class="WiseGuiOperationProgressView"/>');
+	this.successMessage = successMessage;
 
 	this.contents = {};
 
@@ -2328,8 +2335,8 @@ WiseGuiOperationProgressView.prototype.update = function(operationStatus) {
 		contentsEmpty = false;
 	});
 
-	if (contentsEmpty) {
-		self.view.append("All nodes were flashed successfully.");
+	if (contentsEmpty && this.successMessage) {
+		self.view.append(this.successMessage);
 		// setTimeout(function() {self.view.remove()}, 1000);
 	}
 };
