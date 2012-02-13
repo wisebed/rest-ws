@@ -129,6 +129,8 @@ public class Job {
 
 	public JobState process(RequestStatus status) {
 
+		log.debug("Processing request status update: " + status);
+		
 		for (Status s : status.getStatus()) {
 
 			JobState nodeJobState = JobState.RUNNING;
