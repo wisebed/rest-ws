@@ -11,11 +11,17 @@
 			"urnPrefixes":["urn:wisebed:tubs:"],
 			"sessionManagementEndpointUrl":"http://wbportal.ibr.cs.tu-bs.de:8080/sessions"
 		},
-		
-			"fhl":{
+
+		"fhl":{
 			"name":"Lübeck University of Applied Sciences, Germany (FHL)",
 			"urnPrefixes":["urn:wisebed-cosa-testbed-fhl1:"],
 			"sessionManagementEndpointUrl":"http://cosa-testbed-fhl1.fh-luebeck.de:49021/sessions"
+		},
+
+		"local_mock":{
+			"name":"Local desktop testbed with mock devices",
+			"urnPrefixes":["urn:local:"],
+			"sessionManagementEndpointUrl":"http://opium.local:8888/sessions"
 		}
 	}
 }

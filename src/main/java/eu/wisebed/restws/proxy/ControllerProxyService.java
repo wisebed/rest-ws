@@ -7,6 +7,7 @@ import com.google.inject.assistedinject.Assisted;
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.controller.Controller;
 import eu.wisebed.api.controller.RequestStatus;
+import eu.wisebed.api.controller.Status;
 import eu.wisebed.restws.WisebedRestServerConfig;
 import eu.wisebed.restws.event.ExperimentEndedEvent;
 import eu.wisebed.restws.event.NotificationsEvent;
@@ -78,12 +79,27 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@Override
 	public void receiveNotification(@WebParam(name = "msg", targetNamespace = "") final List<String> notifications) {
+		if (log.isDebugEnabled()) {
+			for (String notification : notifications) {
+				log.debug("Received notification '{}'", notification);
+			}
+		}
 		getEventBus().post(new NotificationsEvent(notifications));
 	}
 
 	@Override
 	public void receiveStatus(
 			@WebParam(name = "status", targetNamespace = "") final List<RequestStatus> requestStatuses) {
+
+		if (log.isDebugEnabled()) {
+			for (RequestStatus rs : requestStatuses) {
+				for (Status status : rs.getStatus()) {
+					log.debug("Received status update (requestId='{}', nodeUrn='{}', value={}, message='{}')",
+							new Object[]{rs.getRequestId(), status.getNodeId(), status.getValue()}
+					);
+				}
+			}
+		}
 		jobObserver.process(requestStatuses);
 	}
 
@@ -101,6 +117,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 	@Override
 	protected void doStop() {
 		try {
+			log.info("Stopping SOAP controller endpoint on " + endpointUrl);
 			endpoint.stop();
 			notifyStopped();
 		} catch (Exception e) {
