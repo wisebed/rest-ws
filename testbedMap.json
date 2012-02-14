@@ -25,12 +25,6 @@
 			"sessionManagementEndpointUrl":"http://wisebed2.lsi.upc.edu:8888/sessions"
 		},
 
-		"unige": {
-			"name":"University of Geneva (UNIGE)",
-			"urnPrefixes":["urn:wisebed:unige:"],
-			"sessionManagementEndpointUrl":"http://testbed.tcs.unige.ch:8888/sessions"
-		},
-
 		"fhl":{
 			"name":"Lübeck University of Applied Sciences, Germany (FHL)",
 			"urnPrefixes":["urn:wisebed-cosa-testbed-fhl1:"],
