@@ -2057,40 +2057,78 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		});
 	});
 
-	this.sendSendButton.bind('click', self, function(e) {
-
-		var messageToSend = self.sendMessageInput[0].value;
-		var splitMessage = messageToSend.split(",");
-		var messageBytes = [];
-
-		for (var i=0; i < splitMessage.length; i++) {
-
-			var radix = 10;
-
-			if (splitMessage[i].indexOf("0x") == 0) {
-
-				radix = 16;
-				splitMessage[i] = splitMessage[i].replace("0x","");
-
-			} else if (splitMessage[i].indexOf("0b") == 0) {
-
-				radix = 2;
-				splitMessage[i] = splitMessage[i].replace("0b","");
-
-			}
-
-			messageBytes[i] = parseInt(splitMessage[i], radix);
-		}
-
-		var payloadBase64 = base64_encode(messageBytes);
-
-		self.send(self.sendSelectedNodeUrns, payloadBase64);
-	});
+	this.sendMessageInput.bind('keyup', self, function(e) { self.validateSendMessageInput(e) });
+	this.sendSendButton.bind('click', self, function(e) { self.onSendMessageButtonClicked(e) });
 
 	this.addFlashConfiguration();
 };
 
-/** ******************************************************************************************************************* */
+/**********************************************************************************************************************/
+
+WiseGuiExperimentationView.prototype.validateSendMessageInput = function(e) {
+
+	if (this.parseSendMessagePayloadBase64() == null) {
+		this.sendMessageInput.addClass('error');
+	} else {
+		this.sendMessageInput.removeClass('error');
+	}
+};
+
+WiseGuiExperimentationView.prototype.onSendMessageButtonClicked = function(e) {
+
+	var payloadBase64 = this.parseSendMessagePayloadBase64();
+
+	if (payloadBase64 == null) {
+		this.sendMessageInput.addClass('error');
+	} else {
+		this.sendMessageInput.removeClass('error');
+	}
+
+	this.send(this.sendSelectedNodeUrns, payloadBase64);
+};
+
+WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() {
+
+	var messageToSend = this.sendMessageInput[0].value;
+
+	if (messageToSend === undefined || '') {
+		return null;
+	}
+
+	var splitMessage = messageToSend.split(",");
+	var messageBytes = [];
+
+	for (var i=0; i < splitMessage.length; i++) {
+
+		var radix = 10;
+
+		if (splitMessage[i].indexOf("0x") == 0) {
+
+			radix = 16;
+			splitMessage[i] = splitMessage[i].replace("0x","");
+
+		} else if (splitMessage[i].indexOf("0b") == 0) {
+
+			radix = 2;
+			splitMessage[i] = splitMessage[i].replace("0b","");
+
+		}
+
+		messageBytes[i] = parseInt(splitMessage[i], radix);
+
+		if (isNaN(messageBytes[i])) {
+			return null;
+		}
+	}
+
+	if (messageBytes.length == 0) {
+		return null;
+	}
+
+	return base64_encode(messageBytes);
+};
+
+/**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 
