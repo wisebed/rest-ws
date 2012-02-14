@@ -1,5 +1,6 @@
 {
 	"testbedMap":{
+
 		"uzl":{
 			"name":"University of Lübeck, Germany (UZL)",
 			"urnPrefixes":["urn:wisebed:uzl1:"],
@@ -10,6 +11,24 @@
 			"name":"University of Braunschweig, Germany (TUBS)",
 			"urnPrefixes":["urn:wisebed:tubs:"],
 			"sessionManagementEndpointUrl":"http://wbportal.ibr.cs.tu-bs.de:8080/sessions"
+		},
+
+		"cti": {
+			"name":"Research Academic Computer Technology Institute (CTI)",
+			"urnPrefixes":["urn:wisebed:ctitestbed:"],
+			"sessionManagementEndpointUrl":"http://hercules.cti.gr:8888/sessions"
+		},
+
+		"upc": {
+			"name":"Universitat Politecnica de Catalunya (UPC)",
+			"urnPrefixes":["urn:wisebed:upc1:"],
+			"sessionManagementEndpointUrl":"http://wisebed2.lsi.upc.edu:8888/sessions"
+		},
+
+		"unige": {
+			"name":"University of Geneva (UNIGE)",
+			"urnPrefixes":["urn:wisebed:unige:"],
+			"sessionManagementEndpointUrl":"http://testbed.tcs.unige.ch:8888/sessions"
 		},
 
 		"fhl":{
