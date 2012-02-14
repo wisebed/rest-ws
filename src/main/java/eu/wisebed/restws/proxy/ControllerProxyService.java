@@ -95,7 +95,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 			for (RequestStatus rs : requestStatuses) {
 				for (Status status : rs.getStatus()) {
 					log.debug("Received status update (requestId='{}', nodeUrn='{}', value={}, message='{}')",
-							new Object[]{rs.getRequestId(), status.getNodeId(), status.getValue()}
+							new Object[]{rs.getRequestId(), status.getNodeId(), status.getValue(), status.getMsg()}
 					);
 				}
 			}

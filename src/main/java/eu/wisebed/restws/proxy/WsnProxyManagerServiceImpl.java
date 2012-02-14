@@ -113,12 +113,14 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 
 	@Override
 	protected void doStart() {
+		log.debug("Starting WsnProxyManagerService");
 		executor = Executors.newCachedThreadPool();
 		notifyStarted();
 	}
 
 	@Override
 	protected void doStop() {
+		log.debug("Stopping WsnProxyManagerService");
 		ExecutorUtils.shutdown(executor, 10, TimeUnit.SECONDS);
 		notifyStopped();
 	}

@@ -258,9 +258,15 @@ public class ExperimentResource {
 			SessionManagement sessions = endpointManager.getSmEndpoint(testbedId);
 			String experimentWsnInstanceUrl = sessions.getInstance(copyRsToWsn(reservationKey.reservations), "NONE");
 
-			wsnProxyManagerService.create(experimentWsnInstanceUrl, latestUntil);
-			String controllerEndpointUrl = wsnProxyManagerService.getControllerEndpointUrl(experimentWsnInstanceUrl);
 			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentWsnInstanceUrl);
+
+			if (wsnProxy == null) {
+				wsnProxyManagerService.create(experimentWsnInstanceUrl, latestUntil);
+				wsnProxy = wsnProxyManagerService.get(experimentWsnInstanceUrl);
+			}
+			
+			String controllerEndpointUrl = wsnProxyManagerService.getControllerEndpointUrl(experimentWsnInstanceUrl);
+
 			if (wsnProxy == null) {
 				throw new RuntimeException("This should not happen ever :(");
 			}
