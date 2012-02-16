@@ -8,5 +8,17 @@ fi
 
 RWS_CP=target/classes:`cat classpath.txt`
 RWS_HOSTNAME=`hostname -f`
-nohup java -Djava.endorsed.dirs=target/endorsed -Djava.net.preferIPv4Stack=true -Xmx1024m -cp $RWS_CP eu.wisebed.restws.WisebedRestServer --hostname $RWS_HOSTNAME --logLevel DEBUG --port 8080 --testbedMap testbedMap.json 1> rest-ws.out 2> rest-ws.err &
+
+nohup java \
+    -Djava.endorsed.dirs=target/endorsed \
+    -Djava.net.preferIPv4Stack=true \
+    -Xmx1024m \
+    -cp $RWS_CP \
+    eu.wisebed.restws.WisebedRestServer \
+    --hostname $RWS_HOSTNAME \
+    --logLevel DEBUG \
+    --port 8080 \
+    --testbedMap testbedMap.json \
+    2>&1 >> /dev/null &
+    
 echo $! >> rest-ws.pid
