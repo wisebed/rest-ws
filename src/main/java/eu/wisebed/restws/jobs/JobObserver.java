@@ -71,7 +71,7 @@ public class JobObserver {
 
 	public void submit(Job job, int timeout, TimeUnit timeUnit) {
 
-		log.debug("Submitted job with request Id {}", job.getRequestId());
+		log.trace("Submitted job with request ID {}", job.getRequestId());
 
 		lock.lock();
 		try {
