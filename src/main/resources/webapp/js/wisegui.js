@@ -2545,17 +2545,14 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
  */
 WiseGuiExperimentationView.prototype.preselectNodes = function(nodes) {
 	if(nodes != null && nodes.length > 0) {
-		var preSelected = function(data) {
-			var nodeids = nodes;
-			for(var i = 0; i < nodeids.length; i++) {
-				if(data.id == nodeids[i]) return true;
+		return function(data) {
+			for(var i = 0; i < nodes.length; i++) {
+				if(data.id == nodes[i]) return true;
 			}
 			return false;
 		}
-		return preSelected;
-	} else {
-		return null;
 	}
+	return null;
 }
 
 /**
