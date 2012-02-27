@@ -1910,11 +1910,10 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<table class="zebra-striped">'
 			+ '							<thead>'
 			+ '								<tr>'
-			+ '									<th>Set</th>'
-			+ '									<th>Selected Nodes</th>'
-			+ '									<th></th>'
-			+ '									<th>Image File</th>'
-			+ '									<th></th>'
+			+ '									<th class="span1">Set</th>'
+			+ '									<th class="span6">Selected Nodes</th>'
+			+ '									<th class="span4">Image File</th>'
+			+ '									<th class="span5"></th>'
 			+ '								</tr>'
 			+ '							</thead>'
 			+ '							<tbody>'
@@ -2243,27 +2242,24 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
 	// build and append the gui elements
-	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton">Select Nodes</button>');
-	var nodeSelectionLabel    = $('<div/>');
+	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton span6">Select Nodes</button>');
 	var imageFileInput        = $('<input type="file" style="opacity: 0; width: 0px; position:absolute; top:-100px;"/>');
-	var imageFileButton       = $('<button class="btn fileSelectionButton">Select Image</button>');
+	var imageFileButton       = $('<button class="btn fileSelectionButton span6">Select Image</button>');
 	var imageFileInfoLabel    = $('<div/>');
 	var tr                    = $('<tr/>');
 
 	var setNumberTd           = $('<td>' + (this.flashConfigurations.length + 1) + '</td>');
 	var nodeSelectionButtonTd = $('<td/>');
-	var nodeSelectionLabelTd  = $('<td/>');
 	var imageFileInputTd      = $('<td/>');
 	var imageFileInfoLabelTd  = $('<td/>');
 
 	nodeSelectionButtonTd.append(nodeSelectionButton);
-	nodeSelectionLabelTd.append(nodeSelectionLabel);
 
 	imageFileInputTd.append(imageFileInput);
 	imageFileInputTd.append(imageFileButton);
 	imageFileInfoLabelTd.append(imageFileInfoLabel);
 
-	tr.append(setNumberTd, nodeSelectionButtonTd, nodeSelectionLabelTd, imageFileInputTd, imageFileInfoLabelTd);
+	tr.append(setNumberTd, nodeSelectionButtonTd, imageFileInputTd, imageFileInfoLabelTd);
 	this.flashConfigurationsTableBody.append(tr);
 
 	// build and remember the configuration
@@ -2290,23 +2286,27 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 		if(conf.nodeUrns != null) {
 
 			var checkNodes = function(data) {
-				var reservatedIds = [];
+
+				var reservedNodeUrns = [];
 				for(var i = 0; i < data.setup.node.length; i++) {
-					reservatedIds.push(data.setup.node[i].id);
+					reservedNodeUrns.push(data.setup.node[i].id);
 				}
 
-				var preSelectedIds = [];
-				for(var i = 0; i < conf.nodeUrns.length;i++) {
-					if($.inArray(conf.nodeUrns[i], reservatedIds) >= 0) {
-						preSelectedIds.push(conf.nodeUrns[i]);
+				var preSelectedNodeUrns = [];
+				for(var k = 0; k < conf.nodeUrns.length; k++) {
+					if($.inArray(conf.nodeUrns[k], reservedNodeUrns) >= 0) {
+						preSelectedNodeUrns.push(conf.nodeUrns[k]);
 					}
 				}
 
-				configuration.config.nodeUrns = preSelectedIds;
-				if(configuration.config.nodeUrns.length > 0) {
-					nodeSelectionLabel.append((configuration.config.nodeUrns.length == 1 ? '1 node selected' : (configuration.config.nodeUrns.length + ' nodes selected')));
-				}
-			}
+				configuration.config.nodeUrns = preSelectedNodeUrns;
+
+				var nodeSelectionButtonText = configuration.config.nodeUrns.length == 1 ?
+						'1 node selected' :
+						configuration.config.nodeUrns.length + ' nodes selected';
+
+				nodeSelectionButton.html(nodeSelectionButtonText);
+			};
 
 			Wisebed.getWiseMLAsJSON(this.testbedId, this.experimentId, checkNodes,
 					function(jqXHR, textStatus, errorThrown) {
@@ -2350,8 +2350,7 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 			function(nodeUrns) {
 				nodeSelectionButton.attr('disabled', false);
 				configuration.config.nodeUrns = nodeUrns;
-				nodeSelectionLabel.empty();
-				nodeSelectionLabel.append((nodeUrns.length == 1 ? '1 node selected' : (nodeUrns.length + ' nodes selected')));
+				nodeSelectionButton.html((nodeUrns.length == 1 ? '1 node selected' : (nodeUrns.length + ' nodes selected')));
 			}, function() {
 				nodeSelectionButton.attr('disabled', false);
 			}
