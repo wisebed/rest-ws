@@ -2087,15 +2087,28 @@ WiseGuiExperimentationView.prototype.updateSendControls = function() {
 
 WiseGuiExperimentationView.prototype.onSendMessageButtonClicked = function(e) {
 
-	var payloadBase64 = this.parseSendMessagePayloadBase64();
+	var self = this;
+	this.sendSendButton.attr('disabled', true);
 
-	if (payloadBase64 == null) {
-		this.sendMessageInput.addClass('error');
-	} else {
-		this.sendMessageInput.removeClass('error');
-	}
-
-	this.send(this.sendSelectedNodeUrns, payloadBase64);
+	Wisebed.experiments.send(
+			this.testbedId,
+			this.experimentId,
+			this.sendSelectedNodeUrns,
+			this.parseSendMessagePayloadBase64(),
+			function(result) {
+				var progressView = new WiseGuiOperationProgressView(
+						self.sendSelectedNodeUrns, 1,
+						"The message was sent successfully to all nodes."
+				);
+				progressView.update(result);
+				WiseGui.showInfoAlert(progressView.view);
+				self.sendSendButton.attr('disabled', false);
+			},
+			function(jqXHR, textStatus, errorThrown) {
+				self.sendSendButton.attr('disabled', false);
+				WiseGui.showAjaxError(jqXHR, textStatus, errorThrown);
+			}
+	);
 };
 
 WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() {

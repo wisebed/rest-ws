@@ -29,19 +29,19 @@ var Wisebed = new function() {
 		// Check cookie
 		var getCookieCallbackDone = function() {
 			$.ajax({
-				url: wisebedBaseUrl + "/rest/2.3/cookies/check",
-				success: callbackOK,
-				error: callbackError,
-				xhrFields: { withCredentials: true }
+				url       : wisebedBaseUrl + "/rest/2.3/cookies/check",
+				success   : callbackOK,
+				error     : callbackError,
+				xhrFields : { withCredentials: true }
 			});
 		};
 
 		// Get cookie
 		$.ajax({
-			url: wisebedBaseUrl + "/rest/2.3/cookies/get",
-			success: getCookieCallbackDone,
-			error: callbackError,
-			xhrFields: { withCredentials: true }
+			url       : wisebedBaseUrl + "/rest/2.3/cookies/get",
+			success   : getCookieCallbackDone,
+			error     : callbackError,
+			xhrFields : { withCredentials: true }
 		});
 	}
 
@@ -52,12 +52,12 @@ var Wisebed = new function() {
 					(from ? ("&from=" + from.toISOString()) : "") +
 					(to ? ("&to="+to.toISOString()) : "");
 			$.ajax({
-				url: queryUrl,
-				success: callbackDone,
-				error: callbackError,
-				context: document.body,
-				dataType: "json",
-				xhrFields: { withCredentials: true }
+				url       : queryUrl,
+				success   : callbackDone,
+				error     : callbackError,
+				context   : document.body,
+				dataType  : "json",
+				xhrFields : { withCredentials: true }
 			});
 		};
 
@@ -66,12 +66,12 @@ var Wisebed = new function() {
 					(from ? ("from=" + from.toISOString() + "&") : "") +
 					(to ? ("to="+to.toISOString() + "&") : "");
 			$.ajax({
-				url: queryUrl,
-				success: callbackDone,
-				error: callbackError,
-				context: document.body,
-				dataType: "json",
-				xhrFields: { withCredentials: true }
+				url       : queryUrl,
+				success   : callbackDone,
+				error     : callbackError,
+				context   : document.body,
+				dataType  : "json",
+				xhrFields : { withCredentials: true }
 			});
 		};
 
@@ -79,9 +79,9 @@ var Wisebed = new function() {
 
 			// Generate JavaScript object
 			var content = {
-				"from" : from.toISOString(),
+				"from"     : from.toISOString(),
 				"nodeURNs" : nodeURNs,
-				"to" : to.toISOString(),
+				"to"       : to.toISOString(),
 				"userData" : userData
 			};
 
@@ -93,7 +93,7 @@ var Wisebed = new function() {
 				dataType	:	"json",
 				success		: 	callbackDone,
 				error		: 	callbackError,
-				xhrFields: { withCredentials: true }
+				xhrFields   : { withCredentials: true }
 			});
 
 		};
@@ -131,15 +131,15 @@ var Wisebed = new function() {
 
 		this.getConfiguration = function (url, callbackDone, callbackError) {
 			$.ajax({
-				url: wisebedBaseUrl + "/rest/2.3/experimentconfiguration",
-				type: "GET",
-				data: {url: url},
-				success: callbackDone,
-				error: callbackError,
-				dataType: "json",
-				xhrFields: { withCredentials: true }
+				url       : wisebedBaseUrl + "/rest/2.3/experimentconfiguration",
+				type      : "GET",
+				data      : {url: url},
+				success   : callbackDone,
+				error     : callbackError,
+				dataType  : "json",
+				xhrFields : { withCredentials: true }
 			});
-		}
+		};
 
 		this.getUrl = function(testbedId, reservation, callbackDone, callbackError) {
 
@@ -158,30 +158,48 @@ var Wisebed = new function() {
 				// Headers are empty in Cross-Site-Environment
 				// callbackDone(jqXHR.getResponseHeader("Location"))
 				callbackDone(jqXHR.responseText);
-			}
+			};
 
 			$.ajax({
-				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments",
-				type		:	"POST",
-				data		:	JSON.stringify(secretReservationKeys, null, '  '),
-				contentType	:	"application/json; charset=utf-8",
-				success		: 	succ,
-				error		: 	callbackError,
-				xhrFields: { withCredentials: true }
+				url         : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments",
+				type        : "POST",
+				data        : JSON.stringify(secretReservationKeys, null, '  '),
+				contentType : "application/json; charset=utf-8",
+				success     : succ,
+				error       : callbackError,
+				xhrFields   : { withCredentials: true }
+			});
+		};
+
+		this.send = function(testbedId, experimentId, nodeUrns, messageBytesBase64, callbackDone, callbackError) {
+
+			$.ajax({
+				url         : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/send",
+				type        : "POST",
+				data        : JSON.stringify({
+					sourceNodeUrn  : 'user',
+					targetNodeUrns : nodeUrns,
+					bytesBase64    : messageBytesBase64
+				}, null, '  '),
+				contentType : "application/json; charset=utf-8",
+				dataType    : "json",
+				success     : function(data) {callbackDone(data.operationStatus);},
+				error       : callbackError,
+				xhrFields   : { withCredentials: true }
 			});
 		};
 
 		this.resetNodes = function(testbedId, experimentId, nodeUrns, callbackDone, callbackError) {
 
 			$.ajax({
-				url			:	wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/resetNodes",
-				type		:	"POST",
-				data		:	JSON.stringify({nodeUrns:nodeUrns}, null, '  '),
-				contentType	:	"application/json; charset=utf-8",
-				dataType	:	"json",
-				success		: 	function(data) {callbackDone(data.operationStatus);},
-				error		: 	callbackError,
-				xhrFields: { withCredentials: true }
+				url         : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/experiments/" + experimentId + "/resetNodes",
+				type        : "POST",
+				data        : JSON.stringify({nodeUrns:nodeUrns}, null, '  '),
+				contentType : "application/json; charset=utf-8",
+				dataType    : "json",
+				success     : function(data) {callbackDone(data.operationStatus);},
+				error       : callbackError,
+				xhrFields   : { withCredentials: true }
 			});
 		};
 
@@ -242,8 +260,8 @@ var Wisebed = new function() {
 						type        : "GET",
 						success     : onProgressRequestSuccess,
 						error       : onProgressRequestError,
-						dataType: "json",
-						xhrFields: { withCredentials: true }
+						dataType    : "json",
+						xhrFields   : { withCredentials: true }
 					});
 
 				}, 2 * 1000);
@@ -256,7 +274,7 @@ var Wisebed = new function() {
 				contentType : "application/json; charset=utf-8",
 				success     : requestSuccessCallback,
 				error       : callbackError,
-				xhrFields: { withCredentials: true }
+				xhrFields   : { withCredentials: true }
 			});
 		};
 	};
@@ -306,12 +324,12 @@ var Wisebed = new function() {
 
 	this.getTestbeds = function(callbackDone, callbackError) {
 		$.ajax({
-			url: wisebedBaseUrl + "/rest/2.3/testbeds",
-			success: callbackDone,
-			error: callbackError,
-			context: document.body,
-			dataType: "json",
-			xhrFields: { withCredentials: true }
+			url       : wisebedBaseUrl + "/rest/2.3/testbeds",
+			success   : callbackDone,
+			error     : callbackError,
+			context   : document.body,
+			dataType  : "json",
+			xhrFields : { withCredentials: true }
 		});
 	};
 
@@ -345,16 +363,16 @@ var Wisebed = new function() {
 			dataType	: "json",
 			error		: callbackError,
 			success		: callbackDone,
-			xhrFields: { withCredentials: true }
+			xhrFields   : { withCredentials: true }
 		});
 	};
 
 	this.logout = function(testbedId, callbackDone, callbackError) {
 		$.ajax({
-			url      : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/logout",
-			success  : callbackDone,
-			error    : callbackError,
-			xhrFields: { withCredentials: true }
+			url       : wisebedBaseUrl + "/rest/2.3/" + testbedId + "/logout",
+			success   : callbackDone,
+			error     : callbackError,
+			xhrFields : { withCredentials: true }
 		});
 	};
 

@@ -4,11 +4,7 @@ import static com.google.common.base.Throwables.propagate;
 
 import java.io.StringReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -526,26 +522,29 @@ public class ExperimentResource {
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Path("{experimentUrlBase64}/send")
 	public Response send(@PathParam("experimentUrlBase64") String experimentUrlBase64, SendMessageData data) {
+
 		String experimentUrl = Base64Helper.decode(experimentUrlBase64);
 		log.debug("Received request to send data:  {}", data);
 
 		try {
+
 			Message message = new Message();
 			message.setBinaryData(Base64.decode(data.bytesBase64));
 			message.setSourceNodeId(data.sourceNodeUrn);
-			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar());
+			message.setTimestamp(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
 
 			WsnProxyService wsnProxy = wsnProxyManagerService.get(experimentUrl);
 			if (wsnProxy == null) {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
-			Job job = wsnProxy.send(data.nodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
+
+			Job job = wsnProxy.send(data.targetNodeUrns, message, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();
 			OperationStatusMap operationStatusMap = buildNodeUrnStatusMap(job.getJobNodeStates());
+
 			return Response.ok(JSONHelper.toJSON(operationStatusMap)).build();
 
 		} catch (Exception e) {
-			return returnError(String.format("No such experiment: %s (decoded: %s)", experimentUrlBase64, experimentUrl), e,
-					Status.INTERNAL_SERVER_ERROR);
+			return returnError("Exception while trying to send message downstream", e, Status.INTERNAL_SERVER_ERROR);
 		}
 
 	}
