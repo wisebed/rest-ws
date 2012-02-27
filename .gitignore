@@ -27,3 +27,4 @@ classpath.txt
 rest-ws.err
 rest-ws.out
 rest-ws.pid
+ignored-files
