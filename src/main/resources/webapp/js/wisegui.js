@@ -2331,8 +2331,6 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 					}
 			);
 		}
-
-
 	}
 
 	this.flashConfigurations.push(configuration);
@@ -2342,24 +2340,12 @@ WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
 	nodeSelectionButton.bind('click', function() {
 
-		var preSelected = null;
-
-		if(configuration.config.nodeUrns != null && configuration.config.nodeUrns.length > 0) {
-			preSelected = function(data) {
-				var nodeids = configuration.config.nodeUrns;
-				for(var i = 0; i < nodeids.length; i++) {
-					if(data.id == nodeids[i]) return true;
-				}
-				return false;
-			}
-		}
-
 		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
 				self.testbedId,
 				self.experimentId,
 				'Select Nodes',
 				'Please select the nodes you want to flash.',
-				preSelected
+				self.preselectNodes(configuration.config.nodeUrns)
 		);
 
 		nodeSelectionButton.attr('disabled', true);
@@ -2508,7 +2494,7 @@ WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
 						self.experimentId,
 						'Reset Nodes',
 						'Please select the nodes you want to reset.',
-						preSelected
+						self.preselectNodes(self.resetSelectedNodeUrns)
 				);
 
 				selectionDialog.show(function(selectedNodeUrns) {
@@ -2552,6 +2538,25 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 			}
 	);
 };
+
+/*
+ * This function returns a function which is used as a pre-selection filter within the
+ * node selction table. It takes a list of nodes as argument.
+ */
+WiseGuiExperimentationView.prototype.preselectNodes = function(nodes) {
+	if(nodes != null && nodes.length > 0) {
+		var preSelected = function(data) {
+			var nodeids = nodes;
+			for(var i = 0; i < nodeids.length; i++) {
+				if(data.id == nodeids[i]) return true;
+			}
+			return false;
+		}
+		return preSelected;
+	} else {
+		return null;
+	}
+}
 
 /**
  * #################################################################
