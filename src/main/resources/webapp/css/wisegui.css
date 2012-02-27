@@ -81,3 +81,8 @@ input.success {
 	color: #CCC;
 	margin-top: 20px;
 }
+
+.WiseGuiOperationProgressView {
+	max-height: 300px;
+	overflow: auto;
+}
