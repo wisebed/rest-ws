@@ -1934,12 +1934,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '			</div>'
 		 	+ '			<div class="tab-pane WiseGuiExperimentsViewSendControl" id="'+this.sendDivId+'">'
 		  	+ '				<div class="row">'
-		  	+ '					<div class="span16">'
-		  	+ '						<p>Message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).</p>'
-		  	+ '						<p>Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code></p>'
-		  	+ '					</div>'
-		  	+ '				</div>'
-		  	+ '				<div class="row">'
 			+ '					<div class="span4">'
 			+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
@@ -2031,8 +2025,22 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.sendNodeSelectionButton.bind('click', self, function(e) { self.onSendMessageNodeSelectionButtonClicked(); });
-	this.sendMessageInput.bind('keyup', self, function(e) { self.updateSendControls(); });
 	this.sendSendButton.bind('click', self, function(e) { self.onSendMessageButtonClicked(e) });
+
+	this.sendMessageInput.bind('keyup', self, function(e) { self.updateSendControls(); });
+	this.sendMessageInput.popover({
+		placement : 'below',
+		trigger   : 'manual',
+		animate   : true,
+		html      : true,
+		content   : 'The message must consist of comma-separated bytes in base_10 (no prefix), base_2 (prefix 0b) or base_16 (prefix 0x).<br/>'
+				+ '<br/>'
+				+ 'Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>',
+		html      : true,
+		title     : function() { return "Message Format"; }
+	});
+	this.sendMessageInput.focusin(function() { self.sendMessageInput.popover("show"); });
+	this.sendMessageInput.focusout(function() { self.sendMessageInput.popover("hide"); });
 	this.updateSendControls();
 
 	this.addFlashConfiguration();
