@@ -138,9 +138,11 @@ public class Job {
 				nodeJobState = JobState.FAILED;
 			}
 
-			log.debug("Updating request status (node={}, state={}, value={})", new Object[] {
-					s.getNodeId(), nodeJobState, s.getValue()
-			});
+			if (log.isTraceEnabled()) {
+				log.trace("Updating request status (node={}, state={}, value={})", new Object[] {
+						s.getNodeId(), nodeJobState, s.getValue()
+				});
+			}
 			updateNodeState(s.getNodeId(), nodeJobState, s.getValue(), s.getMsg());
 		}
 

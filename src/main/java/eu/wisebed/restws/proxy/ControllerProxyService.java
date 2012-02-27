@@ -79,7 +79,7 @@ public class ControllerProxyService extends AbstractService implements Controlle
 
 	@Override
 	public void receiveNotification(@WebParam(name = "msg", targetNamespace = "") final List<String> notifications) {
-		if (log.isDebugEnabled()) {
+		if (log.isTraceEnabled()) {
 			for (String notification : notifications) {
 				log.debug("Received notification '{}'", notification);
 			}
@@ -91,16 +91,22 @@ public class ControllerProxyService extends AbstractService implements Controlle
 	public void receiveStatus(
 			@WebParam(name = "status", targetNamespace = "") final List<RequestStatus> requestStatuses) {
 
-		if (log.isDebugEnabled()) {
+		logRequestStatusesReceived(requestStatuses);
+		jobObserver.process(requestStatuses);
+	}
+
+	private void logRequestStatusesReceived(final List<RequestStatus> requestStatuses) {
+
+		if (log.isTraceEnabled()) {
+
 			for (RequestStatus rs : requestStatuses) {
 				for (Status status : rs.getStatus()) {
-					log.debug("Received status update (requestId='{}', nodeUrn='{}', value={}, message='{}')",
+					log.trace("Received status update (requestId='{}', nodeUrn='{}', value={}, message='{}')",
 							new Object[]{rs.getRequestId(), status.getNodeId(), status.getValue(), status.getMsg()}
 					);
 				}
 			}
 		}
-		jobObserver.process(requestStatuses);
 	}
 
 	@Override
