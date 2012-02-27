@@ -944,7 +944,6 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 
 	if(showFiterBox) {
 		this.lastWorkingFilterExpr = null;
-		this.helpTooltipIsVisable = false;
 		this.filter_checkbox = null;
 		this.generateFilter();
 	}
@@ -988,14 +987,10 @@ Table.prototype.generateFilter = function () {
 	});
 	this.filter_input = filter_input;
 
+	var helpTooltipIsVisable = false;
 	img_help.click(function() {
-		if(!that.helpTooltipIsVisable) {
-			img_help.popover("show");
-		} else {
-			img_help.popover("hide");
-		}
-		// Invert
-		that.helpTooltipIsVisable = !that.helpTooltipIsVisable;
+		img_help.popover(helpTooltipIsVisable ? 'hide' : 'show');
+		helpTooltipIsVisable = !helpTooltipIsVisable;
 	});
 
 	var helpText = '<h3>Normal mode</h3>';
@@ -1017,7 +1012,14 @@ Table.prototype.generateFilter = function () {
 	helpText += '<li>($(e.capability).filter(function (i) {return this.name.indexOf("temperature") > 0;}).length > 0)';
 	helpText += '</ul>';
 
-	var pop = img_help.popover({placement:'left', animate:true, html: true, trigger: 'manual', content: helpText, title: function() {return "Help";}});
+	var pop = img_help.popover({
+		placement:'left',
+		animate:true,
+		html: true,
+		trigger: 'manual',
+		content: helpText,
+		title: function() {return "Filter Help";}
+	});
 	div_help.append(filter_input);
 	this.html.append(this.filter);
 };
