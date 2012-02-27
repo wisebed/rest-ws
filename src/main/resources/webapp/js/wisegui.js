@@ -2620,7 +2620,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				var overviewTabMapRow = overviewTab.find('.WisebedTestbedDetailsOverviewMap');
 
 				var jsonTab = $('#WisebedTestbedDetailsWiseMLJSON-'+navigationData.testbedId);
-				jsonTab.append($('<pre style="height:500px;overflow:auto;">'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
+				jsonTab.append($('<pre class="WiseGuiTestbedDetailsWiseMLJSON">'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
@@ -2640,7 +2640,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 			null,
 			function(wiseML) {
 				var xmlTab = $('#WisebedTestbedDetailsWiseMLXML-'+navigationData.testbedId);
-				xmlTab.append($('<pre lang="xml" style="height:500px;overflow:auto;">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
+				xmlTab.append($('<pre class="WiseGuiTestbedDetailsWiseMLXML">'+new XMLSerializer().serializeToString(wiseML).replace(/</g,"&lt;")+'</pre>'));
 			},
 			WiseGui.showAjaxError
 	);

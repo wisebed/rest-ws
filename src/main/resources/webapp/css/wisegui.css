@@ -86,3 +86,8 @@ input.success {
 	max-height: 300px;
 	overflow: auto;
 }
+
+pre.WiseGuiTestbedDetailsWiseMLJSON, pre.WiseGuiTestbedDetailsWiseMLXML {
+	height:500px;
+	overflow:auto;
+}
