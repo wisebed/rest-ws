@@ -2066,7 +2066,7 @@ WiseGuiExperimentationView.prototype.onSendMessageNodeSelectionButtonClicked = f
 			this.experimentId,
 			'Select Node URNs',
 			'Please select the nodes to which you want to send a message.',
-			function (data) { return $.inArray(data.id, self.sendSelectedNodeUrns) >= 0; }
+			self.preselectNodes(self.sendSelectedNodeUrns)
 	);
 
 	nodeSelectionDialog.show(function(selectedNodeUrns){
@@ -2546,12 +2546,10 @@ WiseGuiExperimentationView.prototype.executeResetNodes = function() {
 WiseGuiExperimentationView.prototype.preselectNodes = function(nodes) {
 	if(nodes != null && nodes.length > 0) {
 		return function(data) {
-			for(var i = 0; i < nodes.length; i++) {
-				if(data.id == nodes[i]) return true;
-			}
-			return false;
+			return ($.inArray(data.id, nodes) >= 0);
 		}
 	}
+	// preselected function is null. Thus, it will not be executed
 	return null;
 }
 
