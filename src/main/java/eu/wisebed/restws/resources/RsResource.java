@@ -131,7 +131,10 @@ public class RsResource {
 		} catch (RSExceptionException e) {
 			return returnError("Error in the reservation system", e, Status.INTERNAL_SERVER_ERROR);
 		} catch (ReservervationConflictExceptionException e) {
-			return returnError("Another reservation is in conflict with yours", e, Status.BAD_REQUEST);
+			return Response
+					.status(Status.BAD_REQUEST)
+					.entity(String.format("Another reservation is in conflict with yours: %s (%s)", e, e.getMessage()))
+					.build();
 		}
 
 	}
