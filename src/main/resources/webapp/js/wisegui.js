@@ -1954,7 +1954,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '				</div>'
 		  	+ '			</div>'
 			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingDivId+'">'
-			+ '				Not yet implemented. Please see <a href="https://github.com/wisebed/rest-ws/issues/7" target="_blank">issue #7</a> for more details!'
 			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
@@ -1979,6 +1978,23 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.sendMessageInput             = this.view.find('input.WiseGuiExperimentsViewSendControlSendMessageInput').first();
 	this.sendSendButton               = this.view.find('button.WiseGuiExperimentsViewSendControlSendMessage').first();
 
+	// ******* start ACE displaying error workaround ********
+	// ace editor is not correctly displayed if parent tab is hidden when creating it. therefore we need to workaround
+	// by attaching it to the body (invisible on z-index -1), making the div an ace editor, removing the z-index and
+	// moving the element in the dom to its final destination
+	this.scriptingEditorTabDiv        = this.view.find('div.WiseGuiExperimentsViewScriptingControl').first();
+	this.scriptingEditorDiv           = $('<div class="span16 WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">var readme = "scripting will very soon be available!";</div>');
+
+	$(document.body).append(this.scriptingEditorDiv);
+
+	this.scriptingEditor = ace.edit(this.scriptingEditorDiv[0]);
+	this.scriptingEditor.setTheme("ace/theme/textmate");
+	var JavaScriptMode = require("ace/mode/javascript").Mode;
+	this.scriptingEditor.getSession().setMode(new JavaScriptMode());
+	this.scriptingEditorDiv.attr('style', '');
+	this.scriptingEditorTabDiv.append(this.scriptingEditorDiv);
+	// ******* end ACE displaying error workaround ********
+
 	var self = this;
 
 	// bind actions for flash tab buttons
@@ -2001,6 +2017,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.flashFlashButton.bind('click', self, function(e) {
 		self.executeFlashNodes();
 	});
+
+	this.addFlashConfiguration();
 
 	// bind actions for reset tab buttons
 	this.resetNodeSelectionButton.bind('click', self, function(e) {
@@ -2050,8 +2068,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.sendMessageInput.focusin(function() { self.sendMessageInput.popover("show"); });
 	this.sendMessageInput.focusout(function() { self.sendMessageInput.popover("hide"); });
 	this.updateSendControls();
-
-	this.addFlashConfiguration();
 };
 
 /**********************************************************************************************************************/
