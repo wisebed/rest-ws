@@ -1,5 +1,9 @@
 package eu.wisebed.restws.pt;
 
-public class PacketTrackingWebSocketFactory {
+import java.util.concurrent.ScheduledExecutorService;
+
+public interface PacketTrackingWebSocketFactory {
+
+	public PacketTrackingWebSocket create(ScheduledExecutorService scheduler);
 
 }

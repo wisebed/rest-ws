@@ -5,22 +5,16 @@
 
 	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
 
-	<link rel="stylesheet" media="screen" href="../css/bootstrap.css">
-	<link rel="stylesheet" media="screen" href="../css/prettify.css">
-	<link rel="stylesheet" media="screen" href="../css/wisegui.css">
-	<link rel="stylesheet" media="screen" href="../css/jquery-ui.1.8.17.css">
-	<link rel="stylesheet" media="screen" href="../css/timePicker.css">
+	<link rel="stylesheet" media="screen" href="../css/bootstrap.css"/>
+	<link rel="stylesheet" media="screen" href="../css/wisegui.css"/>
+
+	<style type="text/css">
+		textarea.WebSocketOutputTextArea {
+			height: 300px;
+		}
+	</style>
 
 	<script type="text/javascript" src="../js/library/jquery-1.7.1.js"></script>
-	<script type="text/javascript" src="../js/library/jquery.ba-bbq.min.js"></script>
-	<script type="text/javascript" src="../js/library/jquery.cookie.js"></script>
-	<script type="text/javascript" src="../js/library/jquery.tablesorter.min.js"></script>
-	<script type="text/javascript" src="../js/library/jquery.dateformat-1.0.js"></script>
-	<script type="text/javascript" src="../js/library/jquery.timePicker.js"></script>
-	<!-- Date picker -->
-	<script type="text/javascript" src="../js/library/jquery-ui.min.1.8.17.js"></script>
-
-	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 
 	<script type="text/javascript" src="../js/library/bootstrap-dropdown-1.4.0.js"></script>
 	<script type="text/javascript" src="../js/library/bootstrap-tabs-1.4.0.js"></script>
@@ -29,27 +23,45 @@
 	<script type="text/javascript" src="../js/library/bootstrap-twipsy-1.4.0.js"></script>
 	<script type="text/javascript" src="../js/library/bootstrap-popover-1.4.0.js"></script>
 
-	<script type="text/javascript" src="../js/library/prettify.js"></script>
-	<script type="text/javascript" src="../js/library/BlobBuilder.js"></script>
-	<script type="text/javascript" src="../js/library/FileSaver.js"></script>
-
-	<script type="text/javascript" src="../js/phpjs/explode.js"></script>
-	<script type="text/javascript" src="../js/phpjs/implode.js"></script>
-	<script type="text/javascript" src="../js/phpjs/base64_encode.js"></script>
-
-	<script type="text/javascript" src="../js/wiseml.js"></script>
 	<script type="text/javascript" src="../js/wisebed.js"></script>
-	<script type="text/javascript" src="../js/wisegui.js"></script>
+
+	<script type="text/javascript">
+
+		$(function(){
+
+			window.WebSocket = window.MozWebSocket || window.WebSocket;
+
+			if (window.WebSocket) {
+
+				var webSocketOutputTextArea = $(document).find('textarea.WebSocketOutputTextArea').first();
+
+				socket           = new WebSocket(wisebedWebSocketBaseUrl + '/pt/ws/');
+				socket.onmessage = function(event) { webSocketOutputTextArea.append(JSON.stringify(event.data, null, '  ') + '\n'); };
+				socket.onopen    = function(event) { webSocketOutputTextArea.append('WebSocket opened' + '\n'); };
+				socket.onclose   = function(event) { webSocketOutputTextArea.append('WebSocket closed' + '\n'); };
+
+			} else {
+				alert("Your browser does not support Web Sockets.");
+			}
+
+			$('.GetContentsButton').on('click', function(e) {
+				alert($('iframe').contents().find("body").html());
+			});
+
+		});
+
+	</script>
 
 </head>
 <body>
 
 <div class="container">
-	Packet Tracking
+	<h1>Packet Tracking</h1>
+	<textarea class="span16 WebSocketOutputTextArea"></textarea>
+	<iframe style="height: 300px; margin-top: 20px;" class="span16" src="http://jsfiddle.net/danbim/k5SRK/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+	<button class="btn primary GetContentsButton">Get Contents</button>
 </div>
 
-<div id="WisebedContainer" class="container">
-</div>
 
 </body>
 </html>

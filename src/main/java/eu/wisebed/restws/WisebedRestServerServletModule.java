@@ -1,5 +1,7 @@
 package eu.wisebed.restws;
 
+import eu.wisebed.restws.pt.PacketTrackingWebSocketFactory;
+import eu.wisebed.restws.pt.PacketTrackingWebSocketServlet;
 import org.eclipse.jetty.servlet.DefaultServlet;
 
 import com.google.common.collect.ImmutableMap;
@@ -36,19 +38,22 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 		bind(ExperimentResource.class);
 		bind(RemoteExperimentConfigurationResource.class);
 
+		install(new FactoryModuleBuilder().build(PacketTrackingWebSocketFactory.class));
 		install(new FactoryModuleBuilder().build(WsnWebSocketFactory.class));
 
 		bind(DefaultServlet.class).in(Singleton.class);
 		bind(CrossOriginFilter.class).in(Singleton.class);
 
 		serve("/ws/*").with(WsnWebSocketServlet.class);
+		serve("/pt/ws/*").with(PacketTrackingWebSocketServlet.class);
 		serve("/rest*").with(GuiceContainer.class, ImmutableMap.of(JSONConfiguration.FEATURE_POJO_MAPPING, "true"));
-		filter("/*").through(CrossOriginFilter.class, ImmutableMap.of(
+
+		filter("/*","/pt/*").through(CrossOriginFilter.class, ImmutableMap.of(
 				"allowedOrigins", "http://*",
 				"allowedMethods", "GET,POST,PUT,DELETE",
 				"allowCredentials", "true"
 		));
-		serve("/*").with(DefaultServlet.class, ImmutableMap.of(
+		serve("/*","/pt/*").with(DefaultServlet.class, ImmutableMap.of(
 				"resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm(),
 				"maxCacheSize", "0"
 		));
