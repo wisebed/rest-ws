@@ -1944,9 +1944,13 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '				<div class="row">'
-		  	+ '					<div class="span16">'
-		  	+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
+			+ '					<div class="span4">'
+			+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
+			+ '					</div>'
+			+ '					<div class="span8">'
 		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span8"/>'
+			+ '					</div>'
+			+ '					<div class="span4">'
 		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
 		  	+ '					</div>'
 		  	+ '				</div>'
@@ -2030,48 +2034,55 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		self.printMessagesToTextArea();
 	});
 
-	this.sendNodeSelectionButton.bind('click', self, function(e) {
-
-		var preSelected = null;
-
-		// TODO: Refactor, also used in addFlashConfiguration
-		if(self.sendSelectedNodeUrns != null && self.sendSelectedNodeUrns.length > 0) {
-			preSelected = function(data) {
-				var nodeids = self.sendSelectedNodeUrns;
-				for(var i = 0; i < nodeids.length; i++) {
-					if(data.id == nodeids[i]) return true;
-				}
-				return false;
-			}
-		}
-
-		var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
-				self.testbedId,
-				self.experimentId,
-				'Select Node URNs',
-				'Please select the nodes to which you want to send a message.',
-				preSelected
-		);
-		nodeSelectionDialog.show(function(selectedNodeUrns){
-			self.sendSelectedNodeUrns = selectedNodeUrns;
-		});
-	});
-
-	this.sendMessageInput.bind('keyup', self, function(e) { self.validateSendMessageInput(e) });
+	this.sendNodeSelectionButton.bind('click', self, function(e) { self.onSendMessageNodeSelectionButtonClicked(); });
+	this.sendMessageInput.bind('keyup', self, function(e) { self.updateSendControls(); });
 	this.sendSendButton.bind('click', self, function(e) { self.onSendMessageButtonClicked(e) });
+	this.updateSendControls();
 
 	this.addFlashConfiguration();
 };
 
 /**********************************************************************************************************************/
 
-WiseGuiExperimentationView.prototype.validateSendMessageInput = function(e) {
+WiseGuiExperimentationView.prototype.onSendMessageNodeSelectionButtonClicked = function() {
 
-	if (this.parseSendMessagePayloadBase64() == null) {
-		this.sendMessageInput.addClass('error');
-	} else {
+	var self = this;
+	var nodeSelectionDialog = new WiseGuiNodeSelectionDialog(
+			this.testbedId,
+			this.experimentId,
+			'Select Node URNs',
+			'Please select the nodes to which you want to send a message.',
+			function (data) { return $.inArray(data.id, self.sendSelectedNodeUrns) >= 0; }
+	);
+
+	nodeSelectionDialog.show(function(selectedNodeUrns){
+		self.sendSelectedNodeUrns = selectedNodeUrns;
+		self.updateSendControls();
+	});
+};
+
+WiseGuiExperimentationView.prototype.isSendMessageInputValid = function() {
+	return this.parseSendMessagePayloadBase64() != null;
+};
+
+WiseGuiExperimentationView.prototype.updateSendControls = function() {
+
+	var sendButtonText = this.sendSelectedNodeUrns.length == 1 ?
+			"1 node selected" :
+			this.sendSelectedNodeUrns.length + ' nodes selected';
+	this.sendNodeSelectionButton.html(sendButtonText);
+
+	var isSendMessageInputValid = this.isSendMessageInputValid();
+
+	if (isSendMessageInputValid) {
 		this.sendMessageInput.removeClass('error');
+	} else {
+		this.sendMessageInput.addClass('error');
 	}
+
+	var areSendMessageNodesSelected = this.sendSelectedNodeUrns instanceof Array && this.sendSelectedNodeUrns.length > 0;
+
+	this.sendSendButton.attr('disabled', !isSendMessageInputValid || !areSendMessageNodesSelected);
 };
 
 WiseGuiExperimentationView.prototype.onSendMessageButtonClicked = function(e) {
