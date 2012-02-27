@@ -786,7 +786,15 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 	helpText = 'Please enter your username in the format <strong>username@idphost</strong>. '
 				+ '<br/><br/>'
 				+'If you have registered on <strong>wisebed.eu</strong>, use <strong>yourusername@wisebed1.itm.uni-luebeck.de</strong>.';
-	inputUsername.popover({placement:'below', trigger: 'manual', animate:true, html: true, content: helpText, title: function() {return "Format of the username field";}});
+
+	inputUsername.popover({
+		placement : 'below',
+		trigger   : 'manual',
+		animate   : true,
+		html      : true,
+		content   : helpText,
+		title     : function() { return "Format of the username field"; }
+	});
 
 	inputUsername.focusin(
 		function() {
