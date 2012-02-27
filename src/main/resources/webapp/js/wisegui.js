@@ -1928,9 +1928,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<button class="btn WiseGuiExperimentsViewResetControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
 		  	+ '					<div class="span4">'
-			+ '						<div class="WiseGuiExperimentsViewResetControlResetSelectedNodeUrnsDiv span4">&nbsp;</div>'
-			+ '					</div>'
-		  	+ '					<div class="span8 pull-left">'
 			+ '						<button class="btn primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
 			+ '					</div>'
 		  	+ '				</div>'
@@ -2458,11 +2455,8 @@ WiseGuiExperimentationView.prototype.executeFlashNodes = function() {
 
 WiseGuiExperimentationView.prototype.updateResetSelectNodeUrns = function(selectedNodeUrns) {
 	this.resetSelectedNodeUrns = selectedNodeUrns;
-	if (selectedNodeUrns.length > 0) {
-		this.setResetButtonDisabled(false);
-	}
-	var selectNodeUrnsDiv = this.view.find('div.WiseGuiExperimentsViewResetControlResetSelectedNodeUrnsDiv').first();
-	selectNodeUrnsDiv.html((selectedNodeUrns.length == 1 ? '1 node selected' : selectedNodeUrns.length + ' nodes selected'));
+	this.setResetButtonDisabled(selectedNodeUrns.length == 0);
+	this.resetNodeSelectionButton.html((selectedNodeUrns.length == 1 ? '1 node selected' : selectedNodeUrns.length + ' nodes selected'));
 };
 
 WiseGuiExperimentationView.prototype.showResetNodeSelectionDialog = function() {
