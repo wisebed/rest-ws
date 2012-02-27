@@ -2128,6 +2128,8 @@ WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() 
 
 	for (var i=0; i < splitMessage.length; i++) {
 
+		splitMessage[i] = splitMessage[i].replace(/ /g, '');
+
 		var radix = 10;
 
 		if (splitMessage[i].indexOf("0x") == 0) {
