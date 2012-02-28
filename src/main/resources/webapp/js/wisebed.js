@@ -25,6 +25,32 @@ Array.prototype.compareArrays = function(arr) {
 
 var Wisebed = new function() {
 
+	this.WebSocket = function(testbedId, experimentId, onmessage, onopen, onclosed) {
+
+		this.testbedId    = testbedId;
+		this.experimentId = experimentId;
+		this.onmessage    = onmessage;
+		this.onopen       = onopen;
+		this.onclosed     = onclosed;
+
+		window.WebSocket = window.MozWebSocket || window.WebSocket;
+
+		var self = this;
+
+		this.socket = new WebSocket(wisebedWebSocketBaseUrl + '/ws/experiments/' + this.experimentId);
+		this.socket.onmessage = function(event) { self.onmessage(JSON.parse(event.data)); };
+		this.socket.onopen    = function(event) { self.onopen(event); };
+		this.socket.onclose   = function(event) { self.onclosed(event); };
+
+		this.send = function(message) {
+			this.socket.send(JSON.stringify(message, null, '  '));
+		};
+
+		this.close = function(code, reason) {
+			this.socket.close(code !== undefined ? code : 1000, reason !== undefined ? reason : '');
+		};
+	};
+
 	this.testCookie = function (callbackOK, callbackError) {
 		// Check cookie
 		var getCookieCallbackDone = function() {
