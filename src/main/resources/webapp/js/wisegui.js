@@ -1761,7 +1761,8 @@ var WiseGuiExperimentationView = function(testbedId, experimentId) {
 	this.sendDivId               = this.experimentationDivId+'-send';
 	this.flashDivId              = this.experimentationDivId+'-flash';
 	this.resetDivId              = this.experimentationDivId+'-reset';
-	this.scriptingDivId          = this.experimentationDivId+'-scripting';
+	this.scriptingEditorDivId    = this.experimentationDivId+'-scripting-editor';
+	this.scriptingOutputDivId    = this.experimentationDivId+'-scripting-output';
 
 	this.view = $('<div class="WiseGuiExperimentationView"/>');
 
@@ -1903,7 +1904,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '			<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
 			+ '			<li><a href="#'+this.resetDivId+'">Reset</a></li>'
 			+ '			<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
-			+ '			<li><a href="#'+this.scriptingDivId+'">Scripting</a></li>'
+			+ '			<li><a href="#'+this.scriptingEditorDivId+'">Scripting Editor</a></li>'
+			+ '			<li><a href="#'+this.scriptingOutputDivId+'">Scripting Output</a></li>'
 			+ '		</ul>'
 			+ '		<div class="tab-content">'
 			+ '			<div class="active tab-pane WiseGuiExperimentsViewFlashControl" id="'+this.flashDivId+'">'
@@ -1956,7 +1958,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '			</div>'
-			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingDivId+'">'
+			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingEditorDivId+'">'
 			+ '				<div class="row" style="padding-bottom:10px;">'
 			+ '					<div class="span8">'
 			+ '						<button class="btn span2 WiseGuiExperimentsViewScriptingHelpButton">Help</button>'
@@ -1970,6 +1972,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '					<div class="span16 WiseGuiExperimentsViewScriptingControlEditorRow"></div>'
 			+ '				</div>'
 			+ '			</div>'
+			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingOutputTab" id="'+this.scriptingOutputDivId+'"/>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '</div>');
@@ -1997,6 +2000,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	// ace editor is not correctly displayed if parent tab is hidden when creating it. therefore we need to workaround
 	// by attaching it to the body (invisible on z-index -1), making the div an ace editor, removing the z-index and
 	// moving the element in the dom to its final destination
+	this.scriptingOutputDiv           = this.view.find('div.WiseGuiExperimentsViewScriptingOutputTab').first();
 	this.scriptingEditorRow           = this.view.find('div.WiseGuiExperimentsViewScriptingControlEditorRow').first();
 	this.scriptingEditorStopButton    = this.view.find('button.WiseGuiExperimentsViewScriptingStopButton').first();
 	this.scriptingEditorStartButton   = this.view.find('button.WiseGuiExperimentsViewScriptingStartButton').first();
@@ -2005,11 +2009,17 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ 'this.testbedId = null;\n'
 			+ 'this.experimentId = null;\n'
 			+ 'this.webSocket = null;\n'
+			+ 'this.outputDiv = null;\n'
+			+ 'this.outputTextArea = null;\n'
 			+ '  \n'
 			+ 'this.start = function(env) {\n'
 			+ '  console.log("Starting user script...");\n'
 			+ '  this.testbedId = env.testbedId;\n'
 			+ '  this.experimentId = env.experimentId;\n'
+			+ '  this.outputDiv = env.outputDiv;\n'
+			+ '  this.outputDiv.empty();\n'
+			+ '  this.outputTextArea = $("&lt;textarea/>");\n'
+			+ '  this.outputDiv.append(this.outputTextArea);\n'
 			+ '  this.webSocket = new Wisebed.WebSocket(this.testbedId, this.experimentId, this.onmessage, this.onopen, this.onclosed);\n'
 			+ '  // TODO implement me\n'
 			+ '};\n'
@@ -2022,16 +2032,19 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '\n'
 			+ 'this.onmessage = function(message) {\n'
 			+ '  console.log(message);\n'
+			+ '  this.outputTextArea.append(JSON.stringify(message));\n'
 			+ '  // TODO implement me\n'
 			+ '};\n'
 			+ '\n'
 			+ 'this.onopen = function(event) {\n'
 			+ '  console.log(event);\n'
+			+ '  this.outputTextArea.append("Connection opened!");\n'
 			+ '  // TODO implement me\n'
 			+ '};\n'
 			+ '\n'
 			+ 'this.onclosed = function(event) {\n'
 			+ '  console.log(event);\n'
+			+ '  this.outputTextArea.append("Connection closed!");\n'
 			+ '  // TODO implement me\n'
 			+ '};\n'
 			+ '</div>');
@@ -2129,6 +2142,8 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 				+ 'functionality can e.g., be used to connect to the currently running experiment via WebSockets and '
 				+ 'process the messages received from the sensor nodes to e.g., build visualizations or statistical '
 				+ 'evaluations during the runtime of the experiment while data is flowing.'
+				+ '<h3>How does the scripting environment look like?</h3>'
+				+ 'TODO'
 				+ '<h3>How is the code executed?</h3>'
 				+ 'Upon starting the users script the interpreter wraps the users code in a function object and calls '
 				+ 'lifecycle callback functions if provided by the user.<br/>' 
@@ -2152,8 +2167,6 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 				+ '<br/>' 
 				+ 'When the user stops the script the environment will call <code>userScript.stop()</code> and remove '
 				+ 'the <code>&lt;script></code> tag from the DOM afterwards.<br/>'
-				+ '<h3>How does the scripting environment look like?</h3>'
-				+ 'TODO'
 				+ '<h3>A Word of Warning</h3>'
 				+ 'There\'s no way yet to really clean up after running a user-provided '
 				+ 'JavaScript script. Therefore, if your script doesn\'t cleanly shut down or breaks something the only '
@@ -2178,9 +2191,13 @@ WiseGuiExperimentationView.prototype.startUserScript = function() {
 	this.stopUserScript();
 
 	this.scriptingEditorStartButton.attr('disabled', true);
-	this.userScriptDomElem = $('<script>var WiseGuiUserScriptClass = function() {' + this.scriptingEditor.getSession().getValue() + '};</script>');
-	$(document.body).append(this.userScriptDomElem);
-	this.userScript = new WiseGuiUserScriptClass();
+
+	this.userScriptDomElem = document.createElement('script');
+	this.userScriptDomElem.text = this.scriptingEditor.getSession().getValue();
+	this.userScriptDomElem.id = 'WiseGuiUserScriptDomElem';
+	document.body.appendChild(this.userScriptDomElem);
+
+	this.userScript = new WiseGuiUserScript();
 
 	if (typeof(this.userScript) == 'object') {
 
@@ -2190,7 +2207,9 @@ WiseGuiExperimentationView.prototype.startUserScript = function() {
 		if ('start' in this.userScript && typeof(this.userScript.stop) == 'function') {
 			this.userScript.start({
 				testbedId    : this.testbedId,
-				experimentId : this.experimentId
+				experimentId : this.experimentId,
+				outputDivId  : this.scriptingOutputDivId,
+				outputDiv    : this.scriptingOutputDiv
 			});
 		}
 
@@ -2209,10 +2228,12 @@ WiseGuiExperimentationView.prototype.stopUserScript = function() {
 		this.userScript.stop();
 	}
 
-	delete this.userScript;
-	if (this.userScriptDomElem && "remove" in this.userScriptDomElem && typeof(this.userScriptDomElem.remove) == 'function') {
-		this.userScriptDomElem.remove();
+	var userScriptDomElem = document.getElementById('WiseGuiUserScriptDomElem');
+	if (this.userScriptDomElem && userScriptDomElem) {
+		document.body.removeChild(userScriptDomElem);
 	}
+
+	delete this.userScript;
 };
 
 /**********************************************************************************************************************/

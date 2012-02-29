@@ -91,26 +91,29 @@ public class WsnWebSocket implements WebSocket, WebSocket.OnTextMessage {
 	}
 
 	private void sendUpstream(final DateTime dateTime, final String sourceNode, final byte[] payloadBytes) {
-		String json = JSONHelper.toJSON(
-				new WebSocketUpstreamMessage(
-						dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
-						sourceNode,
-						new String(Base64.encode(payloadBytes))
-				)
+		WebSocketUpstreamMessage upstreamMessage = new WebSocketUpstreamMessage(
+				dateTime.toString(ISODateTimeFormat.basicDateTime()),
+				sourceNode,
+				new String(Base64.encode(payloadBytes))
 		);
+		String json;
+		try {
+			json = JSONHelper.toJSON(upstreamMessage);
+		} catch (Exception e) {
+			log.error("", e);
+			JSONHelper.toJSON(upstreamMessage);
+			return;
+		}
 		log.trace("Sending upstream message via WebSocket: ", json);
 		sendMessage(json);
 	}
 
-	private void sendNotification(final DateTime dateTime, final String notification) {
-		sendMessage(
-				JSONHelper.toJSON(
-						new WebSocketNotificationMessage(
-								dateTime.toString(ISODateTimeFormat.basicDateTimeNoMillis()),
-								notification
-						)
-				)
+	private void sendNotification(final DateTime dateTime, final String notificationString) {
+		WebSocketNotificationMessage notification = new WebSocketNotificationMessage(
+				dateTime.toString(ISODateTimeFormat.basicDateTime()),
+				notificationString
 		);
+		sendMessage(JSONHelper.toJSON(notification));
 	}
 
 	private void sendMessage(final String data) {

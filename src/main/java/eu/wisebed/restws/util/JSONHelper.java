@@ -25,7 +25,7 @@ public class JSONHelper {
 		// make serializer use JAXB annotations (only)
 		mapper.getSerializationConfig().setAnnotationIntrospector(introspector);
 
-		writer = mapper.defaultPrettyPrintingWriter();
+		writer = mapper.writerWithDefaultPrettyPrinter();
 	}
 
 	public static String toXML(Object o) {
@@ -40,6 +40,14 @@ public class JSONHelper {
 			writer.writeValue(stringWriter, o);
 		} catch (IOException e) {
 			// should not happen because of StringWriter
+		} catch (ArrayIndexOutOfBoundsException e) {
+			try {
+				writer = mapper.writerWithDefaultPrettyPrinter();
+				stringWriter = new StringWriter();
+				writer.writeValue(stringWriter, o);
+			} catch (Exception e1) {
+				throw new RuntimeException(e1);
+			}
 		}
 		return stringWriter.toString();
 	}

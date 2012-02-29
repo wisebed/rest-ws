@@ -36,22 +36,22 @@
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-servlet</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-json</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 
 		<!-- JAX-WS API -->
@@ -94,22 +94,22 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>8.1.0.v20120127</version>
+			<version>8.1.1.v20120215</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>8.1.0.v20120127</version>
+			<version>8.1.1.v20120215</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlets</artifactId>
-			<version>8.1.0.v20120127</version>
+			<version>8.1.1.v20120215</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-websocket</artifactId>
-			<version>8.1.0.v20120127</version>
+			<version>8.1.1.v20120215</version>
 		</dependency>
 
 		<!-- JAX-WS support for Jetty -->
