@@ -2006,7 +2006,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.scriptingEditorStartButton   = this.view.find('button.WiseGuiExperimentsViewScriptingStartButton').first();
 	this.scriptingEditorHelpButton    = this.view.find('button.WiseGuiExperimentsViewScriptingHelpButton').first();
 	this.scriptingEditorDiv           = $('<div class="span16 WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">'
-			+ 'var WiseGuiUserScript = function() {\n'
+			+ 'WiseGuiUserScript = function() {\n'
 			+ '  console.log("WiseGuiUserScript instantiated...");\n'
 			+ '  this.testbedId = null;\n'
 			+ '  this.experimentId = null;\n'
@@ -2208,25 +2208,27 @@ WiseGuiExperimentationView.prototype.startUserScript = function() {
 	this.userScriptDomElem.id = 'WiseGuiUserScriptDomElem';
 	document.body.appendChild(this.userScriptDomElem);
 
-	this.userScript = new WiseGuiUserScript();
+	this.scriptingEditorStartButton.attr('disabled', true);
+	this.scriptingEditorStopButton.attr('disabled', false);
 
-	if (typeof(this.userScript) == 'object') {
+	if (typeof(WiseGuiUserScript) == 'function') {
 
-		this.scriptingEditorStartButton.attr('disabled', true);
-		this.scriptingEditorStopButton.attr('disabled', false);
+		this.userScript = new WiseGuiUserScript();
 
-		if ('start' in this.userScript && typeof(this.userScript.stop) == 'function') {
-			this.userScript.start({
-				testbedId    : this.testbedId,
-				experimentId : this.experimentId,
-				outputDivId  : this.scriptingOutputDivId,
-				outputDiv    : this.scriptingOutputDiv
-			});
+		if (typeof(this.userScript) == 'object') {
+
+			if ('start' in this.userScript && typeof(this.userScript.stop) == 'function') {
+				this.userScript.start({
+					testbedId    : this.testbedId,
+					experimentId : this.experimentId,
+					outputDivId  : this.scriptingOutputDivId,
+					outputDiv    : this.scriptingOutputDiv
+				});
+			}
+
+		} else {
+			alert("error");
 		}
-
-	} else {
-		this.scriptingEditorStartButton.attr('disabled', false);
-		alert("error");
 	}
 };
 
@@ -2244,7 +2246,14 @@ WiseGuiExperimentationView.prototype.stopUserScript = function() {
 		document.body.removeChild(userScriptDomElem);
 	}
 
-	delete this.userScript;
+	if (this.userScript) {
+		delete this.userScript;
+	}
+
+	if (typeof(WiseGuiUserScript) != 'undefined') {
+		delete WiseGuiUserScript;
+	}
+
 };
 
 /**********************************************************************************************************************/
