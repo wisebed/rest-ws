@@ -14,7 +14,7 @@
 		},
 
 		"cti": {
-			"name":"Research Academic Computer Technology Institute (CTI)",
+			"name":"Computer Technology Institute & Press (CTI)",
 			"urnPrefixes":["urn:wisebed:ctitestbed:"],
 			"sessionManagementEndpointUrl":"http://hercules.cti.gr:8888/sessions"
 		},
