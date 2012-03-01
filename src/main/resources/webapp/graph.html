@@ -4,7 +4,7 @@
 
 	<meta charset="utf-8">
 
-	<title>WISEBED REST/WebSocket API v2.3 - Home</title>
+	<title>WISEBED REST/WebSocket API v2.3 - Graph Demo</title>
 
 	<link rel="stylesheet" media="screen" href="css/bootstrap-1.4.0.css">
 	<link rel="stylesheet" media="screen" href="css/wisegui.css">
@@ -46,10 +46,193 @@
 	<script type="text/javascript" src="js/wisebed.js"></script>
 	<script type="text/javascript" src="js/wisegui.js"></script>
 
+	<script type="text/javascript" src="js/lib/d3/d3-2.8.0.js"></script>
+
+	<style type="text/css">
+		circle.node {
+			fill: #aaa;
+			stroke: #666;
+			stroke-width: 1px;
+		}
+	</style>
+
+	<script type="text/javascript">
+
+		Packet = function(nodeUrn, type, incoming, srcMac, dstMac, payload) {
+			this.nodeUrn = nodeUrn;
+			this.type = type;
+			this.incoming = incoming;
+			this.srcMac = srcMac;
+			this.dstMac = dstMac;
+			this.payload = payload;
+		};
+
+		var graph;
+		var graphContainer;
+		var graphWidth;
+		var graphHeight;
+		var graphPosFactorX;
+		var graphPosFactorY;
+		var networkNodes;
+		var networkNodesIndices;
+		var networkData;
+		var vizContainer;
+		var statsContainer;
+
+		function printStats() {
+
+			statsContainer.empty();
+
+			$.each(networkNodes, function(index, nodeData) {
+				statsContainer.append(nodeData.nodeUrn + " | (" + nodeData.pos.x + "," + nodeData.pos.y + ") | (" + nodeData.msgs.incoming + "," + nodeData.msgs.outgoing + ")<br/>");
+			});
+		}
+
+		function initGraph() {
+
+			graphWidth = graphContainer[0].clientWidth - 10;
+			graphHeight = graphContainer[0].clientHeight - 10;
+
+			graph = d3.select('.GraphContainer').append('svg')
+					.attr('width', graphWidth)
+					.attr('height', graphHeight);
+
+			graphPosFactorX = graphWidth / networkData.maxX;
+			graphPosFactorY = graphHeight / networkData.maxY;
+
+			var circles = graph.selectAll('circle')
+					.data(networkNodes, function(d) { return d.nodeUrn });
+
+			circles.enter().append('circle')
+					.attr('cx', function(d) { return (d.pos.x * graphPosFactorX) })
+					.attr('cy', function(d) { return (d.pos.y * graphPosFactorY) })
+					.attr('class', 'node')
+					.attr('r', function(d) {
+						var radius = Math.sqrt(d.msgs.incoming + d.msgs.outgoing);
+						return radius == 0 ? 10 : 10 + radius;
+					});
+		}
+
+		function updateGraph() {
+
+			graph.selectAll('circle')
+					.data(networkNodes)
+					.attr('r', function(d) {
+						var radius = Math.sqrt(d.msgs.incoming + d.msgs.outgoing);
+						return radius == 0 ? 10 : 10 + radius;
+					});
+		}
+
+		function loadData(ondone) {
+
+			$.ajax({
+				url      : 'graph_wiseml.json',
+				type     : 'GET',
+				dataType : 'json',
+				error    : function(jqXHR, textStatus, errorThrown) { alert(errorThrown); },
+				success  : function(wiseml) {
+
+					console.log(wiseml);
+
+					$.each(wiseml.setup.node, function(index, elem) {
+
+						networkNodes[index] = {
+							nodeUrn : elem.id,
+							pos : {
+								x : elem.position.x,
+								y : elem.position.y
+							},
+							msgs : {
+								incoming : 0,
+								outgoing : 0
+							}
+						};
+
+						networkNodesIndices[elem.id] = index;
+
+						if (elem.position.x > networkData.maxX) { networkData.maxX = elem.position.x }
+						if (elem.position.x < networkData.minX) { networkData.minX = elem.position.x }
+						if (elem.position.y > networkData.maxY) { networkData.maxY = elem.position.y }
+						if (elem.position.y < networkData.minY) { networkData.minY = elem.position.y }
+
+					});
+
+					ondone();
+				}
+			});
+
+		}
+
+		function getRandom(min, max) {
+
+			if(min > max) { return -1; }
+			if(min == max) { return min; }
+
+			var r;
+			do { r = Math.random(); } while(r == 1.0);
+			return min + parseInt(r * (max-min+1));
+		}
+
+		function onPacketReceived(packet) {
+
+			if (packet.incoming) {
+				networkNodes[networkNodesIndices[packet.nodeUrn]].msgs.incoming++;
+			} else {
+				networkNodes[networkNodesIndices[packet.nodeUrn]].msgs.outgoing++;
+			}
+		}
+
+		function simulatePackets() {
+			var numberOfPackets = Math.round(networkNodes.length / 10);
+
+			for (var i=0; i<numberOfPackets; i++) {
+				var nodeIndex = getRandom(0, networkNodes.length-1);
+				if (getRandom(0, 1) == 0) {
+					onPacketReceived(new Packet(networkNodes[nodeIndex].nodeUrn, 'ipv6', true, null, null, null));
+				} else {
+					onPacketReceived(new Packet(networkNodes[nodeIndex].nodeUrn, 'ipv6', true, null, null, null));
+				}
+			}
+		}
+
+		function init() {
+
+			networkNodes = [];
+			networkNodesIndices = {};
+			networkData = {
+				minX : Number.MAX_VALUE,
+				maxX : Number.MIN_VALUE,
+				minY : Number.MAX_VALUE,
+				maxY : Number.MIN_VALUE
+			};
+
+			graphContainer = $('div.GraphContainer');
+			statsContainer = $('div.StatsContainer');
+
+			loadData(function() {
+
+				initGraph();
+
+				updateGraph();
+				printStats();
+
+				setInterval(simulatePackets, 10);
+				setInterval(function() {
+					updateGraph();
+					printStats();
+				}, 1000);
+			});
+		}
+
+		$(document).ready(init);
+
+	</script>
+
 </head>
 
 <body>
-	<div id="WisebedContainer" class="container"></div>
+	<div class="GraphContainer container span16" style="height: 500px; overflow: auto; border: 1px solid #aaa;"></div>
+	<div class="StatsContainer container span16" style="height: 300px; overflow: auto; border: 1px solid #aaa;"></div>
 </body>
 
 </html>
