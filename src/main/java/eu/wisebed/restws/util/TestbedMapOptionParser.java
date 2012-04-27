@@ -21,15 +21,16 @@ public class TestbedMapOptionParser extends OptionHandler<TestbedMap> {
 	@Override
 	public int parseArguments(final Parameters params) throws CmdLineException {
 		String fileName = params.getParameter(0);
+		final File file = new File(fileName);
 		try {
 			TestbedMap testbedMap = JSONHelper.fromJSON(
-					Files.toString(new File(fileName), Charset.defaultCharset()),
+					Files.toString(file, Charset.defaultCharset()),
 					TestbedMap.class
 			);
 			setter.addValue(testbedMap);
 		} catch (Exception e) {
 			throw new CmdLineException(owner,
-					"The supplied testbed list file \"" + fileName + "\" could not be parsed! Reason: " + e, e
+					"The supplied testbed list file \"" + file.getAbsolutePath() + "\" could not be parsed! Reason: " + e, e
 			);
 		}
 		return 1;
