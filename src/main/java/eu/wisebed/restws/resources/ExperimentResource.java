@@ -150,8 +150,9 @@ public class ExperimentResource {
 			nodeList.nodeUrns = new LinkedList<String>();
 
 			// First add all
-			for (Node node : wiseml.getSetup().getNode())
+			for (Node node : wiseml.getSetup().getNode()) {
 				nodeList.nodeUrns.add(node.getId());
+			}
 
 			// Then remove non-matching ones
 			for (Node node : wiseml.getSetup().getNode()) {
@@ -197,16 +198,16 @@ public class ExperimentResource {
 	private String toString(Capability c) {
 		StringBuilder sb = new StringBuilder();
 		if (c.getName() != null)
-			sb.append(c.getName() + " ");
+			sb.append(c.getName()).append(" ");
 
 		if (c.getDatatype() != null && c.getDatatype().value() != null)
-			sb.append(c.getDatatype().value() + " ");
+			sb.append(c.getDatatype().value()).append(" ");
 
 		if (c.getDefault() != null)
-			sb.append(c.getDefault() + " ");
+			sb.append(c.getDefault()).append(" ");
 
 		if (c.getUnit() != null && c.getUnit().value() != null)
-			sb.append(c.getUnit().value() + " ");
+			sb.append(c.getUnit().value()).append(" ");
 
 		return sb.toString();
 	}
@@ -500,7 +501,7 @@ public class ExperimentResource {
 				return createExperimentNotFoundResponse(experimentUrlBase64);
 			}
 
-			Job job = null;
+			Job job;
 			try {
 
 				job = wsnProxy.resetNodes(nodeUrns.nodeUrns, config.operationTimeoutMillis, TimeUnit.MILLISECONDS).get();

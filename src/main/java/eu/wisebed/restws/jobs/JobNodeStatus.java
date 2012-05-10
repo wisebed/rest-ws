@@ -37,4 +37,13 @@ public class JobNodeStatus {
 	public int getStatusCode() {
 		return statusCode;
 	}
+
+	@Override
+	public String toString() {
+		return "JobNodeStatus{" +
+				"status=" + status +
+				", statusCode=" + statusCode +
+				", message='" + message + '\'' +
+				'}';
+	}
 }

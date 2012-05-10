@@ -13,6 +13,7 @@ import eu.wisebed.restws.util.RSServiceHelper;
 import eu.wisebed.restws.util.SNAAServiceHelper;
 import eu.wisebed.restws.util.WSNServiceHelper;
 
+import javax.annotation.Nonnull;
 import javax.xml.ws.Holder;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,8 @@ public class WebServiceEndpointManagerImpl implements WebServiceEndpointManager 
 
 
 	@Override
-	public synchronized SNAA getSnaaEndpoint(final String testbedId) throws UnknownTestbedIdException {
+	@Nonnull
+	public synchronized SNAA getSnaaEndpoint(@Nonnull final String testbedId) throws UnknownTestbedIdException {
 
 		checkNotNull(testbedId);
 
@@ -49,10 +51,11 @@ public class WebServiceEndpointManagerImpl implements WebServiceEndpointManager 
 	}
 
 	@Override
-	public synchronized RS getRsEndpoint(final String testbedId) throws UnknownTestbedIdException {
+	@Nonnull
+	public synchronized RS getRsEndpoint(@Nonnull final String testbedId) throws UnknownTestbedIdException {
 
 		checkNotNull(testbedId);
-		
+
 		RS rs = rsMap.get(testbedId);
 		if (rs != null) {
 			return rs;
@@ -64,7 +67,9 @@ public class WebServiceEndpointManagerImpl implements WebServiceEndpointManager 
 	}
 
 	@Override
-	public synchronized SessionManagement getSmEndpoint(final String testbedId) throws UnknownTestbedIdException {
+	@Nonnull
+	public synchronized SessionManagement getSmEndpoint(@Nonnull final String testbedId)
+			throws UnknownTestbedIdException {
 
 		checkNotNull(testbedId);
 
@@ -79,7 +84,7 @@ public class WebServiceEndpointManagerImpl implements WebServiceEndpointManager 
 	}
 
 	private void fillMaps(final String testbedId) throws UnknownTestbedIdException {
-		
+
 		final TestbedMap.Testbed testbed = config.testbedMap.testbedMap.get(testbedId);
 		final SessionManagement sm;
 
