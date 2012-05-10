@@ -1,8 +1,16 @@
 package eu.wisebed.restws;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
+import de.uniluebeck.itm.tr.util.ExecutorUtils;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -46,7 +54,10 @@ public class WisebedRestServer {
 
 		log.debug("Starting up with the following configuration " + config);
 
-		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config));
+		final ExecutorService timeLimiterExecutorService = MoreExecutors
+				.getExitingExecutorService((ThreadPoolExecutor) Executors.newCachedThreadPool());
+		final TimeLimiter timeLimiter = new SimpleTimeLimiter(timeLimiterExecutorService);
+		final Injector injector = Guice.createInjector(new WisebedRestServerModule(config, timeLimiter));
 		final WisebedRestServerService serverService = injector.getInstance(WisebedRestServerService.class);
 
 		final WsnProxyManagerService wsnProxyManagerService = injector.getInstance(WsnProxyManagerService.class);
@@ -62,17 +73,22 @@ public class WisebedRestServer {
 		Runtime.getRuntime().addShutdownHook(new Thread("ShutdownThread") {
 			@Override
 			public void run() {
+
 				log.info("Received EXIT signal. Shutting down server...");
+
 				try {
 					serverService.stop().get();
 				} catch (Exception e) {
 					log.warn("Exception caught while shutting server: " + e, e);
 				}
+
 				try {
 					wsnProxyManagerService.stop().get();
 				} catch (Exception e) {
 					log.warn("Exception caught while shutting server: " + e, e);
 				}
+
+				ExecutorUtils.shutdown(timeLimiterExecutorService, 10, TimeUnit.SECONDS);
 			}
 		}
 		);
