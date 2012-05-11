@@ -24,6 +24,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 import de.uniluebeck.itm.tr.util.ExecutorUtils;
+import eu.wisebed.api.WisebedServiceHelper;
 import eu.wisebed.api.common.Message;
 import eu.wisebed.api.wsn.ChannelHandlerConfiguration;
 import eu.wisebed.api.wsn.ChannelHandlerDescription;
@@ -34,7 +35,6 @@ import eu.wisebed.restws.jobs.Job;
 import eu.wisebed.restws.jobs.JobListener;
 import eu.wisebed.restws.jobs.JobObserver;
 import eu.wisebed.restws.jobs.JobType;
-import eu.wisebed.restws.util.WSNServiceHelper;
 
 public class WsnProxyServiceImpl extends AbstractService implements WsnProxyService {
 
@@ -100,7 +100,7 @@ public class WsnProxyServiceImpl extends AbstractService implements WsnProxyServ
 	protected void doStart() {
 		try {
 
-			wsn = WSNServiceHelper.getWSNService(experimentWsnInstanceEndpointUrl);
+			wsn = WisebedServiceHelper.getWSNService(experimentWsnInstanceEndpointUrl);
 			executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 
 			getEventBus().register(this);
