@@ -419,7 +419,7 @@ public class ExperimentResource {
 		// data:[<mediatype>][;base64]
 		int commaPos = dataURL.indexOf(',');
 		String header = dataURL.substring(0, commaPos);
-		if (!header.endsWith(";base64")) {
+		if (!header.endsWith("base64")) {
 			throw new RuntimeException("Data URLs are only supported with base64 encoding!");
 		}
 		return Base64.decode(dataURL.substring(commaPos + 1).getBytes());
