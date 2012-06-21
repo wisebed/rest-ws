@@ -2890,7 +2890,9 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				jsonTab.append($('<pre class="WiseGuiTestbedDetailsWiseMLJSON">'+JSON.stringify(wiseML, null, '  ')+'</pre>'));
 
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
-				new WiseGuiNodeTable(wiseML, nodesTab, false, true);
+				var nodesTabDiv = $('<div class="WiseGuiTestbedDetailsNodesTable"/>');
+				nodesTab.append(nodesTabDiv);
+				var nodesTable = new WiseGuiNodeTable(wiseML, nodesTabDiv, false, true);
 
 				// Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);

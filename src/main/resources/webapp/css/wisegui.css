@@ -96,3 +96,8 @@ div.WiseGuiExperimentsViewScriptingEditor {
 	position: relative;
 	height: 400px;
 }
+
+div.WiseGuiTestbedDetailsNodesTable {
+	height: 500px;
+	overflow: auto;
+}
