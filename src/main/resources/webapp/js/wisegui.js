@@ -1117,9 +1117,12 @@ Table.prototype.generateTable = function () {
 	this.html.append(this.table);
 
 	if(this.showCheckBoxes) {
-		this.table.tablesorter({headers:{0:{sorter:false}}});
+		this.table.tablesorter({
+			headers:{0:{sorter:false}},
+			sortList: [[1,0]]
+		});
 	} else {
-		this.table.tablesorter();
+		this.table.tablesorter({sortList: [[0,0]]});
 	}
 };
 
