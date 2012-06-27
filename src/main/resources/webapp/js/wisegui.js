@@ -1953,8 +1953,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '					<div class="span4">'
 			+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
-			+ '					<div class="span8">'
-		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span8"/>'
+			+ '					<div class="span2">'
+			+ '						<select class="WiseGuiExperimentsViewSendControlSelectMode span2">'
+			+ '							<option value="binary">Binary</option>'
+			+ '							<option value="ascii">ASCII</option>'
+			+ '						</select>'
+			+ '					</div>'
+			+ '					<div class="span6">'
+		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span6"/>'
 			+ '					</div>'
 			+ '					<div class="span4">'
 		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
@@ -1996,6 +2002,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.resetResetButton             = this.view.find('button.WiseGuiExperimentsViewResetControlResetNodeUrns').first();
 
 	this.sendNodeSelectionButton      = this.view.find('button.WiseGuiExperimentsViewSendControlSelectNodeUrns').first();
+	this.sendModeSelect               = this.view.find('select.WiseGuiExperimentsViewSendControlSelectMode').first();
 	this.sendMessageInput             = this.view.find('input.WiseGuiExperimentsViewSendControlSendMessageInput').first();
 	this.sendSendButton               = this.view.find('button.WiseGuiExperimentsViewSendControlSendMessage').first();
 
@@ -2142,8 +2149,16 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 				+ 'Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>',
 		title     : function() { return "Message Format"; }
 	});
-	this.sendMessageInput.focusin(function() { self.sendMessageInput.popover("show"); });
-	this.sendMessageInput.focusout(function() { self.sendMessageInput.popover("hide"); });
+	this.sendMessageInput.focusin(function() {
+		if (self.getSendMode() == 'binary') {
+			self.sendMessageInput.popover("show");
+		}
+	});
+	this.sendMessageInput.focusout(function() {
+		if (self.getSendMode() == 'binary') {
+			self.sendMessageInput.popover("hide");
+		}
+	});
 	this.updateSendControls();
 
 	this.scriptingEditorHelpButton.popover({
@@ -2360,13 +2375,41 @@ WiseGuiExperimentationView.prototype.onSendMessageButtonClicked = function(e) {
 
 WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() {
 
-	var messageToSend = this.sendMessageInput[0].value;
+	var messageBytes;
+	var messageString = this.sendMessageInput[0].value;
 
-	if (messageToSend === undefined || '') {
+	if (messageString === undefined || '') {
 		return null;
 	}
 
-	var splitMessage = messageToSend.split(",");
+	messageBytes = this.getSendMode() == 'binary' ?
+			this.parseByteArrayFromString(messageString) :
+			this.parseByteArrayFromAsciiString(messageString);
+
+	return messageBytes == null ? null : base64_encode(messageBytes);
+};
+
+WiseGuiExperimentationView.prototype.getSendMode = function() {
+	return this.sendModeSelect[0].options[this.sendModeSelect[0].selectedIndex].value
+};
+
+WiseGuiExperimentationView.prototype.parseByteArrayFromAsciiString = function(messageString) {
+
+	if (messageString == null || messageString == '') {
+		return null;
+	}
+
+	var messageBytes = new Array();
+	for(var i = 0; i < messageString.length; i++) {
+		messageBytes[i] = messageString.charCodeAt(i);
+	}
+
+	return messageBytes;
+};
+
+WiseGuiExperimentationView.prototype.parseByteArrayFromString = function(messageString) {
+
+	var splitMessage = messageString.split(",");
 	var messageBytes = [];
 
 	for (var i=0; i < splitMessage.length; i++) {
@@ -2402,7 +2445,7 @@ WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() 
 		return null;
 	}
 
-	return base64_encode(messageBytes);
+	return messageBytes;
 };
 
 /**********************************************************************************************************************/
