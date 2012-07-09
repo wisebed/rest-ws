@@ -282,6 +282,44 @@
 				<version>2.2</version>
 			</extension>
 		</extensions>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-dependency-plugin
+										</artifactId>
+										<versionRange>
+											[2.1,)
+										</versionRange>
+										<goals>
+											<goal>copy</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<repositories>
@@ -336,7 +374,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>wisebed-maven-repository-releases</id>
@@ -349,7 +387,7 @@
 			<url>scpexe://itm01.itm.uni-luebeck.de/www/wisebeds/maven/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-	
+
 	<scm>
 		<connection>scm:git:git@github.com:wisebed/rest-ws.git</connection>
 	</scm>
