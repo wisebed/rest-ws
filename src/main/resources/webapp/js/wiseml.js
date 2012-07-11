@@ -10,6 +10,7 @@ var WiseMLParser = function(wisemlParameter, parentDiv) {
 	this.nodes = new Array();
 	this.markersArray;
 	this.map;
+	this.infoWindow = new google.maps.InfoWindow();
 
 	this.view = null;
 
@@ -86,13 +87,11 @@ WiseMLParser.prototype.addMarker = function(n) {
 		title : "Sensor: " + n.id
 	});
 
-	var infowindow = new google.maps.InfoWindow({
-		content : "<h2>Sensor: " + n.id + "</h2><p>" + n.desc + "</p>"
-	});
+	this.infoWindow.setContent("<h2>Sensor: " + n.id + "</h2><p>" + n.desc + "</p>");
 
 	var self = this;
 	google.maps.event.addListener(marker, 'click', function() {
-		infowindow.open(self.map, marker);
+		self.infoWindow.open(self.map, marker);
 	});
 
 	this.markersArray.push(marker);
