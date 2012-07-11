@@ -152,12 +152,11 @@ WiseGuiNavigationViewer.prototype.buildViewForTestbedOverview = function() {
 
 WiseGuiNavigationViewer.prototype.buildView = function() {
 
-	this.view = $('<div class="topbar-wrapper" style="z-index: 5;">'
-			+ '	<div class="topbar" data-dropdown="dropdown">'
-			+ '		<div class="topbar-inner">'
+	this.view = $('<div class="navbar">'
+			+ '		<div class="navbar-inner">'
 			+ '			<div class="container">'
 			+ '				<ul class="nav"/>'
-			+ '				<ul class="nav secondary-nav">'
+			+ '				<ul class="nav secondary-nav pull-right">'
 			+ '					<li class="WiseGuiNavAboutButton">'
 			+ '						<a href="#">About</a>'
 			+ '				</li>'
@@ -165,7 +164,6 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
 			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
-			+ '</div>'
 	);
 
 	this.primaryMenu   = this.view.find('ul.nav:not(ul.secondary-nav)').first();
@@ -437,8 +435,8 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 */
 	var dialogFooter = $('<div class="modal-footer"/>');
 
-	var okButton = $('<input class="btn primary" value="Load" style="width:35px;text-align:center;">');
-	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	var okButton = $('<input class="btn btn-primary" value="Load" style="width:35px;text-align:center;">');
+	var cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 	okButton.bind('click', this, function(e) {
 		okButton.attr("disabled", "true");
 		cancelButton.attr("disabled", "true");
@@ -578,8 +576,8 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	dialogBody.append(span_description, input_desciption);
 	dialogBody.append(h4_nodes, p_nodes);
 
-	var okButton = $('<input class="btn primary" value="Reserve" style="width:50px;text-align:center;">');
-	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	var okButton = $('<input class="btn btn-primary" value="Reserve" style="width:50px;text-align:center;">');
+	var cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 
 	okButton.bind('click', this, function(e) {
 
@@ -869,8 +867,8 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '	</div>');
 
 
-	this.okButton = $('<input class="btn primary" value="OK" style="width:25px;text-align:center;">');
-	this.cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	this.okButton = $('<input class="btn btn-primary" value="OK" style="width:25px;text-align:center;">');
+	this.cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 
 	this.cancelButton.bind('click', this, function(e) {
 		e.data.hide();
@@ -1034,7 +1032,7 @@ Table.prototype.generateTable = function () {
 		}
 	);
 
-	this.table = $('<table class="bordered-table"></table>');
+	this.table = $('<table class="table table-bordered"></table>');
 
 	/*
 	 * Generate table header
@@ -1658,8 +1656,8 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 	body.append(imgAjaxLoader);
 
 	var bodyFooter = $(' <div class="modal-footer">'
-			+ '		<a class="btn secondary">Cancel</a>'
-			+ '		<a class="btn primary">OK</a>'
+			+ '		<a class="btn">Cancel</a>'
+			+ '		<a class="btn btn-primary">OK</a>'
 			+ '	</div>');
 
 	this.dialogDiv.append(bodyHeader, body, bodyFooter);
@@ -1721,12 +1719,12 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 var WiseGuiTestbedsView = function(testbeds) {
 
 	this.testbeds = testbeds;
-	this.view = $('<table class="WisebedOverviewTable zebra-striped">'
+	this.view = $('<table class="WisebedOverviewTable table table-striped">'
 			+ '	<thead>'
 			+ '		<tr>'
-			+ '			<td>Name</td>'
-			+ '			<td>URN prefixes</td>'
-			+ '			<td>Session Management Endpoint URL</td>'
+			+ '			<th>Name</td>'
+			+ '			<th>URN prefixes</td>'
+			+ '			<th>Session Management Endpoint URL</td>'
 			+ '		</tr>'
 			+ '	</thead>'
 			+ '	<tbody>'
@@ -1824,7 +1822,7 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 
 		if (getNavigationData().experimentId != this.experimentId) {
 
-			var goToExperimentButton = $('<button class="btn primary">Go to experiment</button>');
+			var goToExperimentButton = $('<button class="btn btn-primary">Go to experiment</button>');
 			var blockAlertActions = [goToExperimentButton];
 
 			var self = this;
@@ -1902,7 +1900,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '<div class="WiseGuiExperimentationViewControls">'
 			+ '	<h2>Controls</h2></div>'
 			+ '	<div>'
-			+ '		<ul class="tabs">'
+			+ '		<ul class="nav nav-tabs">'
 			+ '			<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
 			+ '			<li><a href="#'+this.resetDivId+'">Reset</a></li>'
 			+ '			<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
@@ -1917,12 +1915,12 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet span1"> - </button>'
 			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration span2">Load</button>'
 			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration span2">Save</button>'
-			+ '						<button class="btn primary WiseGuiExperimentsViewFlashControlFlashNodes span3">Flash</button>'
+			+ '						<button class="btn btn-primary WiseGuiExperimentsViewFlashControlFlashNodes span3">Flash</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
 		  	+ '					<div class="span16">'
-			+ '						<table class="zebra-striped">'
+			+ '						<table class="table table-striped">'
 			+ '							<thead>'
 			+ '								<tr>'
 			+ '									<th class="span1">Set</th>'
@@ -1943,7 +1941,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<button class="btn WiseGuiExperimentsViewResetControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
 		  	+ '					<div class="span4">'
-			+ '						<button class="btn primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
+			+ '						<button class="btn btn-primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
 			+ '					</div>'
 		  	+ '				</div>'
 			+ '			</div>'
@@ -1962,7 +1960,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span6"/>'
 			+ '					</div>'
 			+ '					<div class="span4">'
-		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
+		  	+ '						<button class="btn btn-primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
 		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '			</div>'
@@ -2898,7 +2896,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 	parentDiv.append($('<h1>Testbed Details "'+testbeds.testbedMap[navigationData.testbedId].name+'"</h1>'));
 
-	var tabs = $('<ul class="tabs">'
+	var tabs = $('<ul class="nav nav-tabs">'
 			+ '	<li class="active"><a href="#WisebedTestbedDetailsOverview-'+navigationData.testbedId+'">Description</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbedId+'">Nodes</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
@@ -3027,7 +3025,7 @@ function buildReservationTable(reservationsTab, navigationData) {
 
 function buildTable(tableHead, tableRows, noEntriesMessage) {
 
-	var table = $('<table class="zebra-striped"/>"');
+	var table = $('<table class="table table-striped"/>"');
 	var thead = $('<thead/>');
 	var theadRow = $('<tr/>');
 	thead.append(theadRow);
@@ -3188,7 +3186,10 @@ function createContentContainer(navigationData) {
 	var createContentFunction = getCreateContentFunction(navigationData);
 	createContentFunction(navigationData, container);
 
-	$('.tabs').tabs();
+	$('.nav-tabs a').click(function (e) {
+	    e.preventDefault();
+	    $(this).tab('show');
+	    })
 
 	return container;
 }
