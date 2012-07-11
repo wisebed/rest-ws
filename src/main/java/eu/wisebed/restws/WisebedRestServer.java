@@ -63,8 +63,8 @@ public class WisebedRestServer {
 		final WsnProxyManagerService wsnProxyManagerService = injector.getInstance(WsnProxyManagerService.class);
 
 		try {
-			wsnProxyManagerService.start().get();
-			serverService.start().get();
+			wsnProxyManagerService.startAndWait();
+			serverService.startAndWait();
 		} catch (Exception e) {
 			log.warn("Exception while starting server: " + e, e);
 			System.exit(1);
@@ -77,13 +77,13 @@ public class WisebedRestServer {
 				log.info("Received EXIT signal. Shutting down server...");
 
 				try {
-					serverService.stop().get();
+					serverService.stopAndWait();
 				} catch (Exception e) {
 					log.warn("Exception caught while shutting server: " + e, e);
 				}
 
 				try {
-					wsnProxyManagerService.stop().get();
+					wsnProxyManagerService.stopAndWait();
 				} catch (Exception e) {
 					log.warn("Exception caught while shutting server: " + e, e);
 				}
