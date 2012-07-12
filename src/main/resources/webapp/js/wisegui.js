@@ -970,13 +970,13 @@ Table.prototype.generateFilter = function () {
 	img_help.attr("src", wisebedBaseUrl + "/img/famfamfam/help.png");
 
 	var div_text = $('<span style="float:left;margin-top:3px;">Filter displayed nodes:</span>');
-	var div_help = $('<div style="margin-right:95px;margin-left:135px;"></div>');
+	var div_help = $('<div style="margin-right:95px;"></div>');
 	var div_adv = $('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
 
 	this.filter_checkbox = $('<input type="checkbox" style="float:right;margin-top:7px;margin-right:3px;">');
-	this.filter.append(img_help, div_adv, this.filter_checkbox, div_text, div_help);
+	this.filter.append(img_help, div_adv, this.filter_checkbox, div_help);
 
-	var filter_input = $('<input type="text" style="width:100%;padding-left:0px;padding-right:0px;">');
+	var filter_input = $('<input type="text" placeholder="Filter displayed nodes...">');
 	// Key up event if enter is pressed
 	filter_input.keyup(function(e) {
 		if ((e.keyCode || e.which) == 13) {
@@ -1293,7 +1293,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	$(this.wiseML.setup.node).each(
 		function() {
 			var t = this.nodeType;
-			var text = "All nodes of type " + t;
+			var text = "Only nodes of type " + t;
 			if($.inArray(text, predefinied_filter_types) < 0) {
 				predefinied_filter_types.push(text);
 				var fn = function(e) {
@@ -1316,7 +1316,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		}
 	);
 
-	var option = $('<option value=""></option>');
+	var option = $('<option value="">Nodes of every type</option>');
 	select.append(option);
 
 	var index = 0;
@@ -3179,6 +3179,7 @@ $(function () {
 
 	Wisebed.getTestbeds(
 			function(testbedsLoaded) {
+
 
 				testbeds = testbedsLoaded;
 
