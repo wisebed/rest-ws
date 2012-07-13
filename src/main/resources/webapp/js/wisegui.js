@@ -865,7 +865,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed "' + testbeds.testbedMap[this.testbedId].name + '"</h3></div>');
 
 	var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
-			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'" action="" method="post" target="dummy">'
+			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'">'
 			+ '		<table id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
 			+ '			<thead>'
 			+ '				<tr>'
