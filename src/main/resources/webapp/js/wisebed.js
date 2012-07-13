@@ -69,11 +69,11 @@ var Wisebed = new function() {
 			error     : callbackError,
 			xhrFields : { withCredentials: true }
 		});
-	}
+	};
 
 	this.reservations = new function() {
 
-		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
+		this.getPersonal = function(testbedId, from, to, callbackDone, callbackError) {
 			var queryUrl = wisebedBaseUrl + "/rest/2.3/" + testbedId + "/reservations?userOnly=true" +
 					(from ? ("&from=" + from.toISOString()) : "") +
 					(to ? ("&to="+to.toISOString()) : "");
@@ -150,7 +150,7 @@ var Wisebed = new function() {
 				return  dataElem1.secretReservationKey == dataElem2.secretReservationKey &&
 						dataElem1.urnPrefix            == dataElem2.urnPrefix;
 			});
-		}
+		};
 	};
 
 	this.experiments = new function() {
@@ -177,7 +177,7 @@ var Wisebed = new function() {
 				secretReservationKeys.reservations[index] = {
 					urnPrefix : elem.urnPrefix,
 					secretReservationKey : elem.secretReservationKey
-				}
+				};
 			});
 
 			var succ = function(data, textStatus, jqXHR) {
@@ -342,7 +342,7 @@ var Wisebed = new function() {
 	this.getNodeUrnArrayFromWiseML = function(wiseML) {
 		var nodeUrns = new Array();
 		var nodes = wiseML.setup.node;
-		for (var i=0; i<nodes.length; i++) {
+		for (var i=0; i<nodes.length; i++) {
 			nodeUrns[i] = nodes[i].id;
 		}
 		return nodeUrns;
@@ -370,7 +370,7 @@ var Wisebed = new function() {
 			dataType : "json",
 			success  : function() {callbackDone(true);},
 			error    : function(jqXHR, textStatus, errorThrown) {
-				if (jqXHR.status == 403) {
+				if (jqXHR.status == 403) {
 					callbackDone(false);
 				} else {
 					callbackError(jqXHR, textStatus, errorThrown);
