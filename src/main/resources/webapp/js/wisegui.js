@@ -843,7 +843,14 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 	tr.append(tdPassword);
 
 	tbody.append(tr);
+	
+	this.replaceWithRememberedPass();
 };
+
+WiseGuiLoginDialog.prototype.replaceWithRememberedPass = function() {
+	$('#username0:hidden').val($('#email').val());
+	$('#password0:hidden').val($('#password').val());
+}
 
 WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 
@@ -852,7 +859,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	var dialogHeader = $('<div class="modal-header"><h3>Login to Testbed "' + testbeds.testbedMap[this.testbedId].name + '"</h3></div>');
 
 	var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
-			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'">'
+			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'" action="" method="post" target="dummy">'
 			+ '		<table id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
 			+ '			<thead>'
 			+ '				<tr>'
