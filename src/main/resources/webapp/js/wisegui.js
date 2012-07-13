@@ -3091,7 +3091,9 @@ function getCreateContentFunction(navigationData) {
 }
 
 function showReservationsDialog(testbedId) {
-	var d = new WiseGuiReservationDialog(testbedId);
+	var existingDialog = $("#WisebedReservationDialog-"+testbedId);
+	if (existingDialog.length != 0) {existingDialog.show();}
+	else {new WiseGuiReservationDialog(testbedId);}
 }
 
 function getLoginDialog(testbedId) {
