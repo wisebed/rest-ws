@@ -848,9 +848,15 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 };
 
 WiseGuiLoginDialog.prototype.replaceWithRememberedPass = function() {
-	$('#username0:hidden').val($('#email').val());
-	$('#password0:hidden').val($('#password').val());
-}
+	$('#username0:hidden').val($('#email:hidden').val());
+	$('#password0:hidden').val($('#password:hidden').val());
+};
+
+WiseGuiLoginDialog.prototype.savePass = function() {
+	$('#email:hidden').val($('#username0').val());
+	$('#password:hidden').val($('#password0').val());
+	$('#fake_form:hidden').submit();
+};
 
 WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 
@@ -909,6 +915,7 @@ WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
 	this.cancelButton.attr("disabled", "true");
 
 	this.updateLoginDataFromForm();
+	this.savePass();
 	this.doLogin();
 };
 
