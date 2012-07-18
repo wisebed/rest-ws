@@ -2389,12 +2389,12 @@ WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() 
 };
 
 WiseGuiExperimentationView.prototype.getSendMode = function() {
-	return this.sendModeSelect[0].options[this.sendModeSelect[0].selectedIndex].value
+	return this.sendModeSelect[0].options[this.sendModeSelect[0].selectedIndex].value;
 };
 
 WiseGuiExperimentationView.prototype.parseByteArrayFromAsciiString = function(messageString) {
 
-	if (messageString == null || messageString == '') {
+	if (messageString == null || messageString == '') {
 		return null;
 	}
 
@@ -2935,7 +2935,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				var nodesTabDiv = $('<div class="WiseGuiTestbedDetailsNodesTable"/>');
 				nodesTab.append(nodesTabDiv);
-				var nodesTable = new WiseGuiNodeTable(wiseML, nodesTabDiv, false, true);
+				new WiseGuiNodeTable(wiseML, nodesTabDiv, false, true);
 
 				// Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
@@ -3087,7 +3087,7 @@ function getCreateContentFunction(navigationData) {
 	return undefined;
 }
 
-function showReservationsDialog(testbedId) {
+function showReservationsDialog(testbedId) {
 	var existingDialog = $("#WisebedReservationDialog-"+testbedId);
 	if (existingDialog.length != 0) {existingDialog.show();}
 	else {new WiseGuiReservationDialog(testbedId);}
