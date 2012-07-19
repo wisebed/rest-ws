@@ -3208,6 +3208,10 @@ var testbeds             = null;
 $(function () {
 
 	$('#WisebedContainer').append(notificationsViewer.view);
+	
+	$('.modal').modal({
+		keyboard: true
+	});
 
 	Wisebed.getTestbeds(
 			function(testbedsLoaded) {
