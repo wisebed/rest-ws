@@ -753,11 +753,11 @@ WiseGuiLoginDialog.prototype.doLogout = function() {
 };
 
 WiseGuiLoginDialog.prototype.hide = function() {
-	this.view.hide();
+	this.view.modal('hide');
 };
 
 WiseGuiLoginDialog.prototype.show = function() {
-	this.view.show();
+	this.view.modal('show');
 };
 
 WiseGuiLoginDialog.prototype.updateLoginDataFromForm = function() {
@@ -786,25 +786,12 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 				+'If you have registered on <strong>wisebed.eu</strong>, use <strong>yourusername@wisebed1.itm.uni-luebeck.de</strong>.';
 
 	inputUsername.popover({
-		placement : 'below',
-		trigger   : 'manual',
-		animate   : true,
-		html      : true,
+		placement : 'bottom',
+		trigger   : 'focus',
+		animation : true,
 		content   : helpText,
-		title     : function() { return "Format of the username field"; }
+		title     : "Format of the username field"
 	});
-
-	inputUsername.focusin(
-		function() {
-			inputUsername.popover("show");
-		}
-	);
-
-	inputUsername.focusout(
-		function() {
-			inputUsername.popover("hide");
-		}
-	);
 
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
@@ -851,7 +838,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 
 	var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
 			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'">'
-			+ '		<table id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
+			+ '		<table class="table" id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
 			+ '			<thead>'
 			+ '				<tr>'
 			+ '					<th>Testbed</th>'
@@ -1881,10 +1868,10 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 
 	this.view.append('<div class="WiseGuiExperimentationViewOutputs">'
 			+ '	<div class="row">'
-			+ '		<div class="span8"><h2>Live Data</h2></div>'
-			+ '		<div class="span8" style="text-align: right">'
+			+ '		<div class="span6"><h2>Live Data</h2></div>'
+			+ '		<div class="span6" style="text-align: right">'
 			+ '			Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages'
-			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'">'
+			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'" style="display:inline;">'
 			+ '				<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
 			+ '				Follow Outputs'
 			+ '			</label>'
@@ -1892,7 +1879,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '		</div>'
 			+ '	</div>'
 			+ '	<div class="row">'
-			+ '		<div class="span16">'
+			+ '		<div class="span12">'
 			+ '			<textarea class="WiseGuiExperimentViewOutputsTextArea" id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '	</div>'
@@ -1910,22 +1897,24 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '		<div class="tab-content">'
 			+ '			<div class="active tab-pane WiseGuiExperimentsViewFlashControl" id="'+this.flashDivId+'">'
 			+ '				<div class="row">'
-			+ '					<div class="span10">'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlAddSet span1"> + </button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet span1"> - </button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration span2">Load</button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration span2">Save</button>'
-			+ '						<button class="btn btn-primary WiseGuiExperimentsViewFlashControlFlashNodes span3">Flash</button>'
+			+ '					<div class="span3">'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlAddSet"> + </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet"> - </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration">Load</button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration">Save</button>'
+			+ '					</div>'
+			+ '					<div class="span3">'
+			+ '						<button class="btn btn-primary WiseGuiExperimentsViewFlashControlFlashNodes span2">Flash</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
-		  	+ '					<div class="span16">'
+		  	+ '					<div class="span12">'
 			+ '						<table class="table table-striped">'
 			+ '							<thead>'
 			+ '								<tr>'
-			+ '									<th class="span1">Set</th>'
-			+ '									<th class="span6">Selected Nodes</th>'
-			+ '									<th class="span4">Image File</th>'
+			+ '									<th>Set</th>'
+			+ '									<th>Selected Nodes</th>'
+			+ '									<th>Image File</th>'
 			+ '									<th class="span5"></th>'
 			+ '								</tr>'
 			+ '							</thead>'
@@ -1966,16 +1955,16 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 		  	+ '			</div>'
 			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingEditorDivId+'">'
 			+ '				<div class="row" style="padding-bottom:10px;">'
-			+ '					<div class="span8">'
+			+ '					<div class="span6">'
 			+ '						<button class="btn span2 WiseGuiExperimentsViewScriptingHelpButton">Help</button>'
 			+ '					</div>'
-			+ '					<div class="span8" style="text-align:right;">'
+			+ '					<div class="span6" style="text-align:right;">'
 			+ '						<button class="btn danger span2 WiseGuiExperimentsViewScriptingStopButton">Stop</button>'
 			+ '						<button class="btn success span2 WiseGuiExperimentsViewScriptingStartButton">Start</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
-			+ '					<div class="span16 WiseGuiExperimentsViewScriptingControlEditorRow"></div>'
+			+ '					<div class="span12 WiseGuiExperimentsViewScriptingControlEditorRow"></div>'
 			+ '				</div>'
 			+ '			</div>'
 			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingOutputTab" id="'+this.scriptingOutputDivId+'"/>'
@@ -2012,7 +2001,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.scriptingEditorStopButton    = this.view.find('button.WiseGuiExperimentsViewScriptingStopButton').first();
 	this.scriptingEditorStartButton   = this.view.find('button.WiseGuiExperimentsViewScriptingStartButton').first();
 	this.scriptingEditorHelpButton    = this.view.find('button.WiseGuiExperimentsViewScriptingHelpButton').first();
-	this.scriptingEditorDiv           = $('<div class="span16 WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">'
+	this.scriptingEditorDiv           = $('<div class="span12 WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">'
 			+ 'WiseGuiUserScript = function() {\n'
 			+ '  console.log("WiseGuiUserScript instantiated...");\n'
 			+ '  this.testbedId = null;\n'
@@ -2028,7 +2017,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '  this.experimentId = env.experimentId;\n'
 			+ '  this.outputDiv = env.outputDiv;\n'
 			+ '  this.outputDiv.empty();\n'
-			+ '  this.outputTextArea = $("&lt;textarea class=\'span16\' style=\'height:500px\'/>");\n'
+			+ '  this.outputTextArea = $("&lt;textarea class=\'span12\' style=\'height:500px\'/>");\n'
 			+ '  this.outputDiv.append(this.outputTextArea);\n'
 			+ '  \n'
 			+ '  var self = this;\n'
@@ -2530,9 +2519,9 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
 	// build and append the gui elements
-	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton span6">Select Nodes</button>');
+	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton span3">Select Nodes</button>');
 	var imageFileInput        = $('<input type="file" style="opacity: 0; width: 0px; position:absolute; top:-100px;"/>');
-	var imageFileButton       = $('<button class="btn fileSelectionButton span6">Select Image</button>');
+	var imageFileButton       = $('<button class="btn fileSelectionButton span3">Select Image</button>');
 	var imageFileInfoLabel    = $('<div/>');
 	var tr                    = $('<tr/>');
 
@@ -2841,10 +2830,10 @@ var WiseGuiOperationProgressView = function(nodeUrns, operationMaxValue, success
 
 		var row = $('<table>'
 				+ '	<tr>'
-				+ '	<td class="span2 nodUrnTd">'+nodeUrns[i]+'</td>'
+				+ '	<td class="span1 nodUrnTd">'+nodeUrns[i]+'</td>'
 				+ '	<td class="span4 progressTd"><progress value="0" min="0" max="'+operationMaxValue+'"/></td>'
-				+ '	<td class="span2 statusTd"></td>'
-				+ '	<td class="span8 messageTd"></td>'
+				+ '	<td class="span1 statusTd"></td>'
+				+ '	<td class="span6 messageTd"></td>'
 				+ '	</tr>'
 				+ '</table>');
 
@@ -2920,10 +2909,10 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 				var overviewTab = $('#WisebedTestbedDetailsOverview-'+navigationData.testbedId);
 				overviewTab.append('<div class="row">'
-						+ '	<div class="span16">' + wiseML.setup.description + '</div>'
+						+ '	<div class="span12">' + wiseML.setup.description + '</div>'
 						+ '</div>'
 						+ '<div class="row">'
-						+ '	<div class="span16 WisebedTestbedDetailsOverviewMap"></div>'
+						+ '	<div class="span12 WisebedTestbedDetailsOverviewMap"></div>'
 						+ '</div>');
 				var overviewTabMapRow = overviewTab.find('.WisebedTestbedDetailsOverviewMap');
 
