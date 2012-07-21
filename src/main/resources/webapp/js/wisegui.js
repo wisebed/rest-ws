@@ -312,13 +312,13 @@ var WiseGuiLoadConfigurationDialog = function(testbedId, callback) {
 };
 
 WiseGuiLoadConfigurationDialog.prototype.hide = function() {
-	this.view.hide();
+	this.view.modal('hide');
 	this.view.remove();
 };
 
 WiseGuiLoadConfigurationDialog.prototype.show = function() {
 	$(document.body).append(this.view);
-	this.view.show();
+	this.view.modal('show');
 };
 
 WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
@@ -1328,7 +1328,7 @@ WiseGuiNodeTable.prototype.applyFilter = function (fn) {
 	this.table.setFilterFun(fn);
 };
 
-WiseGuiNodeTable.prototype.applySelcected = function (fn) {
+WiseGuiNodeTable.prototype.applySelected = function (fn) {
 	this.table.setSelectFun(fn);
 };
 
@@ -1657,14 +1657,14 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 
 	function showDialogInternal(wiseML) {
 
-		self.dialogDiv.show();
+		self.dialogDiv.modal('show');
 
 		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
 		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true, true);
 
-		// Appy preelected
+		// Apply preselected
 		if(typeof(self.preSelected) == "function") {
-			self.table.applySelcected(self.preSelected);
+			self.table.applySelected(self.preSelected);
 		}
 
 		self.dialogDiv.find('.modal-footer .secondary').first().bind(
