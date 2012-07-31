@@ -75,13 +75,13 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 													 final ProxyCacheEntry entry) {
 
 					try {
-						entry.getWsnProxyService().stop().get();
+						entry.getWsnProxyService().stopAndWait();
 					} catch (Exception e) {
 						log.error(e.getMessage(), e);
 					}
 
 					try {
-						entry.getControllerProxyService().stop().get();
+						entry.getControllerProxyService().stopAndWait();
 					} catch (Exception e) {
 						log.error(e.getMessage(), e);
 					}
@@ -146,8 +146,8 @@ public class WsnProxyManagerServiceImpl extends AbstractService implements WsnPr
 		);
 
 		try {
-			controllerProxyService.start().get();
-			wsnProxyService.start().get();
+			controllerProxyService.startAndWait();
+			wsnProxyService.startAndWait();
 		} catch (Exception e) {
 			throw propagate(e);
 		}

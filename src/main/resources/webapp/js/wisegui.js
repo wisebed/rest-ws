@@ -182,7 +182,7 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
 		offset    : 0,
 		placement : 'left',
 		trigger   : 'manual',
-		title     : function() {return 'About WiseGui'},
+		title     : function() {return 'About WiseGui';},
 		html      : true,
 		content   : 'This is an open-source project published under the terms of the BSD license. The sources are freely'
 				+ ' available from <a href="https://github.com/wisebed/rest-ws" target="_blank">github.com/wisebed/rest-ws</a>.'
@@ -203,7 +203,7 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
  * #################################################################
  * WiseGuiLoginObserver
  * #################################################################
- * 
+ *
  * Listens to WiseGui events 'wisegui-logged-in' and 'wisegui-logged-out'. The
  * former carries an object
  *  { testbedId : "uzl", loginData : { authenticationData : [ { urnPrefix :
@@ -311,7 +311,7 @@ var WiseGuiLoadConfigurationDialog = function(testbedId, callback) {
 	this.view = $('<div id="WisebedLoadDialog-'+this.testbedId+'" class="modal hide"></div>');
 	this.buildView();
 	this.show();
-}
+};
 
 WiseGuiLoadConfigurationDialog.prototype.hide = function() {
 	this.view.hide();
@@ -406,13 +406,13 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	// "?url=http://wisebed.eu/experiments/iseraerial/iseraerial.json";
 	var url = "";
 
-	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>')
+	var label_url = $('<label for="type_url_' + this.testbedId + '" style="width:50px;">URL:</label>');
 	var input_checkbox_url  = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_url_' + this.testbedId + '" value="url" checked>');
 	var input_url = $('<input type="text" value="' + url + '" id="input_url_' + this.testbedId + '" style="width:600px"/>');
 
-	var label_file = $('<label for="type_file_' + this.testbedId + '" style="width:50px;">File:</label>')
+	var label_file = $('<label for="type_file_' + this.testbedId + '" style="width:50px;">File:</label>');
 	var input_checkbox_file = $('<input style="margin:9px 5px 0px 5px;" type="radio" name="type_' + this.testbedId + '" id="type_file_' + this.testbedId + '"value="file">');
-	var input_file = $('<input type="file" id="input_file_' + this.testbedId + '"/>')
+	var input_file = $('<input type="file" id="input_file_' + this.testbedId + '"/>');
 
 	input_url.focusin(
 		function() {
@@ -479,7 +479,7 @@ var WiseGuiReservationDialog = function(testbedId) {
 	$(document.body).append(this.view);
 	this.buildView();
 	this.show();
-}
+};
 
 WiseGuiReservationDialog.prototype.hide = function() {
 	this.view.hide();
@@ -505,7 +505,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 		} else {
 			return val;
 		}
-	}
+	};
 
 	var yyyy = now.getFullYear();
 	var mm = (now.getMonth());
@@ -534,7 +534,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 	var showTable = function (wiseML) {
 		that.table = new WiseGuiNodeTable(wiseML, p_nodes, true, true);
-	}
+	};
 
 	Wisebed.getWiseMLAsJSON(this.testbedId, null, showTable,
 			function(jqXHR, textStatus, errorThrown) {
@@ -566,7 +566,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
     	error_msg.empty();
     	error_msg.append(msg);
     	error.show();
-    }
+    };
 
     var span_start = $('<span>Start: </span>');
     var span_end = $('<span style="margin-left:10px;">End: </span>');
@@ -685,7 +685,7 @@ var WiseGuiLoginDialog = function(testbedId) {
 	this.cancelButton = null;
 
 	var self = this;
-	Wisebed.getTestbeds(function(testbeds){self.buildView(testbeds)}, WiseGui.showAjaxError);
+	Wisebed.getTestbeds(function(testbeds){self.buildView(testbeds);}, WiseGui.showAjaxError);
 };
 
 WiseGuiLoginDialog.prototype.doLogin = function() {
@@ -693,7 +693,7 @@ WiseGuiLoginDialog.prototype.doLogin = function() {
 	var self = this;
 
 	var callbackError = function(jqXHR, textStatus, errorThrown) {
-		if (jqXHR.status == 403) {
+		if (jqXHR.status == 403) {
 			self.onLoginError();
 		} else {
 			console.log(jqXHR);
@@ -703,7 +703,7 @@ WiseGuiLoginDialog.prototype.doLogin = function() {
 
 	var callbackDone = function() {
 		self.onLoginSuccess();
-		window.setTimeout(function() {self.hide()}, 1000);
+		window.setTimeout(function() {self.hide();}, 1000);
 		$(window).trigger('wisegui-logged-in', {testbedId : self.testbedId, loginData : self.loginData});
 		$(window).trigger('hashchange');
 	};
@@ -960,7 +960,7 @@ WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
 	}
 	this.updateLoginDataFromForm();
 	this.doLogin();
-}
+};
 
 
 /**
@@ -974,7 +974,7 @@ var TableElem = function (data) {
 	this.row = null;
 	this.isVisible = true;
 	this.checkbox = null;
-}
+};
 
 /**
  * Model: Object[] headers: String[] rowProducer: fun(obj) -> String[]
@@ -1027,13 +1027,13 @@ Table.prototype.generateFilter = function () {
 	img_help.attr("src", wisebedBaseUrl + "/img/famfamfam/help.png");
 
 	var div_text = $('<span style="float:left;margin-top:3px;">Filter displayed nodes:</span>');
-	var div_help = $('<div style="margin-right:95px;margin-left:135px;"></div>');
+	var div_help = $('<div style="margin-right:95px;"></div>');
 	var div_adv = $('<div style="float:right;margin-top:3px;margin-right:2px;">Advanced</div>');
 
 	this.filter_checkbox = $('<input type="checkbox" style="float:right;margin-top:7px;margin-right:3px;">');
-	this.filter.append(img_help, div_adv, this.filter_checkbox, div_text, div_help);
+	this.filter.append(img_help, div_adv, this.filter_checkbox, div_help);
 
-	var filter_input = $('<input type="text" style="width:100%;padding-left:0px;padding-right:0px;">');
+	var filter_input = $('<input type="text" placeholder="Filter displayed nodes...">');
 	// Key up event if enter is pressed
 	filter_input.keyup(function(e) {
 		if ((e.keyCode || e.which) == 13) {
@@ -1247,7 +1247,6 @@ Table.prototype.setFilterFun = function (fn) {
 
 		// Simple filter
 		if(fn != null && typeof(fn) == "string" && fn.length > 0 && !this.filter_checkbox.is(':checked')) {
-			var row = null;
 			if(this.rowProducer != null) {
 				var row = this.rowProducer(d.data);
 				if(implode(" ", row).toLowerCase().indexOf(fn.toLowerCase()) < 0) {
@@ -1317,7 +1316,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	var rowProducer = function (n) {
 		var cap = [];
 		if(n.capability != null) {
-			for(j = 0; j < n.capability.length; j++) {
+			for(var j = 0; j < n.capability.length; j++) {
 				parts = explode(":", n.capability[j].name);
 				cap[j] = parts[parts.length-1];
 			}
@@ -1336,7 +1335,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 			data.push("null");
 		}
 		return data;
-	}
+	};
 
 	// Use the usual table
 	var t = new Table (this.wiseML.setup.node, header, rowProducer, null, null, this.showCheckboxes, this.showFilter);
@@ -1350,16 +1349,16 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 	$(this.wiseML.setup.node).each(
 		function() {
 			var t = this.nodeType;
-			var text = "All nodes of type " + t;
+			var text = "Only nodes of type " + t;
 			if($.inArray(text, predefinied_filter_types) < 0) {
 				predefinied_filter_types.push(text);
 				var fn = function(e) {
 					return e.nodeType == t;
-				}
+				};
 				predefinied_filter_functions.push(fn);
 			}
 		}
-	);this
+	);
 
 	// Other filters can be added here
 
@@ -1373,7 +1372,7 @@ WiseGuiNodeTable.prototype.generateTable = function () {
 		}
 	);
 
-	var option = $('<option value=""></option>');
+	var option = $('<option value="">Nodes of every type</option>');
 	select.append(option);
 
 	var index = 0;
@@ -1424,7 +1423,7 @@ WiseGuiReservationObserver.prototype.fetchReservationsAndProcess = function(test
 			testbedId,
 			null,
 			null,
-			function(reservations) {self.processReservationsFetched(testbedId, reservations.reservations)},
+			function(reservations) {self.processReservationsFetched(testbedId, reservations.reservations);},
 			null
 	);
 };
@@ -1467,7 +1466,7 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(testb
 		if (nowInMillis < newReservations[k].from) {
 
 			var triggerReservationStarted = (function(reservation) {
-				return function() {$(window).trigger('wisegui-reservation-started-'+testbedId, reservation);}
+				return function() {$(window).trigger('wisegui-reservation-started-'+testbedId, reservation);};
 			})(newReservations[k]);
 
 			setTimeout(triggerReservationStarted, (newReservations[k].from - nowInMillis));
@@ -1476,7 +1475,7 @@ WiseGuiReservationObserver.prototype.processReservationsFetched = function(testb
 		if (nowInMillis < newReservations[k].to) {
 
 			var triggerReservationEnded = (function(reservation) {
-				return function() {$(window).trigger('wisegui-reservation-ended-'+testbedId, reservation);}
+				return function() {$(window).trigger('wisegui-reservation-ended-'+testbedId, reservation);};
 			})(newReservations[k]);
 
 			setTimeout(triggerReservationEnded, (newReservations[k].to - nowInMillis));
@@ -1502,13 +1501,13 @@ WiseGuiReservationObserver.prototype.startObserving = function() {
 WiseGuiReservationObserver.prototype.stopObserving = function() {
 
 	var self = this;
-	$.each(this.schedules, function(testbedId, schedule) { self.stopObservationOf(testbedId) });
+	$.each(this.schedules, function(testbedId, schedule) { self.stopObservationOf(testbedId);});
 
 	console.log('WiseGuiReservationObserver stopped observing');
 };
 WiseGuiReservationObserver.prototype.startObservationOf = function(testbedId) {
 	var self = this;
-	this.schedules[testbedId] = window.setInterval(function() {self.fetchReservationsAndProcess(testbedId)}, 60 * 1000);
+	this.schedules[testbedId] = window.setInterval(function() {self.fetchReservationsAndProcess(testbedId);}, 60 * 1000);
 	this.fetchReservationsAndProcess(testbedId);
 	console.log('WiseGuiReservationObserver beginning to observe reservations for testbedId "'+testbedId+'"');
 };
@@ -1525,14 +1524,14 @@ WiseGuiReservationObserver.prototype.stopObservationOf = function(testbedId) {
  * #################################################################
  * WiseGuiNotificationsViewer
  * #################################################################
- * 
+ *
  * Consumes wisegui events of type 'wisegui-notification' and displays them in a
  * notification area. A 'wisegui-notification' event has to carry data of the
  * following type:
  *  { type : "alert"|"block-alert" severity : "warning"|"error"|"success"|"info"
  * message : "Oh snap! Change this and that and try again." actions : an array
  * of buttons (only for block-alerts) }
- * 
+ *
  */
 
 var WiseGuiNotificationsViewer = function() {
@@ -1597,10 +1596,10 @@ WiseGuiNotificationsViewer.prototype.buildView = function() {
  * #################################################################
  * WiseGuiExperimentDropDown
  * #################################################################
- * 
+ *
  * Consumes wisegui events of type 'wisegui-reservation-ended',
  * 'wisegui-reservation-started', 'wisegui-reservation-added'.
- * 
+ *
  */
 
 var WiseGuiExperimentDropDown = function(testbedId) {
@@ -1639,7 +1638,7 @@ WiseGuiExperimentDropDown.prototype.update = function() {
 WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reservations) {
 
 	// this.view.find('.dropdown-menu li').remove();
-	var menu = this.view.find('.dropdown-menu')
+	var menu = this.view.find('.dropdown-menu');
 	menu.empty();
 
 	for (var i=0; i<reservations.length; i++) {
@@ -1865,7 +1864,7 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 		return;
 	}
 
-	if (message.type == 'upstream') {
+	if (message.type == 'upstream') {
 
 		// append new message
 		this.outputs[this.outputs.length] = message.timestamp + " | " + message.sourceNodeUrn + " | " + atob(message.payloadBase64);
@@ -1915,9 +1914,9 @@ WiseGuiExperimentationView.prototype.connectToExperiment = function() {
 		var self = this;
 
 		this.socket = new WebSocket(wisebedWebSocketBaseUrl + '/ws/experiments/'+this.experimentId);
-		this.socket.onmessage = function(event) {self.onWebSocketMessageEvent(event)};
-		this.socket.onopen = function(event) {self.onWebSocketOpen(event)};
-		this.socket.onclose = function(event) {self.onWebSocketClose(event)};
+		this.socket.onmessage = function(event) {self.onWebSocketMessageEvent(event);};
+		this.socket.onopen = function(event) {self.onWebSocketOpen(event);};
+		this.socket.onclose = function(event) {self.onWebSocketClose(event);};
 
 	} else {
 		alert("Your browser does not support Web Sockets.");
@@ -2010,8 +2009,14 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '					<div class="span4">'
 			+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
-			+ '					<div class="span8">'
-		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span8"/>'
+			+ '					<div class="span2">'
+			+ '						<select class="WiseGuiExperimentsViewSendControlSelectMode span2">'
+			+ '							<option value="binary">Binary</option>'
+			+ '							<option value="ascii">ASCII</option>'
+			+ '						</select>'
+			+ '					</div>'
+			+ '					<div class="span6">'
+		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span6"/>'
 			+ '					</div>'
 			+ '					<div class="span4">'
 		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
@@ -2053,6 +2058,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.resetResetButton             = this.view.find('button.WiseGuiExperimentsViewResetControlResetNodeUrns').first();
 
 	this.sendNodeSelectionButton      = this.view.find('button.WiseGuiExperimentsViewSendControlSelectNodeUrns').first();
+	this.sendModeSelect               = this.view.find('select.WiseGuiExperimentsViewSendControlSelectMode').first();
 	this.sendMessageInput             = this.view.find('input.WiseGuiExperimentsViewSendControlSendMessageInput').first();
 	this.sendSendButton               = this.view.find('button.WiseGuiExperimentsViewSendControlSendMessage').first();
 
@@ -2161,7 +2167,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.resetResetButton.bind('click', self, function(e) {
-		e.data.executeResetNodes()
+		e.data.executeResetNodes();
 	});
 
 	// bind actions for send message tab buttons
@@ -2186,9 +2192,9 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	});
 
 	this.sendNodeSelectionButton.bind('click', self, function(e) { self.onSendMessageNodeSelectionButtonClicked(); });
-	this.sendSendButton.bind('click', self, function(e) { self.onSendMessageButtonClicked(e) });
+	this.sendSendButton.bind('click', self, function(e) { self.onSendMessageButtonClicked(e); });
 
-	this.sendMessageInput.bind('keyup', self, function(e) { self.updateSendControls(); });
+	this.sendMessageInput.bind('keyup', self, function(e) { self.updateSendControls(); });
 	this.sendMessageInput.popover({
 		placement : 'below',
 		trigger   : 'manual',
@@ -2199,8 +2205,16 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 				+ 'Example: <code>0x0A,0x1B,0b11001001,40,40,0b11001001,0x1F</code>',
 		title     : function() { return "Message Format"; }
 	});
-	this.sendMessageInput.focusin(function() { self.sendMessageInput.popover("show"); });
-	this.sendMessageInput.focusout(function() { self.sendMessageInput.popover("hide"); });
+	this.sendMessageInput.focusin(function() {
+		if (self.getSendMode() == 'binary') {
+			self.sendMessageInput.popover("show");
+		}
+	});
+	this.sendMessageInput.focusout(function() {
+		if (self.getSendMode() == 'binary') {
+			self.sendMessageInput.popover("hide");
+		}
+	});
 	this.updateSendControls();
 
 	this.scriptingEditorHelpButton.popover({
@@ -2285,7 +2299,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.scriptingEditorStopButton.bind('click', self, function(e) { self.stopUserScript(); });
 };
 
-/********************************************************************************************************************* */
+/**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.startUserScript = function() {
 
@@ -2346,7 +2360,7 @@ WiseGuiExperimentationView.prototype.stopUserScript = function() {
 
 };
 
-/********************************************************************************************************************* */
+/**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.onSendMessageNodeSelectionButtonClicked = function() {
 
@@ -2417,13 +2431,41 @@ WiseGuiExperimentationView.prototype.onSendMessageButtonClicked = function(e) {
 
 WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() {
 
-	var messageToSend = this.sendMessageInput[0].value;
+	var messageBytes;
+	var messageString = this.sendMessageInput[0].value;
 
-	if (messageToSend === undefined || '') {
+	if (messageString === undefined || '') {
 		return null;
 	}
 
-	var splitMessage = messageToSend.split(",");
+	messageBytes = this.getSendMode() == 'binary' ?
+			this.parseByteArrayFromString(messageString) :
+			this.parseByteArrayFromAsciiString(messageString);
+
+	return messageBytes == null ? null : base64_encode(messageBytes);
+};
+
+WiseGuiExperimentationView.prototype.getSendMode = function() {
+	return this.sendModeSelect[0].options[this.sendModeSelect[0].selectedIndex].value;
+};
+
+WiseGuiExperimentationView.prototype.parseByteArrayFromAsciiString = function(messageString) {
+
+	if (messageString == null || messageString == '') {
+		return null;
+	}
+
+	var messageBytes = new Array();
+	for(var i = 0; i < messageString.length; i++) {
+		messageBytes[i] = messageString.charCodeAt(i);
+	}
+
+	return messageBytes;
+};
+
+WiseGuiExperimentationView.prototype.parseByteArrayFromString = function(messageString) {
+
+	var splitMessage = messageString.split(",");
 	var messageBytes = [];
 
 	for (var i=0; i < splitMessage.length; i++) {
@@ -2459,10 +2501,10 @@ WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() 
 		return null;
 	}
 
-	return base64_encode(messageBytes);
+	return messageBytes;
 };
 
-/********************************************************************************************************************* */
+/**********************************************************************************************************************/
 
 WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 
@@ -2481,29 +2523,27 @@ WiseGuiExperimentationView.prototype.saveFlashConfiguration = function(button) {
 
 	var json = {
 		configurations : []
-	}
+	};
 
 	for (var i=0; i<this.flashConfigurations.length; i++) {
 		json.configurations.push(this.flashConfigurations[i].config);
 	}
-	var json = JSON.stringify(json);
+	var jsonString = JSON.stringify(json);
 
-	// if(window.MozBlobBuilder) {
-	// var uriContent = "data:application/octet-stream;base64," + btoa(json);
-	// //window.open(uriContent, 'configuration.json');
-	// window.location = uriContent;
-	// } else {
+	//if(window.MozBlobBuilder) {
+	//	var uriContent = "data:application/octet-stream;base64," + btoa(json);
+	//	//window.open(uriContent, 'configuration.json');
+	//	window.location = uriContent;
+	//} else {
 		var bb = new BlobBuilder();
-		bb.append(json);
+		bb.append(jsonString);
 		saveAs(bb.getBlob("text/plain;charset=utf-8"), "configuration.json");
-	// }
+	//}
 }
 
 WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
 
 	button.attr("disabled", "true");
-
-	var that = this;
 
 	// @param: Type is conf-object
 	function configCallback(conf) {
@@ -2522,7 +2562,7 @@ WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
 	}
 
 	new WiseGuiLoadConfigurationDialog(this.testbedId, configCallback.bind(this));
-}
+};
 
 // @see: http://stackoverflow.com/a/5100158/605890
 WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
@@ -2531,7 +2571,7 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
     var byteString = atob(dataURI.split(',')[1]);
 
     // separate out the mime component
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
 
     // write the bytes of the string to an ArrayBuffer
     var ab = new ArrayBuffer(byteString.length);
@@ -2544,7 +2584,7 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
     var bb = new BlobBuilder();
     bb.append(ab);
     return bb.getBlob(mimeString);
-}
+};
 
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
@@ -2837,11 +2877,11 @@ WiseGuiExperimentationView.prototype.preselectNodes = function(nodes) {
 	if(nodes != null && nodes.length > 0) {
 		return function(data) {
 			return ($.inArray(data.id, nodes) >= 0);
-		}
+		};
 	}
 	// preselected function is null. Thus, it will not be executed
 	return null;
-}
+};
 
 /**
  * #################################################################
@@ -2952,7 +2992,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 				var nodesTab = $('#WisebedTestbedDetailsNodes-'+navigationData.testbedId);
 				var nodesTabDiv = $('<div class="WiseGuiTestbedDetailsNodesTable"/>');
 				nodesTab.append(nodesTabDiv);
-				var nodesTable = new WiseGuiNodeTable(wiseML, nodesTabDiv, false, true);
+				new WiseGuiNodeTable(wiseML, nodesTabDiv, false, true);
 
 				// Show google map
 				var wiseMlParser = new WiseMLParser(wiseML, overviewTabMapRow);
@@ -3031,7 +3071,7 @@ function buildReservationTable(reservationsTab, navigationData) {
 
 				var noEntriesMessage = 'There are no reservations for the next week yet!';
 				var table = buildTable(tableHead, tableRows, noEntriesMessage);
-				reservationsTab.empty()
+				reservationsTab.empty();
 				reservationsTab.append(table);
 				if (tableRows.length > 0) {
 					table.tablesorter({ sortList: [[0,0]] });
@@ -3104,8 +3144,10 @@ function getCreateContentFunction(navigationData) {
 	return undefined;
 }
 
-function showReservationsDialog(testbedId) {
-	var d = new WiseGuiReservationDialog(testbedId);
+function showReservationsDialog(testbedId) {
+	var existingDialog = $("#WisebedReservationDialog-"+testbedId);
+	if (existingDialog.length != 0) {existingDialog.show();}
+	else {new WiseGuiReservationDialog(testbedId);}
 }
 
 function getLoginDialog(testbedId) {
@@ -3146,7 +3188,7 @@ function getNavigationData(fragment) {
 	var parsedFragment = $.deparam.fragment(fragment ? fragment : window.location.fragment);
 
 	return {
-		nav          : parsedFragment['nav']          || 'overview',
+		nav          : parsedFragment['nav']          || 'overview',
 		testbedId    : parsedFragment['testbedId']    || '',
 		experimentId : parsedFragment['experimentId'] || ''
 	};
@@ -3236,6 +3278,7 @@ $(function () {
 
 	Wisebed.getTestbeds(
 			function(testbedsLoaded) {
+
 
 				testbeds = testbedsLoaded;
 

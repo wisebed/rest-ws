@@ -74,6 +74,10 @@ input.success {
 	padding-bottom: 10px;
 }
 
+.WiseGuiNotificationsContainer table td {
+	border: 0;
+}
+
 #WisebedContainer {
 }
 
