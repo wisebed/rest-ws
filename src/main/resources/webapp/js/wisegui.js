@@ -203,7 +203,7 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
  * #################################################################
  * WiseGuiLoginObserver
  * #################################################################
- *
+ * 
  * Listens to WiseGui events 'wisegui-logged-in' and 'wisegui-logged-out'. The
  * former carries an object
  *  { testbedId : "uzl", loginData : { authenticationData : [ { urnPrefix :
@@ -888,9 +888,54 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 	var urnPrefixes = testbeds.testbedMap[this.testbedId].urnPrefixes;
 
 	for (var i=0; i<urnPrefixes.length; i++) {
-		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], "", "");
+		var user = (localStorage[urnPrefixes[i]+'_user'] != undefined) ? localStorage[urnPrefixes[i]+'_user'] : '';
+		var pass = (localStorage[urnPrefixes[i]+'_pass'] != undefined) ? localStorage[urnPrefixes[i]+'_pass'] : '';
+		this.addRowToLoginForm(loginFormTableBody, urnPrefixes[i], user, pass );
 	}
 
+	
+	helpTextLocalStorage = 'Select this check box, log in and your credentials are stored <strong>unencrypted</strong> in your browser (HTML5 local storage). '
+		+ '<br/><br/>'
+		+'Unselect the check box and log in to delete previously stored credentials.';
+
+	var trStoreCredentials = $('<tr/>');
+	var storeCredentials_checkbox;
+	
+	if(localStorage[this.loginFormRows[0].inputUrnPrefix.value+'_user'] != undefined){
+		storeCredentials_checkbox = $('<input type="checkbox" style="margin:3px" checked="checked">');
+	}else{
+		storeCredentials_checkbox = $('<input type="checkbox" style="margin:3px" ">');
+	}
+
+	storeCredentials_checkbox.popover({
+		placement : 'below',
+		trigger   : 'manual',
+		animate   : true,
+		html      : true,
+		content   : helpTextLocalStorage,
+		title     : function() { return "Caution!"; }
+		});
+
+		storeCredentials_checkbox.mouseover(
+		function() {
+			storeCredentials_checkbox.popover("show");
+		}
+		);
+
+		storeCredentials_checkbox.mouseout(
+		function() {
+			storeCredentials_checkbox.popover("hide");
+		}
+		);
+	
+	var tdStoreCredentials = $('<td colspan="4"/>');
+	tdStoreCredentials.append(storeCredentials_checkbox);
+	tdStoreCredentials.append("store credentials");
+	trStoreCredentials.append(tdStoreCredentials);
+	this.storeCredentials_checkbox = storeCredentials_checkbox;
+
+	loginFormTableBody.append(trStoreCredentials);		
+			
 	var trRegister = $('<tr/>');
 	trRegister.append($('<td style="padding-bottom:0px" colspan="4">No account yet? <a href="http://wisebed.eu/site/index.php/register/" target="_blank">Register here!</td>'));
 
@@ -901,6 +946,18 @@ WiseGuiLoginDialog.prototype.startLogin= function(testbeds) {
 	this.okButton.attr("disabled", "true");
 	this.cancelButton.attr("disabled", "true");
 
+	if(this.storeCredentials_checkbox[0].checked){
+		for (var i=0; i<this.loginFormRows.length; i++) {
+			localStorage[this.loginFormRows[i].inputUrnPrefix.value+'_user'] = this.loginFormRows[i].inputUsername.value;
+			localStorage[this.loginFormRows[i].inputUrnPrefix.value+'_pass'] = this.loginFormRows[i].inputPassword.value;
+			}
+	}else{
+		for (var i=0; i<this.loginFormRows.length; i++) {
+			localStorage.removeItem(this.loginFormRows[i].inputUrnPrefix.value+'_user');
+			localStorage.removeItem(this.loginFormRows[i].inputUrnPrefix.value+'_pass');
+			}
+
+	}
 	this.updateLoginDataFromForm();
 	this.doLogin();
 }
@@ -1468,14 +1525,14 @@ WiseGuiReservationObserver.prototype.stopObservationOf = function(testbedId) {
  * #################################################################
  * WiseGuiNotificationsViewer
  * #################################################################
- *
+ * 
  * Consumes wisegui events of type 'wisegui-notification' and displays them in a
  * notification area. A 'wisegui-notification' event has to carry data of the
  * following type:
  *  { type : "alert"|"block-alert" severity : "warning"|"error"|"success"|"info"
  * message : "Oh snap! Change this and that and try again." actions : an array
  * of buttons (only for block-alerts) }
- *
+ * 
  */
 
 var WiseGuiNotificationsViewer = function() {
@@ -1540,10 +1597,10 @@ WiseGuiNotificationsViewer.prototype.buildView = function() {
  * #################################################################
  * WiseGuiExperimentDropDown
  * #################################################################
- *
+ * 
  * Consumes wisegui events of type 'wisegui-reservation-ended',
  * 'wisegui-reservation-started', 'wisegui-reservation-added'.
- *
+ * 
  */
 
 var WiseGuiExperimentDropDown = function(testbedId) {
@@ -2228,7 +2285,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.scriptingEditorStopButton.bind('click', self, function(e) { self.stopUserScript(); });
 };
 
-/**********************************************************************************************************************/
+/********************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.startUserScript = function() {
 
@@ -2289,7 +2346,7 @@ WiseGuiExperimentationView.prototype.stopUserScript = function() {
 
 };
 
-/**********************************************************************************************************************/
+/********************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.onSendMessageNodeSelectionButtonClicked = function() {
 
@@ -2405,7 +2462,7 @@ WiseGuiExperimentationView.prototype.parseSendMessagePayloadBase64 = function() 
 	return base64_encode(messageBytes);
 };
 
-/**********************************************************************************************************************/
+/********************************************************************************************************************* */
 
 WiseGuiExperimentationView.prototype.getFlashFormData = function() {
 
@@ -2431,15 +2488,15 @@ WiseGuiExperimentationView.prototype.saveFlashConfiguration = function(button) {
 	}
 	var json = JSON.stringify(json);
 
-	//if(window.MozBlobBuilder) {
-	//	var uriContent = "data:application/octet-stream;base64," + btoa(json);
-	//	//window.open(uriContent, 'configuration.json');
-	//	window.location = uriContent;
-	//} else {
+	// if(window.MozBlobBuilder) {
+	// var uriContent = "data:application/octet-stream;base64," + btoa(json);
+	// //window.open(uriContent, 'configuration.json');
+	// window.location = uriContent;
+	// } else {
 		var bb = new BlobBuilder();
 		bb.append(json);
 		saveAs(bb.getBlob("text/plain;charset=utf-8"), "configuration.json");
-	//}
+	// }
 }
 
 WiseGuiExperimentationView.prototype.loadFlashConfiguration = function(button) {
