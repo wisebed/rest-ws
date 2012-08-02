@@ -7,8 +7,14 @@ body {
 	margin: -250px 0 0 -400px;
 }
 
-.modal.WiseGuiNodeSelectionDialog .modal-body {
-	height: 300px;
+.reservation {
+	margin: -360px 0 0 -491px;
+    width: 980px;
+    height: 750px;
+}
+
+.reservation-body {
+	height: 610px;
 	overflow: auto;
 }
 

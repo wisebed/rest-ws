@@ -475,7 +475,7 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 var WiseGuiReservationDialog = function(testbedId) {
 	this.testbedId = testbedId;
 	this.table = null;
-	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide"></div>');
+	this.view = $('<div id="WisebedReservationDialog-'+this.testbedId+'" class="modal hide reservation"></div>');
 	$(document.body).append(this.view);
 	this.buildView();
 	this.show();
@@ -491,6 +491,11 @@ WiseGuiReservationDialog.prototype.show = function() {
 
 WiseGuiReservationDialog.prototype.buildView = function() {
 
+	Array.prototype.diff = function(a) {
+	    return this.filter(function(i) {return !(a.indexOf(i) > -1);});
+	};
+
+	
 	var that = this;
 
 	var dialogHeader = $('<div class="modal-header"><h3>Make a reservation for Testbed ' + this.testbedId + '</h3></div>');
@@ -523,6 +528,7 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 	var date_end = format(in_one_hour.getDate()) + "." + format(in_one_hour.getMonth() +1) + "." + in_one_hour.getFullYear();
 	var time_end = format(in_one_hour.getHours()) + ":" + format(in_one_hour.getMinutes());
 
+	
 	// Create the inputs
 	var input_date_start = $('<input type="text" value="' + date_start + '" id="input_date_start_'+this.testbedId+'" style="width:75px"/>');
 	var input_time_start = $('<input type="text" value="' + time_start + '" id="input_time_start_'+this.testbedId+'" style="width:40px"/>');
@@ -532,6 +538,25 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 	var p_nodes = $("<p></p>");
 
+
+	
+	var tabs = $('<ul class="tabs" data-tabs="tabs">'
+			+ '	<li class="active"><a href="#WisebedTestbedMakeReservationList">List</a></li>'
+			+ '	<li><a href="#WisebedTestbedMakeReservationMap">Map</a></li>'
+			+ '</ul>'
+			+ '<div class="tab-content">'
+			+ '	<div class="tab-pane active" id="WisebedTestbedMakeReservationList"></div>'
+			+ '	<div class="tab-pane" id="WisebedTestbedMakeReservationMap"></div>'
+			+ '</div>');
+	
+	var listTab = $('#WisebedTestbedMakeReservationList');
+	
+	
+	
+	tabs.find('#WisebedTestbedMakeReservationList').append(p_nodes);
+	
+
+	
 	var showTable = function (wiseML) {
 		that.table = new WiseGuiNodeTable(wiseML, p_nodes, true, true);
 	};
@@ -542,6 +567,120 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 			}
 	);
 
+	 //Show google map
+	var showMap = function(wiseML){ 
+		var wiseMlParser = new WiseMLParser(wiseML, tabs.find('#WisebedTestbedMakeReservationMap'));
+		wiseMlParser.map.enableKeyDragZoom();
+		wiseMlParser.map.selectedURNs = [];
+		
+		wiseMlParser.map.selectURNs = function(urns, deselect){
+			var image;
+			if(!deselect){ 
+				image = new google.maps.MarkerImage(
+						'img/node_selected.png',
+		      			  new google.maps.Size(25,19),
+		      			  new google.maps.Point(0,0),
+		      			  new google.maps.Point(13,19)
+		      			);
+			}else{
+				image = new google.maps.MarkerImage(
+		      			  'img/node.png',
+		      			  new google.maps.Size(25,19),
+		      			  new google.maps.Point(0,0),
+		      			  new google.maps.Point(13,19)
+		      			);
+			}
+			
+			//loop over markers and set new image
+			$.each(wiseMlParser.markersArray, function (index, marker) {
+				if(urns.indexOf(marker.urn)>-1)
+                    marker.setIcon(image);
+            });
+			
+			//loop over selected urns and insert them to model if necessary
+			$.each(urns, function(index, urn){
+				var index = wiseMlParser.map.selectedURNs.indexOf(urn);
+					if(index==-1){
+						if(!deselect){
+							wiseMlParser.map.selectedURNs.push(urn);
+						}else{
+							wiseMlParser.map.selectedURNs.splice(index,1);
+						}
+					}	
+			})
+		}
+		
+		//TODO FMA: 
+		//Filter out all markers but the ones with the urns given
+		wiseMlParser.map.filter = function(urns){
+			//loop over markers and set new image
+			var markersArray = wiseMlParser.markersArray;
+			$.each(markersArray, function (index, marker) {
+				if(urns.indexOf(marker.urn)==-1){
+		            marker.setMap(null);
+				}else{
+					marker.setMap(wiseMlParser.map);
+				}
+		    });
+		}
+		
+		that.table.table.addSelectionListener(wiseMlParser.map.selectURNs);
+		that.table.table.addFilterListener(wiseMlParser.map.filter);
+		
+		var dz = wiseMlParser.map.getDragZoomObject();
+		
+		google.maps.event.addListener(dz, 'dragend', function(bounds) {
+            console.log('DragZoom DragEnd :' + bounds);
+//          get markers in bound
+            var markersInBound = [];
+            var selectedURNs = [];
+            var deselectedURNs = [];
+            
+            // get nodes that have been (de-)selected
+            $.each(wiseMlParser.markersArray, function (index, marker) {
+                if (bounds.contains(marker.getPosition()) && marker.getMap() != null) {
+                    markersInBound.push(marker);
+                    if(marker.getIcon().url == 'img/node.png'){
+                    selectedURNs.push(marker.urn);
+                    }else{
+                    	deselectedURNs.push(marker.urn);
+                    }
+                }
+            });
+            
+            // update the map
+            wiseMlParser.map.selectURNs(selectedURNs);
+            wiseMlParser.map.selectURNs(deselectedURNs, true);
+            
+            //add all newly selected nodes
+            wiseMlParser.map.selectedURNs = wiseMlParser.map.selectedURNs.concat(selectedURNs);
+            //remove all deselected nodes
+            wiseMlParser.map.selectedURNs = wiseMlParser.map.selectedURNs.diff(deselectedURNs);
+            //update selection in table
+            var selectedFun =function(data) {
+				var nodeids = wiseMlParser.map.selectedURNs;
+				for(var i = 0; i < nodeids.length; i++) {
+					if(data.id == nodeids[i]) return true;
+				}
+				return false;
+			} 
+            
+           that.table.applySelected(selectedFun);
+          });
+		
+		tabs.find('li a[href=#WisebedTestbedMakeReservationMap'+']').bind('change', function(e) {
+			google.maps.event.trigger(wiseMlParser.map, 'resize');
+			wiseMlParser.setBounds();});
+		};
+	
+	Wisebed.getWiseMLAsJSON(this.testbedId, null, showMap,
+			function(jqXHR, textStatus, errorThrown) {
+				console.log('TODO handle error in WiseGuiReservationDialog');
+			}
+	);
+
+
+	
 	// Add the picker
     input_date_start.datepicker({dateFormat: 'dd.mm.yy'});
     input_date_end.datepicker({dateFormat: 'dd.mm.yy'});
@@ -572,11 +711,18 @@ WiseGuiReservationDialog.prototype.buildView = function() {
     var span_end = $('<span style="margin-left:10px;">End: </span>');
     var span_description = $('<span style="margin-left:10px;">Description: </span>');
 
-	var dialogBody = $('<div class="modal-body" style="height:400px;overflow:auto;padding:5px"/></div>');
+	var dialogBody = $('<div class="modal-body reservation-body"/></div>');
 	dialogBody.append(error, span_start, input_date_start, input_time_start);
 	dialogBody.append(span_end, input_date_end, input_time_end);
 	dialogBody.append(span_description, input_desciption);
-	dialogBody.append(h4_nodes, p_nodes);
+	
+	
+	dialogBody.append(h4_nodes);
+	dialogBody.append(tabs);
+
+
+
+
 
 	var okButton = $('<input class="btn primary" value="Reserve" style="width:50px;text-align:center;">');
 	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
@@ -869,8 +1015,8 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '	</div>');
 
 
-	this.okButton = $('<input class="btn primary" value="OK" style="width:25px;text-align:center;">');
-	this.cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	this.okButton = $('<input type="submit" class="btn primary" value="OK" style="width:25px;text-align:center;">');
+	this.cancelButton = $('<input type="reset" class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
 
 	this.cancelButton.bind('click', this, function(e) {
 		e.data.hide();
@@ -993,7 +1139,8 @@ var Table = function (model, headers, rowProducer, preFilterFun, preSelectFun, s
 	this.table = null;
 	this.filter = null;
 	this.data = [];
-
+	this.selectionListeners = [];
+	this.filterListeners = [];
 	this.dataArray = [];
 
 	this.filter_input = null;
@@ -1114,8 +1261,10 @@ Table.prototype.generateTable = function () {
 			if(that.table != null) {
 				// .find("input")
 				var inputs = that.table.find('tr:visible').find('input:checkbox');
-				inputs.each(function() {
+				inputs.each(function(index, input) {
 					$(this).attr('checked', checked);
+					if(index>0) // first checkbox does not belong to a specific node and has no urn
+					that.callSelectionListeners(input.attributes["urn"].nodeValue,!checked);
 				});
 			}
 		});
@@ -1152,7 +1301,11 @@ Table.prototype.generateTable = function () {
 			if(this.showCheckBoxes) {
 				var checkbox = $('<input type="checkbox"/>');
 				checkbox.attr("name", i);
-
+				checkbox.attr("urn", data.id);
+				checkbox.click(function(){
+					var checked = $(this).is(':checked');
+					that.callSelectionListeners(this.attributes["urn"].nodeValue,!checked);
+				})
 				data.checkbox = checkbox;
 				var td_checkbox = $('<td></td>');
 				td_checkbox.append(checkbox);
@@ -1182,6 +1335,28 @@ Table.prototype.generateTable = function () {
 		this.table.tablesorter({sortList: [[0,0]]});
 	}
 };
+
+Table.prototype.addSelectionListener = function (listener) {
+	this.selectionListeners.push(listener);
+}
+
+Table.prototype.addFilterListener = function ( listener) {
+	this.filterListeners.push(listener);
+}
+
+Table.prototype.callSelectionListeners = function(urn, deselected){
+	var that = this;
+	for (var i =0; i<that.selectionListeners.length;i++){
+		that.selectionListeners[i](urn, deselected);
+	}
+}
+
+Table.prototype.callFilterListeners = function(urns){
+	var that = this;
+	for (var i =0; i<that.filterListeners.length;i++){
+		that.filterListeners[i](urns);
+	}
+}
 
 Table.prototype.getSelectedRows = function () {
 
@@ -1265,6 +1440,13 @@ Table.prototype.setFilterFun = function (fn) {
 	if(this.showCheckBoxes) {
 		this.input_checkbox_th.attr('checked', false);
 	}
+	var urns = [];
+	for ( var i = 0; i < this.data.length; i++) {
+		var d = this.data[i];
+		if(d.isVisible==true){
+			urns.push(d.data.id);}
+		}
+	this.callFilterListeners(urns);
 };
 
 Table.prototype.setSelectFun = function (fn) {
@@ -1400,7 +1582,7 @@ WiseGuiNodeTable.prototype.applyFilter = function (fn) {
 	this.table.setFilterFun(fn);
 };
 
-WiseGuiNodeTable.prototype.applySelcected = function (fn) {
+WiseGuiNodeTable.prototype.applySelected = function (fn) {
 	this.table.setSelectFun(fn);
 };
 
@@ -1736,7 +1918,7 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 
 		// Appy preelected
 		if(typeof(self.preSelected) == "function") {
-			self.table.applySelcected(self.preSelected);
+			self.table.applySelected(self.preSelected);
 		}
 
 		self.dialogDiv.find('.modal-footer .secondary').first().bind(
