@@ -1539,28 +1539,26 @@ WiseGuiNotificationsViewer.prototype.showNotification = function(notification) {
 };
 
 WiseGuiNotificationsViewer.prototype.showAlert = function(alert) {
-	var alertDiv = $('<div class="alert-message '+alert.severity+'">'
-			+ '<a class="close" href="#">&times;</a>'
-			+ '<p/>'
+	var alertDiv = $('<div class="alert alert-'+alert.severity+'">'
+			+ '<button class="close" data-dismiss="alert">&times;</button>'
 			+ '</div>');
-	alertDiv.find('p').append(alert.message);
+	alertDiv.append(alert.message);
 	this.view.append(alertDiv);
 	alertDiv.alert();
 };
 
 WiseGuiNotificationsViewer.prototype.showBlockAlert = function(alert) {
-	var blockAlertDiv = $('<div class="alert-message block-message '+alert.severity+'">'
-			+ '	<a class="close" href="#">&times;</a>'
-			+ '	<p></p>'
+	var blockAlertDiv = $('<div class="alert block-message '+alert.severity+'">'
+			+ '	<button class="close" data-dismiss="alert">x</button>'
 			+ '	<div class="alert-actions">'
 			+ '	</div>'
 			+ '</div>');
 	if (alert.message instanceof Array) {
 		for (var i=0; i<alert.message.length; i++) {
-			blockAlertDiv.find('p').append(alert.message[i]);
+			blockAlertDiv.append(alert.message[i]);
 		}
 	} else {
-		blockAlertDiv.find('p').append(alert.message);
+		blockAlertDiv.append(alert.message);
 	}
 	var actionsDiv = blockAlertDiv.find('.alert-actions');
 	if (alert.actions) {
