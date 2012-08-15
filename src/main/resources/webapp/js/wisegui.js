@@ -1700,8 +1700,8 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 	body.append(imgAjaxLoader);
 
 	var bodyFooter = $(' <div class="modal-footer">'
-			+ '		<a class="btn">Cancel</a>'
-			+ '		<a class="btn btn-primary">OK</a>'
+			+ '		<a id="modal-cancel" class="btn">Cancel</a>'
+			+ '		<a id="modal-ok" class="btn btn-primary">OK</a>'
 			+ '	</div>');
 
 	this.dialogDiv.append(bodyHeader, body, bodyFooter);
@@ -1715,6 +1715,12 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 	function showDialogInternal(wiseML) {
 
 		self.dialogDiv.modal('show');
+		
+		self.dialogDiv.on('hide', function() {
+			if (callbackCancel) {
+				callbackCancel();
+			}
+		});
 
 		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
 		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true, true);
@@ -1724,23 +1730,25 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 			self.table.applySelected(self.preSelected);
 		}
 
-		self.dialogDiv.find('.modal-footer .secondary').first().bind(
+		// Cancel clicked
+		self.dialogDiv.find('#modal-cancel').first().bind(
 				'click',
 				{dialog : self},
 				function(event) {
-					event.data.dialog.dialogDiv.hide();
+					event.data.dialog.dialogDiv.modal('hide');
 					event.data.dialog.dialogDiv.remove();
 					if (callbackCancel) {
 						callbackCancel();
 					}
 				}
 		);
-
-		self.dialogDiv.find('.modal-footer .primary').first().bind(
+		
+		// OK cklicked
+		self.dialogDiv.find('#modal-ok').first().bind(
 				'click',
 				self,
 				function(event) {
-					event.data.dialogDiv.hide();
+					event.data.dialogDiv.modal('hide');
 					event.data.dialogDiv.remove();
 					callbackOK(event.data.table.getSelectedNodes());
 				}
