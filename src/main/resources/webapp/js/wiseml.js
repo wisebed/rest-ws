@@ -81,13 +81,40 @@ WiseMLParser.prototype.buildView = function(parentDiv) {
 WiseMLParser.prototype.addMarker = function(n) {
 	var markerLatLng = new google.maps.LatLng(n.c.x, n.c.y);
 
+	
+	// Sample custom marker code created with Google Map Custom Marker Maker
+	// http://powerhut.co.uk/googlemaps/custom_markers.php
+
+	var image = new google.maps.MarkerImage(
+			  'img/node.png',
+			  new google.maps.Size(25,19),
+			  new google.maps.Point(0,0),
+			  new google.maps.Point(13,19)
+			);
+
+			var shadow = new google.maps.MarkerImage(
+			  'img/node_shadow.png',
+			  new google.maps.Size(39,19),
+			  new google.maps.Point(0,0),
+			  new google.maps.Point(13,19)
+			);
+	
+	var shape = {
+			  coord: [18,2,20,3,22,4,23,5,23,6,22,7,21,8,20,9,19,10,18,11,16,12,16,13,14,14,14,15,14,16,11,16,11,15,11,14,9,13,9,12,7,11,7,10,5,9,4,8,2,7,2,6,2,5,3,4,5,3,7,2,18,2],
+			  type: 'poly'
+			};
+			
 	var marker = new google.maps.Marker({
 		position : markerLatLng,
 		map : this.map,
-		title : "Sensor: " + n.id
+		title : "Sensor: " + n.id,
+		icon: image,
+		shadow: shadow,
+		shape: shape,
+		urn : n.id
 	});
 
-	this.infoWindow.setContent("<h2>Sensor: " + n.id + "</h2><p>" + n.desc + "</p>");
+	this.infoWindow.setContent("<h5>Sensor: " + n.id + "</h5><p style=\"width:200px;\">" + n.desc + "</p>");
 
 	var self = this;
 	google.maps.event.addListener(marker, 'click', function() {
