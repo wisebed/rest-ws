@@ -152,12 +152,11 @@ WiseGuiNavigationViewer.prototype.buildViewForTestbedOverview = function() {
 
 WiseGuiNavigationViewer.prototype.buildView = function() {
 
-	this.view = $('<div class="topbar-wrapper" style="z-index: 5;">'
-			+ '	<div class="topbar" data-dropdown="dropdown">'
-			+ '		<div class="topbar-inner">'
+	this.view = $('<div class="navbar">'
+			+ '		<div class="navbar-inner">'
 			+ '			<div class="container">'
 			+ '				<ul class="nav"/>'
-			+ '				<ul class="nav secondary-nav">'
+			+ '				<ul class="nav secondary-nav pull-right">'
 			+ '					<li class="WiseGuiNavAboutButton">'
 			+ '						<a href="#">About</a>'
 			+ '				</li>'
@@ -165,7 +164,6 @@ WiseGuiNavigationViewer.prototype.buildView = function() {
 			+ '			</div>'
 			+ '		</div>'
 			+ '	</div>'
-			+ '</div>'
 	);
 
 	this.primaryMenu   = this.view.find('ul.nav:not(ul.secondary-nav)').first();
@@ -314,13 +312,13 @@ var WiseGuiLoadConfigurationDialog = function(testbedId, callback) {
 };
 
 WiseGuiLoadConfigurationDialog.prototype.hide = function() {
-	this.view.hide();
+	this.view.modal('hide');
 	this.view.remove();
 };
 
 WiseGuiLoadConfigurationDialog.prototype.show = function() {
 	$(document.body).append(this.view);
-	this.view.show();
+	this.view.modal('show');
 };
 
 WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
@@ -437,8 +435,8 @@ WiseGuiLoadConfigurationDialog.prototype.buildView = function() {
 	 */
 	var dialogFooter = $('<div class="modal-footer"/>');
 
-	var okButton = $('<input class="btn primary" value="Load" style="width:35px;text-align:center;">');
-	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	var okButton = $('<input class="btn btn-primary" value="Load" style="width:35px;text-align:center;">');
+	var cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 	okButton.bind('click', this, function(e) {
 		okButton.attr("disabled", "true");
 		cancelButton.attr("disabled", "true");
@@ -724,8 +722,8 @@ WiseGuiReservationDialog.prototype.buildView = function() {
 
 
 
-	var okButton = $('<input class="btn primary" value="Reserve" style="width:50px;text-align:center;">');
-	var cancelButton = $('<input class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	var okButton = $('<input class="btn btn-primary" value="Reserve" style="width:50px;text-align:center;">');
+	var cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 
 	okButton.bind('click', this, function(e) {
 
@@ -901,11 +899,11 @@ WiseGuiLoginDialog.prototype.doLogout = function() {
 };
 
 WiseGuiLoginDialog.prototype.hide = function() {
-	this.view.hide();
+	this.view.modal('hide');
 };
 
 WiseGuiLoginDialog.prototype.show = function() {
-	this.view.show();
+	this.view.modal('show');
 };
 
 WiseGuiLoginDialog.prototype.updateLoginDataFromForm = function() {
@@ -934,25 +932,12 @@ WiseGuiLoginDialog.prototype.addRowToLoginForm = function(tbody, urnPrefix, user
 				+'If you have registered on <strong>wisebed.eu</strong>, use <strong>yourusername@wisebed1.itm.uni-luebeck.de</strong>.';
 
 	inputUsername.popover({
-		placement : 'below',
-		trigger   : 'manual',
-		animate   : true,
-		html      : true,
+		placement : 'bottom',
+		trigger   : 'focus',
+		animation : true,
 		content   : helpText,
-		title     : function() { return "Format of the username field"; }
+		title     : "Format of the username field"
 	});
-
-	inputUsername.focusin(
-		function() {
-			inputUsername.popover("show");
-		}
-	);
-
-	inputUsername.focusout(
-		function() {
-			inputUsername.popover("hide");
-		}
-	);
 
 	var inputPassword = $('<input type="password" id="password'+i+'" name="password'+i+'" value="'+password+'"/>');
 
@@ -999,7 +984,7 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 
 	var dialogBody = $('<div class="modal-body WiseGuiLoginDialog"/>'
 			+ '		<form id="WisebedLoginDialogForm-'+this.testbedId+'">'
-			+ '		<table id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
+			+ '		<table class="table" id="WisebedLoginDialogFormTable-'+this.testbedId+'">'
 			+ '			<thead>'
 			+ '				<tr>'
 			+ '					<th>Testbed</th>'
@@ -1014,9 +999,8 @@ WiseGuiLoginDialog.prototype.buildView = function(testbeds) {
 			+ '		</form>'
 			+ '	</div>');
 
-
-	this.okButton = $('<input type="submit" class="btn primary" value="OK" style="width:25px;text-align:center;">');
-	this.cancelButton = $('<input type="reset" class="btn secondary" value="Cancel" style="width:45px;text-align:center;">');
+	this.okButton = $('<input class="btn btn-primary" value="OK" style="width:25px;text-align:center;">');
+	this.cancelButton = $('<input class="btn" value="Cancel" style="width:45px;text-align:center;">');
 
 	this.cancelButton.bind('click', this, function(e) {
 		e.data.hide();
@@ -1238,7 +1222,7 @@ Table.prototype.generateTable = function () {
 		}
 	);
 
-	this.table = $('<table class="bordered-table"></table>');
+	this.table = $('<table class="table table-bordered"></table>');
 
 	/*
 	 * Generate table header
@@ -1736,28 +1720,26 @@ WiseGuiNotificationsViewer.prototype.showNotification = function(notification) {
 };
 
 WiseGuiNotificationsViewer.prototype.showAlert = function(alert) {
-	var alertDiv = $('<div class="alert-message '+alert.severity+'">'
-			+ '<a class="close" href="#">&times;</a>'
-			+ '<p/>'
+	var alertDiv = $('<div class="alert alert-'+alert.severity+'">'
+			+ '<button class="close" data-dismiss="alert">&times;</button>'
 			+ '</div>');
-	alertDiv.find('p').append(alert.message);
+	alertDiv.append(alert.message);
 	this.view.append(alertDiv);
 	alertDiv.alert();
 };
 
 WiseGuiNotificationsViewer.prototype.showBlockAlert = function(alert) {
-	var blockAlertDiv = $('<div class="alert-message block-message '+alert.severity+'">'
-			+ '	<a class="close" href="#">&times;</a>'
-			+ '	<p></p>'
+	var blockAlertDiv = $('<div class="alert block-message '+alert.severity+'">'
+			+ '	<button class="close" data-dismiss="alert">x</button>'
 			+ '	<div class="alert-actions">'
 			+ '	</div>'
 			+ '</div>');
 	if (alert.message instanceof Array) {
 		for (var i=0; i<alert.message.length; i++) {
-			blockAlertDiv.find('p').append(alert.message[i]);
+			blockAlertDiv.append(alert.message[i]);
 		}
 	} else {
-		blockAlertDiv.find('p').append(alert.message);
+		blockAlertDiv.append(alert.message);
 	}
 	var actionsDiv = blockAlertDiv.find('.alert-actions');
 	if (alert.actions) {
@@ -1857,7 +1839,7 @@ WiseGuiExperimentDropDown.prototype.onReservationsChangedEvent = function(reserv
 
 WiseGuiExperimentDropDown.prototype.buildView = function() {
 	this.view = $('<li class="dropdown">'
-			+ '	<a href="#" class="dropdown-toggle">My Reservations</a>'
+			+ '	<a href="#" class="dropdown-toggle" data-toggle="dropdown">My Reservations</a>'
 			+ '	<ul class="dropdown-menu">'
 			+ '	</ul>'
 			+ '</li>');
@@ -1897,8 +1879,8 @@ var WiseGuiNodeSelectionDialog = function(testbedId, experimentId, headerHtml, b
 	body.append(imgAjaxLoader);
 
 	var bodyFooter = $(' <div class="modal-footer">'
-			+ '		<a class="btn secondary">Cancel</a>'
-			+ '		<a class="btn primary">OK</a>'
+			+ '		<a id="modal-cancel" class="btn">Cancel</a>'
+			+ '		<a id="modal-ok" class="btn btn-primary">OK</a>'
 			+ '	</div>');
 
 	this.dialogDiv.append(bodyHeader, body, bodyFooter);
@@ -1911,33 +1893,41 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 
 	function showDialogInternal(wiseML) {
 
-		self.dialogDiv.show();
+		self.dialogDiv.modal('show');
+		
+		self.dialogDiv.on('hide', function() {
+			if (callbackCancel) {
+				callbackCancel();
+			}
+		});
 
 		self.dialogDiv.find('.ajax-loader').attr('hidden', 'true');
 		self.table = new WiseGuiNodeTable(wiseML, self.dialogDiv.find('.modal-body').first(), true, true);
 
-		// Appy preelected
+		// Apply preselected
 		if(typeof(self.preSelected) == "function") {
 			self.table.applySelected(self.preSelected);
 		}
 
-		self.dialogDiv.find('.modal-footer .secondary').first().bind(
+		// Cancel clicked
+		self.dialogDiv.find('#modal-cancel').first().bind(
 				'click',
 				{dialog : self},
 				function(event) {
-					event.data.dialog.dialogDiv.hide();
+					event.data.dialog.dialogDiv.modal('hide');
 					event.data.dialog.dialogDiv.remove();
 					if (callbackCancel) {
 						callbackCancel();
 					}
 				}
 		);
-
-		self.dialogDiv.find('.modal-footer .primary').first().bind(
+		
+		// OK cklicked
+		self.dialogDiv.find('#modal-ok').first().bind(
 				'click',
 				self,
 				function(event) {
-					event.data.dialogDiv.hide();
+					event.data.dialogDiv.modal('hide');
 					event.data.dialogDiv.remove();
 					callbackOK(event.data.table.getSelectedNodes());
 				}
@@ -1960,12 +1950,12 @@ WiseGuiNodeSelectionDialog.prototype.show = function(callbackOK, callbackCancel)
 var WiseGuiTestbedsView = function(testbeds) {
 
 	this.testbeds = testbeds;
-	this.view = $('<table class="WisebedOverviewTable zebra-striped">'
+	this.view = $('<table class="WisebedOverviewTable table table-striped">'
 			+ '	<thead>'
 			+ '		<tr>'
-			+ '			<td>Name</td>'
-			+ '			<td>URN prefixes</td>'
-			+ '			<td>Session Management Endpoint URL</td>'
+			+ '			<th>Name</td>'
+			+ '			<th>URN prefixes</td>'
+			+ '			<th>Session Management Endpoint URL</td>'
 			+ '		</tr>'
 			+ '	</thead>'
 			+ '	<tbody>'
@@ -2063,7 +2053,7 @@ WiseGuiExperimentationView.prototype.onWebSocketMessageEvent = function(event) {
 
 		if (getNavigationData().experimentId != this.experimentId) {
 
-			var goToExperimentButton = $('<button class="btn primary">Go to experiment</button>');
+			var goToExperimentButton = $('<button class="btn btn-primary">Go to experiment</button>');
 			var blockAlertActions = [goToExperimentButton];
 
 			var self = this;
@@ -2122,26 +2112,30 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 
 	this.view.append('<div class="WiseGuiExperimentationViewOutputs">'
 			+ '	<div class="row">'
-			+ '		<div class="span8"><h2>Live Data</h2></div>'
-			+ '		<div class="span8" style="text-align: right">'
-			+ '			Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages'
-			+ '			<label for="'+(this.experimentationDivId + '-follow-checkbox')+'">'
-			+ '				<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
-			+ '				Follow Outputs'
-			+ '			</label>'
-			+ '			<button class="btn WiseGuiExperimentViewOutputsClearButton">Clear</button>'
+			+ '		<div class="span6"><h2>Live Data</h2></div>'
 			+ '		</div>'
 			+ '	</div>'
 			+ '	<div class="row">'
-			+ '		<div class="span16">'
+			+ '		<div class="span12">'
 			+ '			<textarea class="WiseGuiExperimentViewOutputsTextArea" id="'+this.outputsTextAreaId+'" style="width: 100%; height:300px;" readonly disabled></textarea>'
 			+ '		</div>'
 			+ '	</div>'
+			+ '	<div class="row">'
+			+ '			<div class="span6">'
+			+ '				Show <input type="text" class="span1 WiseGuiExperimentViewOutputNumMessages" value="'+this.outputsNumMessages+'" /> messages'
+			+ '			<button class="btn WiseGuiExperimentViewOutputsClearButton">Clear</button>'
+			+ '			</div>'
+			+ '			<div class="span2 offset4" style="text-align: right;"'
+			+ '				<label for="'+(this.experimentationDivId + '-follow-checkbox')+'" style="display:inline;">'
+			+ '					<input type="checkbox" id="'+(this.experimentationDivId + '-follow-checkbox')+'" class="FollowOutputsCheckbox"'+(this.outputsFollow ? ' checked' : '')+'></input>'
+			+ '					auto scroll'
+			+ '				</label>'
+			+ '			</div>'
 			+ '</div>'
 			+ '<div class="WiseGuiExperimentationViewControls">'
 			+ '	<h2>Controls</h2></div>'
 			+ '	<div>'
-			+ '		<ul class="tabs">'
+			+ '		<ul class="nav nav-tabs">'
 			+ '			<li class="active"><a href="#'+this.flashDivId+'">Flash</a></li>'
 			+ '			<li><a href="#'+this.resetDivId+'">Reset</a></li>'
 			+ '			<li><a href="#'+this.sendDivId+'">Send Message</a></li>'
@@ -2151,22 +2145,24 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '		<div class="tab-content">'
 			+ '			<div class="active tab-pane WiseGuiExperimentsViewFlashControl" id="'+this.flashDivId+'">'
 			+ '				<div class="row">'
-			+ '					<div class="span10">'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlAddSet span1"> + </button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet span1"> - </button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration span2">Load</button>'
-			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration span2">Save</button>'
-			+ '						<button class="btn primary WiseGuiExperimentsViewFlashControlFlashNodes span3">Flash</button>'
+			+ '					<div class="span3">'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlAddSet"> + </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlRemoveSet"> - </button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlLoadConfiguration">Load</button>'
+			+ '						<button class="btn WiseGuiExperimentsViewFlashControlSaveConfiguration">Save</button>'
+			+ '					</div>'
+			+ '					<div class="span3">'
+			+ '						<button class="btn btn-primary WiseGuiExperimentsViewFlashControlFlashNodes span2">Flash</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
-		  	+ '					<div class="span16">'
-			+ '						<table class="zebra-striped">'
+		  	+ '					<div class="span12">'
+			+ '						<table class="table table-striped">'
 			+ '							<thead>'
 			+ '								<tr>'
-			+ '									<th class="span1">Set</th>'
-			+ '									<th class="span6">Selected Nodes</th>'
-			+ '									<th class="span4">Image File</th>'
+			+ '									<th>Set</th>'
+			+ '									<th>Selected Nodes</th>'
+			+ '									<th>Image File</th>'
 			+ '									<th class="span5"></th>'
 			+ '								</tr>'
 			+ '							</thead>'
@@ -2182,41 +2178,39 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '						<button class="btn WiseGuiExperimentsViewResetControlSelectNodeUrns span4">Select Nodes</button>'
 			+ '					</div>'
 		  	+ '					<div class="span4">'
-			+ '						<button class="btn primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
+			+ '						<button class="btn btn-primary WiseGuiExperimentsViewResetControlResetNodeUrns span4" disabled>Reset Nodes</button>'
 			+ '					</div>'
 		  	+ '				</div>'
 			+ '			</div>'
 		 	+ '			<div class="tab-pane WiseGuiExperimentsViewSendControl" id="'+this.sendDivId+'">'
 		  	+ '				<div class="row">'
-			+ '					<div class="span4">'
-			+ '						<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span4">Select Nodes</button>'
-			+ '					</div>'
+			+ '					<button class="btn WiseGuiExperimentsViewSendControlSelectNodeUrns span2">Select Nodes</button>'
 			+ '					<div class="span2">'
 			+ '						<select class="WiseGuiExperimentsViewSendControlSelectMode span2">'
 			+ '							<option value="binary">Binary</option>'
 			+ '							<option value="ascii">ASCII</option>'
 			+ '						</select>'
 			+ '					</div>'
-			+ '					<div class="span6">'
-		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span6"/>'
-			+ '					</div>'
 			+ '					<div class="span4">'
-		  	+ '						<button class="btn primary WiseGuiExperimentsViewSendControlSendMessage span4">Send message</button><br/>'
+		  	+ '						<input type="text" class="WiseGuiExperimentsViewSendControlSendMessageInput span4"/>'
+			+ '					</div>'
+			+ '					<div class="span2">'
+		  	+ '						<button class="btn btn-primary WiseGuiExperimentsViewSendControlSendMessage span2">Send message</button><br/>'
 		  	+ '					</div>'
 		  	+ '				</div>'
 		  	+ '			</div>'
 			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingControl" id="'+this.scriptingEditorDivId+'">'
 			+ '				<div class="row" style="padding-bottom:10px;">'
-			+ '					<div class="span8">'
+			+ '					<div class="span6">'
 			+ '						<button class="btn span2 WiseGuiExperimentsViewScriptingHelpButton">Help</button>'
 			+ '					</div>'
-			+ '					<div class="span8" style="text-align:right;">'
-			+ '						<button class="btn danger span2 WiseGuiExperimentsViewScriptingStopButton">Stop</button>'
-			+ '						<button class="btn success span2 WiseGuiExperimentsViewScriptingStartButton">Start</button>'
+			+ '					<div class="span6" style="text-align:right;">'
+			+ '						<button class="btn btn-danger span2 WiseGuiExperimentsViewScriptingStopButton">Stop</button>'
+			+ '						<button class="btn btn-success span2 WiseGuiExperimentsViewScriptingStartButton">Start</button>'
 			+ '					</div>'
 			+ '				</div>'
 			+ '				<div class="row">'
-			+ '					<div class="span16 WiseGuiExperimentsViewScriptingControlEditorRow"></div>'
+			+ '					<div class="span12 WiseGuiExperimentsViewScriptingControlEditorRow"></div>'
 			+ '				</div>'
 			+ '			</div>'
 			+ '			<div class="tab-pane WiseGuiExperimentsViewScriptingOutputTab" id="'+this.scriptingOutputDivId+'"/>'
@@ -2253,7 +2247,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 	this.scriptingEditorStopButton    = this.view.find('button.WiseGuiExperimentsViewScriptingStopButton').first();
 	this.scriptingEditorStartButton   = this.view.find('button.WiseGuiExperimentsViewScriptingStartButton').first();
 	this.scriptingEditorHelpButton    = this.view.find('button.WiseGuiExperimentsViewScriptingHelpButton').first();
-	this.scriptingEditorDiv           = $('<div class="span16 WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">'
+	this.scriptingEditorDiv           = $('<div class="WiseGuiExperimentsViewScriptingEditor" style="z-index:-1;">'
 			+ 'WiseGuiUserScript = function() {\n'
 			+ '  console.log("WiseGuiUserScript instantiated...");\n'
 			+ '  this.testbedId = null;\n'
@@ -2269,7 +2263,7 @@ WiseGuiExperimentationView.prototype.buildView = function() {
 			+ '  this.experimentId = env.experimentId;\n'
 			+ '  this.outputDiv = env.outputDiv;\n'
 			+ '  this.outputDiv.empty();\n'
-			+ '  this.outputTextArea = $("&lt;textarea class=\'span16\' style=\'height:500px\'/>");\n'
+			+ '  this.outputTextArea = $("&lt;textarea class=\'span12\' style=\'height:500px\'/>");\n'
 			+ '  this.outputDiv.append(this.outputTextArea);\n'
 			+ '  \n'
 			+ '  var self = this;\n'
@@ -2771,9 +2765,9 @@ WiseGuiExperimentationView.prototype.dataURItoBlob = function(dataURI) {
 WiseGuiExperimentationView.prototype.addFlashConfiguration = function(conf) {
 
 	// build and append the gui elements
-	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton span6">Select Nodes</button>');
+	var nodeSelectionButton   = $('<button class="btn nodeSelectionButton span3">Select Nodes</button>');
 	var imageFileInput        = $('<input type="file" style="opacity: 0; width: 0px; position:absolute; top:-100px;"/>');
-	var imageFileButton       = $('<button class="btn fileSelectionButton span6">Select Image</button>');
+	var imageFileButton       = $('<button class="btn fileSelectionButton span3">Select Image</button>');
 	var imageFileInfoLabel    = $('<div/>');
 	var tr                    = $('<tr/>');
 
@@ -3082,10 +3076,10 @@ var WiseGuiOperationProgressView = function(nodeUrns, operationMaxValue, success
 
 		var row = $('<table>'
 				+ '	<tr>'
-				+ '	<td class="span2 nodUrnTd">'+nodeUrns[i]+'</td>'
+				+ '	<td class="span1 nodUrnTd">'+nodeUrns[i]+'</td>'
 				+ '	<td class="span4 progressTd"><progress value="0" min="0" max="'+operationMaxValue+'"/></td>'
-				+ '	<td class="span2 statusTd"></td>'
-				+ '	<td class="span8 messageTd"></td>'
+				+ '	<td class="span1 statusTd"></td>'
+				+ '	<td class="span6 messageTd"></td>'
 				+ '	</tr>'
 				+ '</table>');
 
@@ -3137,7 +3131,7 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 	parentDiv.append($('<h1>Testbed Details "'+testbeds.testbedMap[navigationData.testbedId].name+'"</h1>'));
 
-	var tabs = $('<ul class="tabs">'
+	var tabs = $('<ul class="nav nav-tabs">'
 			+ '	<li class="active"><a href="#WisebedTestbedDetailsOverview-'+navigationData.testbedId+'">Description</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsNodes-'+navigationData.testbedId+'">Nodes</a></li>'
 			+ '	<li><a href="#WisebedTestbedDetailsReservations-'+navigationData.testbedId+'">Reservations</a></li>'
@@ -3161,10 +3155,10 @@ function loadTestbedDetailsContainer(navigationData, parentDiv) {
 
 				var overviewTab = $('#WisebedTestbedDetailsOverview-'+navigationData.testbedId);
 				overviewTab.append('<div class="row">'
-						+ '	<div class="span16">' + wiseML.setup.description + '</div>'
+						+ '	<div class="span12">' + wiseML.setup.description + '</div>'
 						+ '</div>'
 						+ '<div class="row">'
-						+ '	<div class="span16 WisebedTestbedDetailsOverviewMap"></div>'
+						+ '	<div class="span12 WisebedTestbedDetailsOverviewMap"></div>'
 						+ '</div>');
 				var overviewTabMapRow = overviewTab.find('.WisebedTestbedDetailsOverviewMap');
 
@@ -3266,7 +3260,7 @@ function buildReservationTable(reservationsTab, navigationData) {
 
 function buildTable(tableHead, tableRows, noEntriesMessage) {
 
-	var table = $('<table class="zebra-striped"/>"');
+	var table = $('<table class="table table-striped"/>"');
 	var thead = $('<thead/>');
 	var theadRow = $('<tr/>');
 	thead.append(theadRow);
@@ -3427,7 +3421,10 @@ function createContentContainer(navigationData) {
 	var createContentFunction = getCreateContentFunction(navigationData);
 	createContentFunction(navigationData, container);
 
-	$('.tabs').tabs();
+	$('.nav-tabs a').click(function (e) {
+	    e.preventDefault();
+	    $(this).tab('show');
+	    })
 
 	return container;
 }
@@ -3457,6 +3454,10 @@ var testbeds             = null;
 $(function () {
 
 	$('#WisebedContainer').append(notificationsViewer.view);
+	
+	$('.modal').modal({
+		keyboard: true
+	});
 
 	Wisebed.getTestbeds(
 			function(testbedsLoaded) {
