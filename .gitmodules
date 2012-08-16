@@ -1,0 +1,3 @@
+[submodule "src/main/resources/webapp"]
+	path = src/main/resources/webapp
+	url = git@github.com:wisebed/wisegui.git
