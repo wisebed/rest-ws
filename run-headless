@@ -19,6 +19,7 @@ nohup java \
     --logLevel DEBUG \
     --port 8080 \
     --testbedMap testbedMap.json \
+    --webAppRootDir ../wisegui \
     2>&1 >> /dev/null &
     
 echo $! >> rest-ws.pid

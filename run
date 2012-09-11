@@ -15,4 +15,5 @@ java \
 	--hostname `hostname -f` \
 	--logLevel DEBUG \
 	--port 8080 \
-	--testbedMap testbedMap.json
+	--testbedMap testbedMap.json \
+	--webAppRootDir ../wisegui

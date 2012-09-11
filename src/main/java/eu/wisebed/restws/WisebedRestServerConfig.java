@@ -6,6 +6,8 @@ import eu.wisebed.restws.util.TestbedMapOptionParser;
 import org.apache.log4j.Level;
 import org.kohsuke.args4j.Option;
 
+import java.io.File;
+
 public class WisebedRestServerConfig {
 
 	@Option(name = "--hostname", usage = "Hostname to start the web server on.", required = true)
@@ -37,6 +39,10 @@ public class WisebedRestServerConfig {
 
 	@Option(name = "--flashTimeoutMillis", usage = "The milliseconds after which a flash operation should time out.")
 	public int flashTimeoutMillis = 2 * 60 * 1000;
+
+	@Option(name = "--webAppRootDir",
+			usage = "The root directory of the web application (WiseGui) to be served by the web server")
+	public File webAppRootDir;
 
 	@Override
 	public String toString() {

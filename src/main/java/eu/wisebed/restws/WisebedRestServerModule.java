@@ -35,6 +35,6 @@ public class WisebedRestServerModule extends AbstractModule {
 
 		bindListener(Matchers.any(), new Log4JTypeListener());
 
-		install(new WisebedRestServerServletModule());
+		install(new WisebedRestServerServletModule(config));
 	}
 }

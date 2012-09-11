@@ -21,12 +21,20 @@ import eu.wisebed.restws.ws.WsnWebSocketFactory;
 import eu.wisebed.restws.ws.WsnWebSocketServlet;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 
+import java.net.URL;
+
 /**
  * Configuration class to set up Google Guice-based dependency injection with the Jersey JAX-RS implementation. For
  * more information please check
  * http://jersey.java.net/nonav/apidocs/latest/contribs/jersey-guice/com/sun/jersey/guice/spi/container/servlet/package-summary.html.
  */
 public class WisebedRestServerServletModule extends JerseyServletModule {
+
+	private final WisebedRestServerConfig config;
+
+	public WisebedRestServerServletModule(final WisebedRestServerConfig config) {
+		this.config = config;
+	}
 
 	@Override
 	protected void configureServlets() {
@@ -53,8 +61,20 @@ public class WisebedRestServerServletModule extends JerseyServletModule {
 				"allowedMethods", "GET,POST,PUT,DELETE",
 				"allowCredentials", "true"
 		));
+
+		String resourceBase;
+		if (config.webAppRootDir != null) {
+			resourceBase = config.webAppRootDir.getAbsolutePath();
+		} else {
+			final URL webAppBaseUrl = this.getClass().getClassLoader().getResource("webapp");
+			if (webAppBaseUrl == null) {
+				throw new IllegalArgumentException("Bundled web app directory was not found!");
+			}
+			resourceBase = webAppBaseUrl.toExternalForm();
+		}
+
 		serve("/*","/pt/*").with(DefaultServlet.class, ImmutableMap.of(
-				"resourceBase", this.getClass().getClassLoader().getResource("webapp").toExternalForm(),
+				"resourceBase", resourceBase,
 				"maxCacheSize", "0"
 		));
 	}
