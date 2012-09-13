@@ -275,13 +275,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>2.2</version>
-			</extension>
-		</extensions>
 		<pluginManagement>
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
@@ -324,14 +317,8 @@
 
 	<repositories>
 		<repository>
-			<id>releases-repository.java.net</id>
-			<name>Java.net Releases Repository for Maven</name>
-			<url>https://maven.java.net/content/repositories/releases/</url>
-			<layout>default</layout>
-		</repository>
-		<repository>
 			<id>itm-maven-repository-releases</id>
-			<url>http://www.itm.uni-luebeck.de/projects/maven/releases/</url>
+			<url>http://maven.itm.uni-luebeck.de/content/repositories/releases/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -341,7 +328,7 @@
 		</repository>
 		<repository>
 			<id>itm-maven-repository-snapshots</id>
-			<url>http://www.itm.uni-luebeck.de/projects/maven/snapshots/</url>
+			<url>http://maven.itm.uni-luebeck.de/content/repositories/snapshots/</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
@@ -369,6 +356,12 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>releases-repository.java.net</id>
+			<name>Java.net Releases Repository for Maven</name>
+			<url>https://maven.java.net/content/repositories/releases/</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 
 	<properties>
@@ -377,14 +370,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>wisebed-maven-repository-releases</id>
-			<name>WISEBED Maven releases repository</name>
-			<url>scpexe://itm01.itm.uni-luebeck.de/www/wisebeds/maven/releases</url>
+			<id>itm-maven-repository-releases</id>
+			<name>ITM UzL Maven releases repository</name>
+			<url>http://maven.itm.uni-luebeck.de/content/repositories/releases/</url>
 		</repository>
 		<snapshotRepository>
-			<id>wisebed-maven-repository-snapshots</id>
-			<name>WISEBED Maven snapshots repository</name>
-			<url>scpexe://itm01.itm.uni-luebeck.de/www/wisebeds/maven/snapshots</url>
+			<id>itm-maven-repository-snapshots</id>
+			<name>ITM UzL Maven snapshots repository</name>
+			<url>http://maven.itm.uni-luebeck.de/content/repositories/snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
