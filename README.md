@@ -7,7 +7,9 @@ Clone
 
 To clone the [wisegui submodule](https://github.com/wisebed/wisegui/) as well, use `--recursive`:
 
-`git clone --recursive git@github.com:wisebed/rest-ws.git`
+```
+git clone --recursive git@github.com:wisebed/rest-ws.git
+```
 
 Building 
 ======
