@@ -2,7 +2,7 @@ WISEBED REST/WebSocket API
 ======
 This project provides an RESTful HTTP Web service and WebSocket API for WISEBED Testbeds.
 
-Clone
+Cloning
 ======
 
 To clone the [wisegui submodule](https://github.com/wisebed/wisegui/) as well, use `--recursive`:
